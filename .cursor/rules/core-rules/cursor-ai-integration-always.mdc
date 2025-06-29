@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: gameplay
+globs: 
 alwaysApply: false
 ---
 # Cursor AI Integration Standards
@@ -119,3 +119,4 @@ public class BadCode : MonoBehaviour
 }
 ```
 </example>
+

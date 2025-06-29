@@ -1,179 +1,427 @@
 ---
-description: context
+description: 
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
-# Sangsom Mini-Me Project Document
+---
+description: Educational 3D Tamagotchi-style care simulation game with Unity development guidelines and optimized project structure
+globs: ["**/*.cs", "**/*.unity", "**/*.prefab", "Assets/**/*", "Scripts/**/*", "**/*.md"]
+version: "2.0.0"
+priority: 1
+tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
+---
 
-## Project Overview
-**Name:** Sangsom Mini-Me  
-**Genre:** Educational 3D Tamagotchi-style Care Simulation  
-**Target Platform:** Unity (Multi-platform deployment)  
-**Development Tools:** Unity, Cursor AI, Blender (optional for 3D modeling)  
-**Universe:** Minime Universe (Expandable ecosystem of educational games)
+# Sangsom Mini-Me Project Rules
 
-## Core Objective
-Create personalized 3D mini-avatars of students registered to the school system. Students will care for their digital mini-me by completing assigned homework, playing educational side games, and managing virtual resources (coins, gems, etc.) to purchase food, outfits, and customization items through the platform.
+@context {
+  "type": "unity-game-project",
+  "genre": "educational-simulation",
+  "target_platform": "multi-platform",
+  "development_stage": "prototype",
+  "ai_integration": "cursor-assisted",
+  "universe": "minime-expandable-ecosystem"
+}
 
-## Gameplay Mechanics
+@project_structure {
+  "root_organization": {
+    "docs_external": "Keep all documentation outside Unity folder",
+    "unity_isolated": "Clean Unity project structure with no external dependencies",
+    "builds_ignored": "All build outputs in separate git-ignored directory"
+  },
+  "unity_architecture": {
+    "assets_by_type": "Group art assets by type, not by character",
+    "scripts_separated": "Runtime/Editor/Tests in separate assemblies",
+    "third_party_isolated": "All external packages in dedicated folder"
+  }
+}
 
-### Core Loop
-- **Care-taking System:** 90's Tamagotchi-inspired mechanics updated with modern design
-- **Homework Online Assignment:** Online capabilities enabling schools to assign homework and users to interact with models from home
-- **Educational Integration:** Homework completion directly affects character well-being
-- **Minime Universe Games:** Educational side games that contribute resources to main character
-- **Resource Management:** Earn coins and gems through academic achievements and side games
-- **Virtual Economy:** Purchase food, outfits, accessories, and room upgrades
-- **Multi-Account System:** Support for multiple user profiles and characters
+## Core Game Mechanics
 
-### Minime Universe Ecosystem
-- **Educational Side Games:** Standalone games that feed resources back to main Mini-Me
-- **Cross-Game Currency:** Resources earned in side games transfer to main character care
-- **Expandable Content:** New educational games can be added to the universe over time
-- **Integrated Progress:** Academic achievements across all games contribute to Mini-Me development
+@gameplay_loop {
+  "care_system": "90s Tamagotchi mechanics with modern UI",
+  "homework_integration": "Academic completion affects character well-being",
+  "resource_management": "Coins/gems earned through achievements",
+  "customization": "Scalable eye sizes, outfits, accessories, room upgrades",
+  "cross_game_currency": "Resources shared across Minime Universe games"
+}
 
-### Character Requirements
+@character_requirements {
+  "art_style": "Japanese anime aesthetic",
+  "input_method": "2-3 reference photos for AI generation",
+  "rigging": ["head", "neck", "arms", "legs", "hips", "facial_expressions"],
+  "animations": ["dance", "wave", "wai", "curtsy", "bow"],
+  "customization": {
+    "eye_scaling": "Interactive scrolling bar",
+    "outfits": "Purchasable clothing system",
+    "accessories": ["hats", "jewelry", "special_items"]
+  }
+}
 
-#### 3D Model Specifications
-- **Art Style:** Japanese animation (anime) aesthetic
-- **Input Method:** 2-3 reference images fed to AI for character generation
-- **File Organization:** Photos stored in folders named after the subject/student (e.g., "Leandi")
-- **Rigging Requirements:**
-  - Articulated joints: Head, neck, arms, legs, hips
-  - Full body movement capability
-  - Facial expression support (optional enhancement)
+## Optimized File Architecture (2025)
 
-#### Customization Features
-- **Scalable Eye Sizes:** Interactive scrolling bar for eye size adjustment
-- **Outfits System:** Purchasable clothing with expandable wardrobe
-- **Accessories:**
-  - Hats and headwear
-  - Jewelry (necklaces, earrings, bracelets)
-  - Additional items (expandable for future content)
-- **Modular Design:** Ability to add new items and outfits post-launch
+@file_structure {
+  "philosophy": "Separate concerns, isolate dependencies, optimize compilation",
+  "structure": {
+    "project_root": {
+      "README.md": "Project overview and setup",
+      "SangsomMini-Me.mdc": "This design document",
+      "History2.md": "Development log and changelog"
+    },
+    "docs_folder": {
+      "path": "Docs/",
+      "purpose": "External documentation, UI mockups, architecture diagrams",
+      "isolation": "Completely outside Unity to prevent unnecessary imports"
+    },
+    "unity_folder": {
+      "path": "Unity/",
+      "structure": {
+        "Assets/": {
+          "3rdParty/": "Asset store packages after import",
+          "Art/": ["Animation/", "Audio/", "Fonts/", "Materials/", "Models/", "Shaders/", "Sprites/", "Textures/"],
+          "Characters/": "Per-character folders with Photos/, Models/, Animations/",
+          "Prefabs/": "Reusable game objects",
+          "Resources/": "Runtime loadable assets",
+          "Scenes/": "Game scenes",
+          "Scripts/": {
+            "Editor/": "Custom editor tools and inspectors",
+            "Runtime/": "Game logic and systems",
+            "Tests/": "Unit and integration tests"
+          },
+          "ScriptableObjects/": "Data containers",
+          "Settings/": "Project configuration"
+        },
+        "Packages/": "Package manager dependencies",
+        "ProjectSettings/": "Unity project configuration"
+      }
+    },
+    "builds_folder": {
+      "path": "Builds/",
+      "purpose": "CI generated builds and installers",
+      "git_status": "ignored"
+    }
+  }
+}
 
-#### Pre-programmed Animations
-- **Dance:** Multiple dance sequences
-- **Wave:** Greeting gesture
-- **Wai:** Traditional Thai greeting
-- **Curtsy:** Formal bow gesture
-- **Bow:** Respectful greeting
+@architecture_guidelines [
+  {
+    "rule": "docs_isolation",
+    "description": "Keep Docs/ outside Unity folder to prevent engine imports",
+    "severity": "error"
+  },
+  {
+    "rule": "third_party_separation",
+    "description": "Place 3rdParty/ packages in dedicated folder for clean upgrades",
+    "severity": "error"
+  },
+  {
+    "rule": "script_assemblies",
+    "description": "Split Scripts/ into Runtime, Editor, Tests assemblies with .asmdef files",
+    "severity": "warning"
+  },
+  {
+    "rule": "character_organization",
+    "description": "Store reference photos under Characters/<Name>/Photos/",
+    "severity": "error"
+  },
+  {
+    "rule": "build_isolation",
+    "description": "Commit no auto-generated or build output; use Builds/ folder",
+    "severity": "error"
+  }
+]
 
-### Environment Design
+## Development Stack & Implementation
 
-#### Room/Building Models
-- **Bedroom:** Personal living space
-- **Study Room:** Academic environment
-- **Recreation Area:** Play and social space
-- **Additional rooms:** Expandable based on progression
+@technical_stack {
+  "game_engine": "Unity 3D",
+  "ai_assistant": "Cursor AI for code generation and asset creation",
+  "modeling": "AI-generated models with Unity integration",
+  "animation": "Unity Animator with custom controllers",
+  "database": "User account management and progress tracking",
+  "security": "Password-protected administrative access"
+}
 
-#### Technical Specifications
-- **3D Environments:** Created using Unity and Cursor AI assistance
-- **Interactive Elements:** Furniture, decorations, functional items
-- **Scalable Architecture:** Room expansion system
+@key_systems [
+  {
+    "system": "student_registration",
+    "description": "Link real students to mini-me avatars"
+  },
+  {
+    "system": "homework_integration", 
+    "description": "Direct connection to school assignment platform"
+  },
+  {
+    "system": "progress_tracking",
+    "description": "Visual indicators of care status and academic performance"
+  },
+  {
+    "system": "customization_engine",
+    "description": "Scalable eye sizes, outfits, accessories, room items"
+  },
+  {
+    "system": "reward_system",
+    "description": "Achievement-based progression through homework and side games"
+  },
+  {
+    "system": "multi_user_accounts",
+    "description": "Multiple student profiles and character management"
+  },
+  {
+    "system": "minime_universe_bridge",
+    "description": "Cross-game resource sharing and progress tracking"
+  }
+]
 
-## Virtual Economy & Purchasable Items
+## Virtual Economy Design
 
-### Currency System
-- **Coins:** Primary currency earned through homework completion
-- **Gems:** Premium currency earned through exceptional academic performance
-- **Cross-Game Resources:** Currency earned from Minime Universe side games
+@currency_system {
+  "coins": "Primary currency from homework completion",
+  "gems": "Premium currency from exceptional academic performance", 
+  "cross_game_resources": "Currency earned from Minime Universe side games"
+}
 
-### Purchasable Categories
+@purchasable_categories {
+  "food_care": ["basic_meals", "premium_food", "health_items"],
+  "outfits": ["casual_wear", "formal_wear", "seasonal_clothing", "cultural_outfits"],
+  "accessories": ["headwear", "jewelry", "special_items"],
+  "environment": ["furniture", "room_themes", "interactive_objects", "room_expansions"]
+}
 
-#### Food & Care Items
-- **Basic Meals:** Bread, rice, simple dishes
-- **Premium Food:** Specialty dishes, treats, exotic foods
-- **Health Items:** Medicine, vitamins, energy boosters
+## AI-Optimized Development Phases
 
-#### Outfits & Clothing
-- **Casual Wear:** T-shirts, jeans, everyday clothing
-- **Formal Wear:** School uniforms, dress clothes, special occasion outfits
-- **Seasonal Clothing:** Summer, winter, holiday-themed outfits
-- **Cultural Outfits:** Traditional Thai clothing, international costumes
+@agent_collaboration_workflow {
+  "methodology": "Unity-Focused Human-AI Development Cycles",
+  "testing_approach": "Unity Editor Play Mode > Automated Test Scripts",
+  "ai_integration": "Unity Code Generation + Asset Pipeline Automation",
+  "developer_role": "Unity Editor Operator & Game Experience Validator"
+}
 
-#### Accessories & Jewelry
-- **Headwear:** Hats, caps, headbands, traditional headdresses
-- **Jewelry:** Necklaces, bracelets, earrings, rings
-- **Special Items:** Glasses, bags, shoes, watches
+@development_roadmap [
+  {
+    "phase": 1,
+    "title": "Unity Project Foundation",
+    "duration": "1 sprint",
+    "approach": "unity_setup_workflow",
+    "collaboration_pattern": "developer_guided_ai_assistance",
+    "tasks": [
+      {
+        "task": "Unity Project Creation",
+        "method": "unity_hub_new_project",
+        "acceptance": "Developer creates new Unity 3D project with proper folder structure",
+        "ai_role": "Provide Unity project setup guidance and folder structure recommendations",
+        "human_role": "Execute Unity Hub project creation and validate structure"
+      },
+      {
+        "task": "Implement Optimized File Architecture",
+        "method": "unity_folder_organization",
+        "acceptance": "Developer confirms Assets/ folder follows @project_structure guidelines",
+        "ai_role": "Generate folder creation scripts and .asmdef files",
+        "human_role": "Execute folder creation and verify Unity recognizes structure"
+      },
+      {
+        "task": "Leandi Character Asset Import",
+        "method": "unity_asset_import_pipeline",
+        "acceptance": "Developer successfully imports Leandi photos into Characters/Leandi/Photos/",
+        "ai_role": "Create import settings and texture optimization",
+        "human_role": "Drag-drop photos and validate import settings in Unity Inspector"
+      },
+      {
+        "task": "Basic Scene Setup",
+        "method": "unity_scene_creation",
+        "acceptance": "Developer has main scene with basic lighting and camera setup",
+        "ai_role": "Generate scene setup scripts and lighting configurations",
+        "human_role": "Create scene in Unity Editor and test play mode"
+      }
+    ],
+    "test_limit": "Unity Editor validation only - no external test runners needed"
+  },
+  {
+    "phase": 2,
+    "title": "Rapid Prototype Validation",
+    "duration": "2-3 sprints",
+    "approach": "agentic_development",
+    "collaboration_pattern": "agent_executes_human_validates",
+    "tasks": [
+      {
+        "task": "Basic Care Loop",
+        "method": "live_gameplay_test",
+        "acceptance": "Developer plays through 5-minute care session",
+        "ai_role": "Build complete system",
+        "human_role": "Playtest & iterate",
+        "test_limit": "No automated tests - human gameplay validation only"
+      },
+      {
+        "task": "Eye-Size Scaling Demo",
+        "method": "realtime_ui_test",
+        "acceptance": "Developer adjusts sliders and sees immediate results",
+        "ai_role": "UI + logic implementation", 
+        "human_role": "Interactive testing & UX feedback"
+      }
+    ]
+  },
+  {
+    "phase": 3,
+    "title": "Core Systems Integration",
+    "duration": "3-4 sprints", 
+    "approach": "hybrid_human_ai",
+    "collaboration_pattern": "collaborative_building",
+    "tasks": [
+      {
+        "task": "Multi-User Framework",
+        "method": "live_account_switching",
+        "acceptance": "Developer creates and switches between 3 accounts",
+        "ai_role": "Backend implementation",
+        "human_role": "Manual account testing & security validation"
+      },
+      {
+        "task": "Save/Load System", 
+        "method": "session_persistence_test",
+        "acceptance": "Developer saves, closes, reopens - state preserved",
+        "ai_role": "Serialization logic",
+        "human_role": "Cross-session testing"
+      }
+    ],
+    "optimization": "Focus on developer experience over test coverage"
+  },
+  {
+    "phase": 4,
+    "title": "Educational Workflow Validation",
+    "duration": "2-3 sprints",
+    "approach": "collaborative_integration",
+    "collaboration_pattern": "real_workflow_simulation", 
+    "tasks": [
+      {
+        "task": "Homework Integration",
+        "method": "mock_assignment_completion",
+        "acceptance": "Developer completes fake homework → Mini-Me responds",
+        "ai_role": "API integration + reward logic",
+        "human_role": "End-to-end workflow testing"
+      },
+      {
+        "task": "Progress Visualization",
+        "method": "live_progress_tracking",
+        "acceptance": "Developer sees visual progress changes in real-time",
+        "ai_role": "UI components + data binding",
+        "human_role": "Visual validation & UX iteration"
+      }
+    ],
+    "test_philosophy": "Real educational scenarios > unit tests"
+  },
+  {
+    "phase": 5,
+    "title": "Polish & Performance",
+    "duration": "1-2 sprints",
+    "approach": "optimization_focused",
+    "collaboration_pattern": "human_guided_optimization",
+    "tasks": [
+      {
+        "task": "Performance Optimization",
+        "method": "developer_stress_testing",
+        "acceptance": "Developer confirms smooth 60fps gameplay",
+        "ai_role": "Code optimization + profiling",
+        "human_role": "Performance validation on target devices"
+      },
+      {
+        "task": "UX Polish Pass",
+        "method": "heuristic_evaluation",
+        "acceptance": "Developer approves overall feel and responsiveness", 
+        "ai_role": "Animation + transition improvements",
+        "human_role": "Subjective quality assessment"
+      }
+    ]
+  }
+]
 
-#### Room & Environment
-- **Furniture:** Beds, desks, chairs, decorative items
-- **Room Themes:** Modern, traditional, fantasy, study-focused
-- **Interactive Objects:** Games, books, musical instruments
-- **Room Expansions:** Additional rooms and building upgrades
+@testing_optimization {
+  "principle": "Interactive > Automated",
+  "rationale": "Educational games require human validation of engagement and fun",
+  "guidelines": [
+    "Limit automated test runs to 2 per feature maximum",
+    "Prioritize developer live-testing over scripted validation", 
+    "Use AI for rapid iteration based on human feedback",
+    "Focus on end-user experience validation",
+    "Implement 'playground testing' where developer explores freely"
+  ]
+}
 
-### Expandable Content System
-- **Post-Launch Items:** Regular addition of new outfits and accessories
-- **Seasonal Content:** Holiday and event-specific items
-- **Achievement Rewards:** Special items unlocked through academic milestones
-- **Premium Collections:** Exclusive items for exceptional students
+@collaboration_protocols {
+  "vibe_coding_sessions": {
+    "purpose": "Rapid prototyping with immediate feedback",
+    "duration": "30-60 minutes focused sessions",
+    "method": "Developer describes vision → AI implements → Live testing"
+  },
+  "agentic_development": {
+    "purpose": "Complex system implementation", 
+    "autonomy_level": "High AI autonomy with human checkpoints",
+    "method": "AI plans → implements → tests → reports to human"
+  },
+  "interactive_debugging": {
+    "purpose": "Real-time issue resolution",
+    "method": "Human observes issue → AI diagnoses → implements fix → human validates"
+  }
+}
 
-## Technical Implementation
+## Success Metrics & Vision
 
-### Development Stack
-- **Game Engine:** Unity 3D
-- **AI Assistant:** Cursor AI for code generation and asset creation
-- **3D Modeling:** AI-generated models with Unity integration
-- **Animation System:** Unity Animator with custom animation controllers
-- **File Architecture:** Multi-structural folder system for optimization
-- **Database:** User account management and progress tracking
-- **Security:** Password-protected administrative access system
+@success_metrics [
+  "student_engagement_homework_completion",
+  "platform_usage_frequency", 
+  "character_care_consistency",
+  "academic_performance_correlation"
+]
 
-### Key Features
-1. **Student Registration System:** Link real students to their mini-me avatars
-2. **Homework Integration:** Direct connection to school assignment platform
-3. **Progress Tracking:** Visual indicators of care status and academic performance
-4. **Advanced Customization System:** 
-   - Unlockable clothes, accessories, and room items
-   - Scalable eye size adjustment
-   - Expandable outfit and jewelry collections
-5. **Reward System:** Achievement-based progression through homework and side games
-6. **Administrative Access:** Password-protected settings and developer alterations
-7. **Multi-User Account Support:** Multiple student profiles and character management
-8. **Optimized File Structure:** Multi-structural folders for enhanced speed and editing efficiency
-9. **Minime Universe Integration:** Cross-game resource sharing and progress tracking
+@long_term_vision {
+  "expandable_universe": "Platform for multiple educational games",
+  "cross_game_integration": "Seamless resource and progress sharing",
+  "educational_impact": "Direct academic performance correlation",
+  "scalable_infrastructure": "Multi-user system for entire schools",
+  "administrative_control": "Teacher and administrator monitoring tools"
+}
 
-### Development Phases
-1. **Phase 1 - Leandi Test Model:** 
-   - Create first Mini-Me model using Leandi as test subject
-   - Upload reference photos to "Leandi" folder
-   - Implement basic character generation from AI using uploaded photos
-   - Basic care mechanics and eye size scaling functionality
-   - Initial outfit and accessory system
-2. **Phase 2 - Core Systems:** 
-   - Room environments and interaction systems
-   - Multi-user account framework
-   - Administrative access and password protection
-   - Multi-structural folder optimization
-3. **Phase 3 - Educational Integration:** 
-   - Homework assignment platform connection
-   - First Minime Universe side game development
-   - Cross-game resource system implementation
-4. **Phase 4 - Expansion & Polish:** 
-   - Additional educational games for Minime Universe
-   - Advanced customization features
-   - Performance optimization and final polish
-   - Scalability improvements for multiple students
+## Migration Tasks
 
-## Success Metrics
-- Student engagement with homework completion
-- Platform usage frequency
-- Character care consistency
-- Academic performance correlation
+@migration_checklist [
+  {
+    "task": "create_unity_folder",
+    "description": "Set up clean Unity/ directory with optimized structure",
+    "priority": "high"
+  },
+  {
+    "task": "move_leandi_photos",
+    "description": "Move Leandi/ images to Unity/Assets/Characters/Leandi/Photos/",
+    "priority": "high"
+  },
+  {
+    "task": "create_docs_folder", 
+    "description": "Set up external Docs/ directory for documentation",
+    "priority": "medium"
+  },
+  {
+    "task": "setup_asmdef_files",
+    "description": "Create assembly definition files for Scripts/ organization",
+    "priority": "medium"
+  },
+  {
+    "task": "configure_gitignore",
+    "description": "Update .gitignore for Builds/ folder and Unity artifacts",
+    "priority": "high"
+  }
+]
 
-## Project Scope
-This educational gamification ecosystem creates the foundation for the "Minime Universe" - an expandable platform of educational games centered around personalized 3D avatars. The core Sangsom Mini-Me application serves as the hub where students care for their digital selves while academic achievements from both homework completion and educational side games contribute to character development and resource accumulation.
+@version "2.0.0"
+@last_updated "2025-01-30"
 
-### Long-term Vision
-- **Expandable Universe:** Platform designed to accommodate multiple educational games
-- **Cross-Game Integration:** Seamless resource and progress sharing between applications  
-- **Educational Impact:** Direct correlation between academic performance and gaming rewards
-- **Scalable Infrastructure:** Multi-user, multi-account system capable of serving entire schools
-- **Administrative Control:** Teacher and administrator tools for monitoring and customization
 
-### First Implementation - Leandi Test Model
-The initial development phase focuses on creating and testing the core systems using "Leandi" as the prototype model, establishing the foundational technology and user experience that will scale to serve multiple students across the educational system.
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: Generating 3d models
+globs: 
 alwaysApply: false
 ---
 # AI Character Generation Guidelines
@@ -190,3 +190,4 @@ public class BadCharacterGenerator : MonoBehaviour
 }
 ```
 </example>
+
