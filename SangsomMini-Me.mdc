@@ -1,0 +1,192 @@
+---
+description: context
+globs: 
+alwaysApply: false
+---
+# Sangsom Mini-Me Project Document
+
+## Project Overview
+**Name:** Sangsom Mini-Me  
+**Genre:** Educational 3D Tamagotchi-style Care Simulation  
+**Target Platform:** Unity (Multi-platform deployment)  
+**Development Tools:** Unity, Cursor AI, Blender (optional for 3D modeling)  
+**Universe:** Minime Universe (Expandable ecosystem of educational games)
+
+## Core Objective
+Create personalized 3D mini-avatars of students registered to the school system. Students will care for their digital mini-me by completing assigned homework, playing educational side games, and managing virtual resources (coins, gems, etc.) to purchase food, outfits, and customization items through the platform.
+
+## Gameplay Mechanics
+
+### Core Loop
+- **Care-taking System:** 90's Tamagotchi-inspired mechanics updated with modern design
+- **Homework Online Assignment:** Online capabilities enabling schools to assign homework and users to interact with models from home
+- **Educational Integration:** Homework completion directly affects character well-being
+- **Minime Universe Games:** Educational side games that contribute resources to main character
+- **Resource Management:** Earn coins and gems through academic achievements and side games
+- **Virtual Economy:** Purchase food, outfits, accessories, and room upgrades
+- **Multi-Account System:** Support for multiple user profiles and characters
+
+### Minime Universe Ecosystem
+- **Educational Side Games:** Standalone games that feed resources back to main Mini-Me
+- **Cross-Game Currency:** Resources earned in side games transfer to main character care
+- **Expandable Content:** New educational games can be added to the universe over time
+- **Integrated Progress:** Academic achievements across all games contribute to Mini-Me development
+
+### Character Requirements
+
+#### 3D Model Specifications
+- **Art Style:** Japanese animation (anime) aesthetic
+- **Input Method:** 2-3 reference images fed to AI for character generation
+- **File Organization:** Photos stored in folders named after the subject/student (e.g., "Leandi")
+- **Rigging Requirements:**
+  - Articulated joints: Head, neck, arms, legs, hips
+  - Full body movement capability
+  - Facial expression support (optional enhancement)
+
+#### Customization Features
+- **Scalable Eye Sizes:** Interactive scrolling bar for eye size adjustment
+- **Outfits System:** Purchasable clothing with expandable wardrobe
+- **Accessories:**
+  - Hats and headwear
+  - Jewelry (necklaces, earrings, bracelets)
+  - Additional items (expandable for future content)
+- **Modular Design:** Ability to add new items and outfits post-launch
+
+#### Pre-programmed Animations
+- **Dance:** Multiple dance sequences
+- **Wave:** Greeting gesture
+- **Wai:** Traditional Thai greeting
+- **Curtsy:** Formal bow gesture
+- **Bow:** Respectful greeting
+
+### Environment Design
+
+#### Room/Building Models
+- **Bedroom:** Personal living space
+- **Study Room:** Academic environment
+- **Recreation Area:** Play and social space
+- **Additional rooms:** Expandable based on progression
+
+#### Technical Specifications
+- **3D Environments:** Created using Unity and Cursor AI assistance
+- **Interactive Elements:** Furniture, decorations, functional items
+- **Scalable Architecture:** Room expansion system
+
+## Virtual Economy & Purchasable Items
+
+### Currency System
+- **Coins:** Primary currency earned through homework completion
+- **Gems:** Premium currency earned through exceptional academic performance
+- **Cross-Game Resources:** Currency earned from Minime Universe side games
+
+### Purchasable Categories
+
+#### Food & Care Items
+- **Basic Meals:** Bread, rice, simple dishes
+- **Premium Food:** Specialty dishes, treats, exotic foods
+- **Health Items:** Medicine, vitamins, energy boosters
+
+#### Outfits & Clothing
+- **Casual Wear:** T-shirts, jeans, everyday clothing
+- **Formal Wear:** School uniforms, dress clothes, special occasion outfits
+- **Seasonal Clothing:** Summer, winter, holiday-themed outfits
+- **Cultural Outfits:** Traditional Thai clothing, international costumes
+
+#### Accessories & Jewelry
+- **Headwear:** Hats, caps, headbands, traditional headdresses
+- **Jewelry:** Necklaces, bracelets, earrings, rings
+- **Special Items:** Glasses, bags, shoes, watches
+
+#### Room & Environment
+- **Furniture:** Beds, desks, chairs, decorative items
+- **Room Themes:** Modern, traditional, fantasy, study-focused
+- **Interactive Objects:** Games, books, musical instruments
+- **Room Expansions:** Additional rooms and building upgrades
+
+### Expandable Content System
+- **Post-Launch Items:** Regular addition of new outfits and accessories
+- **Seasonal Content:** Holiday and event-specific items
+- **Achievement Rewards:** Special items unlocked through academic milestones
+- **Premium Collections:** Exclusive items for exceptional students
+
+## Technical Implementation
+
+### Development Stack
+- **Game Engine:** Unity 3D
+- **AI Assistant:** Cursor AI for code generation and asset creation
+- **3D Modeling:** AI-generated models with Unity integration
+- **Animation System:** Unity Animator with custom animation controllers
+- **File Architecture:** Multi-structural folder system for optimization
+- **Database:** User account management and progress tracking
+- **Security:** Password-protected administrative access system
+
+### Key Features
+1. **Student Registration System:** Link real students to their mini-me avatars
+2. **Homework Integration:** Direct connection to school assignment platform
+3. **Progress Tracking:** Visual indicators of care status and academic performance
+4. **Advanced Customization System:** 
+   - Unlockable clothes, accessories, and room items
+   - Scalable eye size adjustment
+   - Expandable outfit and jewelry collections
+5. **Reward System:** Achievement-based progression through homework and side games
+6. **Administrative Access:** Password-protected settings and developer alterations
+7. **Multi-User Account Support:** Multiple student profiles and character management
+8. **Optimized File Structure:** Multi-structural folders for enhanced speed and editing efficiency
+9. **Minime Universe Integration:** Cross-game resource sharing and progress tracking
+
+### Development Phases
+1. **Phase 1 - Leandi Test Model:** 
+   - Create first Mini-Me model using Leandi as test subject
+   - Upload reference photos to "Leandi" folder
+   - Implement basic character generation from AI using uploaded photos
+   - Basic care mechanics and eye size scaling functionality
+   - Initial outfit and accessory system
+2. **Phase 2 - Core Systems:** 
+   - Room environments and interaction systems
+   - Multi-user account framework
+   - Administrative access and password protection
+   - Multi-structural folder optimization
+3. **Phase 3 - Educational Integration:** 
+   - Homework assignment platform connection
+   - First Minime Universe side game development
+   - Cross-game resource system implementation
+4. **Phase 4 - Expansion & Polish:** 
+   - Additional educational games for Minime Universe
+   - Advanced customization features
+   - Performance optimization and final polish
+   - Scalability improvements for multiple students
+
+## Success Metrics
+- Student engagement with homework completion
+- Platform usage frequency
+- Character care consistency
+- Academic performance correlation
+
+## Project Scope
+This educational gamification ecosystem creates the foundation for the "Minime Universe" - an expandable platform of educational games centered around personalized 3D avatars. The core Sangsom Mini-Me application serves as the hub where students care for their digital selves while academic achievements from both homework completion and educational side games contribute to character development and resource accumulation.
+
+### Long-term Vision
+- **Expandable Universe:** Platform designed to accommodate multiple educational games
+- **Cross-Game Integration:** Seamless resource and progress sharing between applications  
+- **Educational Impact:** Direct correlation between academic performance and gaming rewards
+- **Scalable Infrastructure:** Multi-user, multi-account system capable of serving entire schools
+- **Administrative Control:** Teacher and administrator tools for monitoring and customization
+
+### First Implementation - Leandi Test Model
+The initial development phase focuses on creating and testing the core systems using "Leandi" as the prototype model, establishing the foundational technology and user experience that will scale to serve multiple students across the educational system.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

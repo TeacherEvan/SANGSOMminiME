@@ -1,0 +1,139 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Educational Nurturing Game Design Principles
+
+## Core Nurturing Philosophy
+
+### Authentic Care Mechanics
+- **Genuine needs over artificial timers**: Characters should have realistic needs (hunger, attention, learning support) rather than countdown mechanics
+- **Meaningful interaction cycles**: Each caring action should reveal more about the character's personality and growth
+- **Emotional connection building**: Design interactions that make students genuinely care about their character's wellbeing
+- **Consequence modeling**: Poor care should feel regrettable, not punishing
+
+### Educational Integration
+- **Homework as primary care**: Academic achievement directly translates to character health and happiness
+- **Subject-specific benefits**: Different homework types provide different character boosts (math = logic, writing = creativity)
+- **Progress visualization**: Character growth visually represents learning progress
+- **Collaborative learning**: Side games in Minime Universe reinforce educational concepts
+
+## Anti-Stress Design Patterns
+
+### Remove Pressure Elements
+- **No countdown timers** for character needs - characters wait patiently
+- **No death/failure states** - characters become sad but recover with care
+- **Flexible interaction timing** - students can care when convenient
+- **Positive reinforcement focus** - celebrate progress rather than penalize absence
+
+### Cozy Gameplay Elements
+- **Slow, meditative pace** encouraging thoughtful interaction
+- **Ambient character behaviors** - characters have lives independent of player
+- **Customization as self-expression** - extensive personalization options
+- **Safe exploration spaces** - no wrong choices in character care
+
+## Character Development Systems
+
+### Meaningful Progression
+- **Personality growth over stats**: Characters develop traits based on care patterns
+- **Memory systems**: Characters remember and reference past interactions
+- **Preference learning**: Characters develop individual likes/dislikes over time
+- **Relationship deepening**: Trust and bond levels unlock new interactions
+
+### Visual Feedback Systems
+- **Expressive animations**: Characters show emotions through body language
+- **Environmental reactions**: Character's room/space reflects their wellbeing
+- **Subtle state indicators**: Mood shown through posture, not intrusive UI bars
+- **Growth visualization**: Physical or outfit changes showing development
+
+## Reward System Design
+
+### Authentic Character Responses
+- **Personal gifts from character**: Items that feel meaningful to the relationship
+- **Character-initiated interactions**: Surprise moments when character reaches out
+- **Memory sharing**: Character reveals stories or memories as trust grows
+- **Skill demonstrations**: Character shows off learned abilities
+
+### Educational Reward Integration
+- **Academic achievement celebrations**: Character parties for homework completion
+- **Knowledge sharing**: Character asks about what student learned
+- **Real-world connections**: Character relates lessons to their own experiences
+- **Progress artifacts**: Character keeps mementos of educational milestones
+
+## Multi-User Considerations
+
+### Individual Character Relationships
+- **Unique personality per character**: No two Mini-Me's should feel identical
+- **Personal interaction history**: Each student's relationship develops independently
+- **Cultural sensitivity**: Characters adapt to individual student backgrounds
+- **Privacy protection**: Character interactions remain personal to each student
+
+### Administrative Tools
+- **Progress monitoring without intrusion**: Teachers see engagement, not personal interactions
+- **Flexible homework integration**: Easy connection to existing assignment systems
+- **Parental involvement options**: Optional sharing of character milestones
+- **Classroom discussion facilitation**: Tools for sharing appropriate character experiences
+
+## Examples
+
+<example>
+Proper nurturing interaction design:
+```csharp
+public class CharacterNeedsSystem : MonoBehaviour
+{
+    [System.Serializable]
+    public class CharacterNeed
+    {
+        public string needName;
+        public float currentLevel; // 0-1, never decreases below 0.2
+        public float decayRate = 0.01f; // Very slow decay
+        public bool isEmergency => currentLevel < 0.3f;
+        
+        public CharacterReaction GetNeedReaction()
+        {
+            if (currentLevel > 0.8f) return CharacterReaction.Happy;
+            if (currentLevel > 0.5f) return CharacterReaction.Content;
+            if (currentLevel > 0.3f) return CharacterReaction.Concerned;
+            return CharacterReaction.Sad; // Never death/failure
+        }
+    }
+    
+    public void CompleteHomework(HomeworkType type, float quality)
+    {
+        // Educational achievement directly improves character wellbeing
+        var bonus = quality * GetSubjectBonus(type);
+        UpdateNeed("Learning", bonus);
+        UpdateNeed("Happiness", bonus * 0.5f);
+        
+        // Character remembers this achievement
+        character.AddMemory($"I'm so proud you aced that {type} assignment!");
+        
+        // Trigger authentic character response
+        character.ShowGratitude(type);
+    }
+}
+```
+</example>
+
+<example type="invalid">
+Avoid stressful, punitive design:
+```csharp
+// ❌ DON'T: Stressful tamagotchi mechanics
+public class BadNeedsSystem : MonoBehaviour 
+{
+    public float hungerTimer = 300f; // 5 minute countdown
+    
+    void Update() 
+    {
+        hungerTimer -= Time.deltaTime;
+        if (hungerTimer <= 0) 
+        {
+            // Character dies/fails - creates stress, not care
+            character.Die();
+            ShowGameOverScreen();
+        }
+    }
+}
+```
+</example>

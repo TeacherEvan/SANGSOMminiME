@@ -1,0 +1,192 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# AI Character Generation Guidelines
+
+## Photo-to-Model Conversion Process
+
+### Reference Photo Requirements
+- **2-3 high-quality photos** minimum per character (front, side, 3/4 view preferred)
+- **Well-lit, clear facial features** for accurate anime conversion
+- **Neutral expressions** for base model - emotions added through animation
+- **Consistent lighting** across all reference photos
+- **Store in organized folders**: `Assets/Characters/{StudentName}/Photos/`
+
+### Anime Style Conversion Prompts
+```
+"Create a 3D anime-style character model based on these reference photos. 
+Style requirements:
+- Large, expressive eyes with customizable size scaling
+- Soft, rounded facial features typical of anime/manga
+- Clean, simplified geometry suitable for real-time rendering
+- Proportions: slightly larger head, smaller body for cute aesthetic
+- Smooth, cartoon-like textures with cell-shading compatibility
+- Modular design allowing outfit and accessory attachment points"
+```
+
+## Character Customization Architecture
+
+### Scalable Feature System
+- **Eye size scaling**: Implement as bone-based scaling system, not mesh deformation
+- **Facial expression blendshapes**: Minimum 10 expressions (happy, sad, surprised, etc.)
+- **Modular attachment points**: Standardized bones for hats, jewelry, accessories
+- **Outfit system**: Separate mesh layers for different clothing categories
+- **Hair variations**: Swappable hair meshes with physics-enabled strands
+
+### Technical Implementation
+```csharp
+[System.Serializable]
+public class CharacterCustomization 
+{
+    [Header("Facial Features")]
+    [Range(0.5f, 2.0f)] public float eyeSize = 1.0f;
+    [Range(0.8f, 1.2f)] public float faceWidth = 1.0f;
+    
+    [Header("Outfit System")]
+    public OutfitData currentOutfit;
+    public List<AccessoryData> equippedAccessories;
+    
+    [Header("Animation")]
+    public RuntimeAnimatorController animatorController;
+    public float expressionBlendSpeed = 2.0f;
+}
+```
+
+## Animation Requirements
+
+### Essential Animation Set
+- **Dance**: 3-4 variations (simple, energetic, cultural, celebration)
+- **Wave**: Standard greeting with hand motion
+- **Wai**: Traditional Thai greeting (hands together, bow)
+- **Curtsy**: Formal bow with dress/skirt motion
+- **Bow**: Respectful Japanese-style bow
+- **Idle variations**: 5+ subtle ambient animations
+
+### Animation Guidelines
+- **Smooth transitions**: 0.2-0.5 second blend times between animations
+- **Loop-friendly**: All animations should loop seamlessly
+- **Scalable timing**: Animations adapt to character mood (slower when sad, faster when happy)
+- **Cultural sensitivity**: Research proper form for cultural gestures
+
+## Outfit and Accessory System
+
+### Clothing Categories
+- **Casual wear**: T-shirts, jeans, everyday clothing
+- **Formal wear**: School uniforms, dress clothes, special occasions
+- **Cultural outfits**: Traditional Thai clothing, international costumes
+- **Seasonal items**: Summer/winter variants, holiday themes
+- **Fantasy/costume**: Creative, playful outfit options
+
+### Accessory Types
+- **Headwear**: Hats, caps, headbands, traditional headdresses
+- **Jewelry**: Necklaces, bracelets, earrings, rings
+- **Functional items**: Glasses, bags, shoes, watches
+- **Special effects**: Glowing items, animated accessories
+
+### Implementation Structure
+```csharp
+[CreateAssetMenu(fileName = "New Outfit", menuName = "Character/Outfit Data")]
+public class OutfitData : ScriptableObject
+{
+    [Header("Visual")]
+    public Sprite icon;
+    public GameObject outfitPrefab;
+    public Material[] materials;
+    
+    [Header("Gameplay")]
+    public int coinCost;
+    public int gemCost;
+    public bool requiresAchievement;
+    public string unlockCondition;
+    
+    [Header("Categories")]
+    public OutfitCategory category;
+    public OutfitStyle style;
+    public bool isSeasonalItem;
+}
+```
+
+## Quality Assurance Standards
+
+### Visual Consistency
+- **Unified art style**: All characters should feel like they belong in the same world
+- **Consistent proportions**: Maintain anime aesthetic ratios across all models
+- **Optimized poly counts**: Target 8-12k polygons for mobile compatibility
+- **Texture resolution**: 512x512 for accessories, 1024x1024 for main character
+- **Color palette harmony**: Use consistent color schemes across outfits
+
+### Technical Requirements
+- **Rigging standards**: Humanoid rig for Unity's animation system
+- **Bone hierarchy**: Consistent naming convention for all character bones
+- **Physics integration**: Cloth physics for skirts, hair physics for longer styles
+- **LOD system**: Multiple detail levels for performance optimization
+- **Lighting compatibility**: Models work with both real-time and baked lighting
+
+## Examples
+
+<example>
+Proper character generation workflow:
+```csharp
+public class CharacterGenerator : MonoBehaviour
+{
+    [Header("Photo References")]
+    public Texture2D[] referencePhotos;
+    
+    [Header("Generation Settings")]
+    public AnimeStyleSettings styleSettings;
+    public CustomizationProfile defaultCustomization;
+    
+    public async Task<GameObject> GenerateCharacterAsync(string studentName)
+    {
+        // Load reference photos from student folder
+        var photoPath = $"Assets/Characters/{studentName}/Photos/";
+        var photos = LoadPhotosFromDirectory(photoPath);
+        
+        // Generate AI prompt with style requirements
+        var prompt = BuildAnimeStylePrompt(photos, styleSettings);
+        
+        // Create base character model
+        var baseModel = await AIModelGenerator.GenerateFromPrompt(prompt);
+        
+        // Apply customization systems
+        SetupCustomizationRig(baseModel);
+        AttachAnimationController(baseModel);
+        ConfigureBlendShapes(baseModel);
+        
+        // Save generated character
+        var characterPath = $"Assets/Characters/{studentName}/Models/";
+        return SaveCharacterAsset(baseModel, characterPath);
+    }
+    
+    private void SetupCustomizationRig(GameObject character)
+    {
+        // Ensure eye scaling bones are properly configured
+        var eyeScaler = character.AddComponent<EyeScalingSystem>();
+        eyeScaler.Initialize(character.transform);
+        
+        // Setup attachment points for accessories
+        var attachmentSystem = character.AddComponent<AccessoryAttachmentSystem>();
+        attachmentSystem.ConfigureAttachmentPoints();
+    }
+}
+```
+</example>
+
+<example type="invalid">
+Avoid inflexible character generation:
+```csharp
+// ❌ DON'T: Rigid, non-scalable approach
+public class BadCharacterGenerator : MonoBehaviour 
+{
+    public GameObject characterPrefab; // Single fixed model
+    
+    public void MakeCharacter() 
+    {
+        // No customization, no photo input, no AI generation
+        Instantiate(characterPrefab);
+    }
+}
+```
+</example>

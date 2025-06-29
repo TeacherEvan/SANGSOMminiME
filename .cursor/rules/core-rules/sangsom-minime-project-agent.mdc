@@ -1,0 +1,149 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Master rule for Sangsom Mini-Me educational tamagotchi project. Apply when working on any aspect of this Unity C# project including character creation, educational game mechanics, AI-generated models, multi-user systems, administrative controls, or Minime Universe ecosystem development. This rule ensures consistency across the entire project and guides proper implementation of educational gaming principles, Japanese anime-style character systems, and modern Unity development practices.
+globs: 
+alwaysApply: false
+---
+
+# Sangsom Mini-Me Project Development Guide
+
+## Project Overview
+- **Educational 3D Tamagotchi**: Students care for personalized Mini-Me characters through homework completion
+- **Minime Universe**: Expandable ecosystem with educational side games feeding resources to main character
+- **Unity + Cursor AI**: Modern AI-assisted development with automated code generation
+- **Target**: Schools/educators with multi-user account management
+
+## Core Development Principles
+
+### Character System
+- **Anime-style 3D models** generated from 2-3 reference photos
+- **Scalable customization**: Eye size sliders, outfits, accessories, jewelry
+- **Animation requirements**: Dance, wave, wai, curtsy, bow movements
+- **Student-specific folders**: `Assets/Characters/{StudentName}/`
+
+### Educational Integration
+- **Homework completion** drives character well-being and resources
+- **No timers or stress mechanics** - focus on nurturing, cozy gameplay
+- **Resource system**: Coins from homework, gems from excellence
+- **Cross-game currency** from Minime Universe side games
+
+### Technical Architecture
+- **Multi-structural folders** for performance optimization
+- **Administrative access** with password protection for teachers
+- **Multi-user account system** supporting entire schools
+- **Modular design** allowing post-launch content expansion
+
+## File Organization Standards
+
+### Assets Structure
+```
+Assets/
+├── Characters/{StudentName}/
+│   ├── Photos/          # Reference images for AI model generation
+│   ├── Models/          # Generated 3D models and textures
+│   └── Animations/      # Custom animation controllers
+├── Minime-Universe/
+│   ├── Core-Game/       # Main tamagotchi systems
+│   └── Side-Games/      # Educational mini-games
+├── Resources/
+│   ├── Outfits/         # Purchasable clothing items
+│   └── Accessories/     # Hats, jewelry, special items
+└── Scripts/
+    ├── Core/            # Game management, save systems
+    ├── Character/       # Character behavior and customization
+    ├── UI/              # Interface and menu systems
+    └── Educational/     # Homework integration and progress tracking
+```
+
+### Script Naming Conventions
+- **Managers**: `{System}Manager.cs` (e.g., `CharacterManager.cs`)
+- **Controllers**: `{Feature}Controller.cs` (e.g., `CustomizationController.cs`) 
+- **Data**: `{Type}Data.cs` (e.g., `StudentData.cs`, `OutfitData.cs`)
+- **UI**: `{Component}UI.cs` (e.g., `CharacterCustomizationUI.cs`)
+
+## AI-Assisted Development Rules
+
+### Code Generation Guidelines
+- **Always use TypeScript-style C#** with explicit types and null safety
+- **Implement comprehensive error handling** for all user interactions
+- **Create modular, reusable components** for character customization
+- **Use Unity's ScriptableObject system** for data management
+- **Follow SOLID principles** especially Single Responsibility
+
+### Character AI Integration
+- **Generate models from photos** using descriptive prompts about anime style
+- **Create animation controllers** with smooth transitions between states
+- **Implement reactive character behaviors** based on care status
+- **Design emotional feedback systems** showing character responses
+
+### Educational System Requirements
+- **Homework assignment API integration** for school systems
+- **Progress tracking with visual indicators** for student engagement  
+- **Achievement system** encouraging consistent care and academic performance
+- **Parental/teacher dashboard** for monitoring student progress
+
+## Modern Unity Best Practices
+
+### Performance Optimization
+- **Object pooling** for UI elements and particle effects
+- **Efficient asset loading** using addressables system
+- **Mobile-first optimization** ensuring smooth performance across devices
+- **Memory management** with proper disposal of temporary objects
+
+### User Experience Design
+- **Consistent visual hierarchy** with clear navigation
+- **Accessibility considerations** including colorblind-friendly palettes
+- **Intuitive touch/click interactions** with appropriate feedback
+- **Responsive design** adapting to different screen sizes
+
+## Examples
+
+<example>
+Creating a character customization script:
+```csharp
+[System.Serializable]
+public class CharacterCustomization : MonoBehaviour
+{
+    [Header("Scalable Features")]
+    public Slider eyeSizeSlider;
+    public Transform eyeTransform;
+    
+    [Header("Outfit System")]
+    public OutfitData[] availableOutfits;
+    public Transform outfitParent;
+    
+    private void Start()
+    {
+        eyeSizeSlider.onValueChanged.AddListener(UpdateEyeSize);
+        LoadStudentCustomization();
+    }
+    
+    private void UpdateEyeSize(float value)
+    {
+        Vector3 newScale = Vector3.one * (0.5f + value);
+        eyeTransform.localScale = newScale;
+        SaveCustomization();
+    }
+}
+```
+</example>
+
+<example type="invalid">
+Avoid creating rigid, non-scalable character systems:
+```csharp
+// ❌ DON'T: Hard-coded, inflexible approach
+public class BadCharacter : MonoBehaviour 
+{
+    public GameObject hat1, hat2, hat3; // Not scalable
+    public void ChangeHat(int index) 
+    {
+        // Switch statement for each hat - not expandable
+    }
+}
+```
+</example>
+
