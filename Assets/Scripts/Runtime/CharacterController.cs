@@ -1,0 +1,332 @@
+using UnityEngine;
+
+namespace SangsomMiniMe.Character
+{
+    /// <summary>
+    /// Controls the Mini-Me character behavior and interactions
+    /// </summary>
+    public class CharacterController : MonoBehaviour
+    {
+        [Header("Character Settings")]
+        [SerializeField] private Animator characterAnimator;
+        [SerializeField] private Transform eyeScale1;
+        [SerializeField] private Transform eyeScale2;
+        [SerializeField] private Transform accessoryPoint;
+        [SerializeField] private SkinnedMeshRenderer characterRenderer;
+        
+        [Header("Customization")]
+        [SerializeField] private Material[] outfitMaterials;
+        [SerializeField] private GameObject[] accessories;
+        
+        [Header("Animation")]
+        [SerializeField] private AnimationClip idleClip;
+        [SerializeField] private AnimationClip danceClip;
+        [SerializeField] private AnimationClip waveClip;
+        [SerializeField] private AnimationClip waiClip;
+        [SerializeField] private AnimationClip curtsyClip;
+        [SerializeField] private AnimationClip bowClip;
+        
+        [Header("Happiness Indicators")]
+        [SerializeField] private ParticleSystem happinessParticles;
+        [SerializeField] private GameObject sadnessIndicator;
+        
+        private float currentEyeScale = 1.0f;
+        private int currentOutfitIndex = 0;
+        private int currentAccessoryIndex = 0;
+        private float currentHappiness = 75f;
+        private bool isAnimating = false;
+        
+        // Animation state hashes for performance
+        private static readonly int IdleHash = Animator.StringToHash("Idle");
+        private static readonly int DanceHash = Animator.StringToHash("Dance");
+        private static readonly int WaveHash = Animator.StringToHash("Wave");
+        private static readonly int WaiHash = Animator.StringToHash("Wai");
+        private static readonly int CurtsyHash = Animator.StringToHash("Curtsy");
+        private static readonly int BowHash = Animator.StringToHash("Bow");
+        
+        public float CurrentHappiness => currentHappiness;
+        public bool IsAnimating => isAnimating;
+        
+        // Events
+        public System.Action<string> OnAnimationStarted;
+        public System.Action<string> OnAnimationCompleted;
+        public System.Action<float> OnHappinessChanged;
+        
+        private void Start()
+        {
+            Initialize();
+        }
+        
+        private void Initialize()
+        {
+            // Set default values
+            SetEyeScale(currentEyeScale);
+            SetOutfit(currentOutfitIndex);
+            SetAccessory(currentAccessoryIndex);
+            UpdateHappinessDisplay();
+            
+            // Subscribe to user manager events
+            if (Core.UserManager.Instance != null)
+            {
+                Core.UserManager.Instance.OnUserLoggedIn += OnUserLoggedIn;
+                Core.UserManager.Instance.OnUserLoggedOut += OnUserLoggedOut;
+            }
+            
+            Debug.Log("Character Controller initialized");
+        }
+        
+        private void OnUserLoggedIn(Core.UserProfile user)
+        {
+            // Apply user's character customization
+            SetEyeScale(user.EyeScale);
+            SetOutfitByName(user.CurrentOutfit);
+            SetAccessoryByName(user.CurrentAccessory);
+            SetHappiness(user.CharacterHappiness);
+            
+            Debug.Log($"Character customized for user: {user.DisplayName}");
+        }
+        
+        private void OnUserLoggedOut()
+        {
+            // Reset to default appearance
+            SetEyeScale(1.0f);
+            SetOutfit(0);
+            SetAccessory(0);
+            SetHappiness(50f);
+        }
+        
+        public void SetEyeScale(float scale)
+        {
+            scale = Mathf.Clamp(scale, 0.5f, 2.0f);
+            currentEyeScale = scale;
+            
+            if (eyeScale1 != null)
+                eyeScale1.localScale = Vector3.one * scale;
+            if (eyeScale2 != null)
+                eyeScale2.localScale = Vector3.one * scale;
+            
+            // Save to current user if logged in
+            if (Core.UserManager.Instance?.CurrentUser != null)
+            {
+                Core.UserManager.Instance.CurrentUser.SetEyeScale(scale);
+                Core.UserManager.Instance.SaveCurrentUser();
+            }
+        }
+        
+        public void SetOutfit(int outfitIndex)
+        {
+            if (outfitMaterials != null && outfitIndex >= 0 && outfitIndex < outfitMaterials.Length)
+            {
+                currentOutfitIndex = outfitIndex;
+                if (characterRenderer != null)
+                {
+                    characterRenderer.material = outfitMaterials[outfitIndex];
+                }
+                
+                // Save to current user if logged in
+                if (Core.UserManager.Instance?.CurrentUser != null)
+                {
+                    string outfitName = outfitIndex == 0 ? "default" : $"outfit_{outfitIndex}";
+                    Core.UserManager.Instance.CurrentUser.SetOutfit(outfitName);
+                    Core.UserManager.Instance.SaveCurrentUser();
+                }
+            }
+        }
+        
+        public void SetOutfitByName(string outfitName)
+        {
+            if (outfitName == "default")
+            {
+                SetOutfit(0);
+            }
+            else if (outfitName.StartsWith("outfit_"))
+            {
+                if (int.TryParse(outfitName.Replace("outfit_", ""), out int index))
+                {
+                    SetOutfit(index);
+                }
+            }
+        }
+        
+        public void SetAccessory(int accessoryIndex)
+        {
+            // Hide all accessories first
+            if (accessories != null)
+            {
+                foreach (var accessory in accessories)
+                {
+                    if (accessory != null)
+                        accessory.SetActive(false);
+                }
+                
+                // Show selected accessory
+                if (accessoryIndex > 0 && accessoryIndex < accessories.Length && accessories[accessoryIndex] != null)
+                {
+                    accessories[accessoryIndex].SetActive(true);
+                    currentAccessoryIndex = accessoryIndex;
+                }
+                else
+                {
+                    currentAccessoryIndex = 0; // No accessory
+                }
+                
+                // Save to current user if logged in
+                if (Core.UserManager.Instance?.CurrentUser != null)
+                {
+                    string accessoryName = currentAccessoryIndex == 0 ? "none" : $"accessory_{currentAccessoryIndex}";
+                    Core.UserManager.Instance.CurrentUser.SetAccessory(accessoryName);
+                    Core.UserManager.Instance.SaveCurrentUser();
+                }
+            }
+        }
+        
+        public void SetAccessoryByName(string accessoryName)
+        {
+            if (accessoryName == "none")
+            {
+                SetAccessory(0);
+            }
+            else if (accessoryName.StartsWith("accessory_"))
+            {
+                if (int.TryParse(accessoryName.Replace("accessory_", ""), out int index))
+                {
+                    SetAccessory(index);
+                }
+            }
+        }
+        
+        public void SetHappiness(float happiness)
+        {
+            happiness = Mathf.Clamp(happiness, 0f, 100f);
+            currentHappiness = happiness;
+            UpdateHappinessDisplay();
+            OnHappinessChanged?.Invoke(currentHappiness);
+        }
+        
+        private void UpdateHappinessDisplay()
+        {
+            // Update particle effects and indicators based on happiness
+            if (happinessParticles != null)
+            {
+                if (currentHappiness > 70f)
+                {
+                    happinessParticles.gameObject.SetActive(true);
+                    var emission = happinessParticles.emission;
+                    emission.rateOverTime = (currentHappiness - 70f) / 30f * 10f; // Scale particles with happiness
+                }
+                else
+                {
+                    happinessParticles.gameObject.SetActive(false);
+                }
+            }
+            
+            if (sadnessIndicator != null)
+            {
+                sadnessIndicator.SetActive(currentHappiness < 30f);
+            }
+        }
+        
+        // Animation methods
+        public void PlayIdle()
+        {
+            PlayAnimation("Idle", IdleHash);
+        }
+        
+        public void PlayDance()
+        {
+            PlayAnimation("Dance", DanceHash);
+            IncreaseHappiness(2f);
+        }
+        
+        public void PlayWave()
+        {
+            PlayAnimation("Wave", WaveHash);
+        }
+        
+        public void PlayWai()
+        {
+            PlayAnimation("Wai", WaiHash);
+        }
+        
+        public void PlayCurtsy()
+        {
+            PlayAnimation("Curtsy", CurtsyHash);
+        }
+        
+        public void PlayBow()
+        {
+            PlayAnimation("Bow", BowHash);
+        }
+        
+        private void PlayAnimation(string animationName, int animationHash)
+        {
+            if (characterAnimator != null && !isAnimating)
+            {
+                characterAnimator.SetTrigger(animationHash);
+                isAnimating = true;
+                OnAnimationStarted?.Invoke(animationName);
+                
+                // Reset animation flag after a delay (would normally be handled by animation events)
+                Invoke(nameof(ResetAnimationFlag), 2f);
+                
+                Debug.Log($"Playing animation: {animationName}");
+            }
+        }
+        
+        private void ResetAnimationFlag()
+        {
+            isAnimating = false;
+        }
+        
+        public void IncreaseHappiness(float amount)
+        {
+            SetHappiness(currentHappiness + amount);
+            
+            // Update user profile
+            if (Core.UserManager.Instance?.CurrentUser != null)
+            {
+                Core.UserManager.Instance.CurrentUser.IncreaseHappiness(amount);
+                Core.UserManager.Instance.SaveCurrentUser();
+            }
+        }
+        
+        public void DecreaseHappiness(float amount)
+        {
+            SetHappiness(currentHappiness - amount);
+            
+            // Update user profile
+            if (Core.UserManager.Instance?.CurrentUser != null)
+            {
+                Core.UserManager.Instance.CurrentUser.DecreaseHappiness(amount);
+                Core.UserManager.Instance.SaveCurrentUser();
+            }
+        }
+        
+        // Interaction methods for UI buttons
+        public void OnCharacterClicked()
+        {
+            if (!isAnimating)
+            {
+                // Cycle through different interactions on click
+                int randomAction = Random.Range(0, 4);
+                switch (randomAction)
+                {
+                    case 0: PlayWave(); break;
+                    case 1: PlayDance(); break;
+                    case 2: PlayWai(); break;
+                    case 3: PlayCurtsy(); break;
+                }
+            }
+        }
+        
+        private void OnDestroy()
+        {
+            // Unsubscribe from events
+            if (Core.UserManager.Instance != null)
+            {
+                Core.UserManager.Instance.OnUserLoggedIn -= OnUserLoggedIn;
+                Core.UserManager.Instance.OnUserLoggedOut -= OnUserLoggedOut;
+            }
+        }
+    }
+}

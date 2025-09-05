@@ -1,7 +1,9 @@
 {
     "name": "SangsomMiniMe.Runtime",
     "rootNamespace": "SangsomMiniMe",
-    "references": [],
+    "references": [
+        "Unity.TextMeshPro"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
