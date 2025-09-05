@@ -263,7 +263,7 @@ dotnet build  # For any .NET test projects
 # If stuck, validate basic environment:
 dotnet --version                    # Should show 8.0.119+
 git --no-pager log --oneline -3    # Recent commits
-find Assets -name "*.asmdef"       # Assembly definitions exist
+find Assets -name "*.asmdef" -exec echo "Found: {}" \;       # Assembly definitions exist
 ls -la .cursor/rules/*/             # AI rules are present
 ```
 
