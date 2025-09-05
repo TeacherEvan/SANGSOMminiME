@@ -202,8 +202,7 @@ SANGSOMminiME/
 
 ### Important Files to Monitor
 ```bash
-# Always check these after modifying project structure:
-ls -la Assets/Scripts/*/Runtime.asmdef    # Assembly definitions
+ls -la Assets/Scripts/Runtime/Runtime.asmdef Assets/Scripts/Editor/Editor.asmdef    # Assembly definitions
 ls -la .cursor/rules/core-rules/          # AI development rules
 ls -la Assets/Characters/Leandi/Photos/   # Sample character data
 ```
