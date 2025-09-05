@@ -13,7 +13,7 @@ Sangsom Mini-Me is an educational 3D tamagotchi-style Unity game where students 
 ```bash
 # Install Unity 2022.3 LTS (Linux/Ubuntu)
 # NOTE: Unity installation requires manual download due to licensing
-# Download Unity Hub from: https://unity3d.com/get-unity/download
+# Download Unity Hub from: https://unity.com/download
 # Install Unity 2022.3 LTS through Unity Hub
 # Unity Editor path typically: ~/.local/share/UnityHub/Editor/2022.3.XX/Editor/Unity
 
