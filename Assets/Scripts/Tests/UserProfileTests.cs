@@ -25,11 +25,11 @@ namespace SangsomMiniMe.Tests
             Assert.AreEqual("test_user", testUser.UserName);
             Assert.AreEqual("Test User", testUser.DisplayName);
             Assert.AreEqual(0, testUser.ExperiencePoints);
-            Assert.AreEqual(100, testUser.Coins); // Starting coins
-            Assert.AreEqual(75f, testUser.CharacterHappiness); // Starting happiness
-            Assert.AreEqual(1.0f, testUser.EyeScale);
-            Assert.AreEqual("default", testUser.CurrentOutfit);
-            Assert.AreEqual("none", testUser.CurrentAccessory);
+            Assert.AreEqual(GameConstants.DefaultStartingCoins, testUser.Coins); // Starting coins
+            Assert.AreEqual(GameConstants.DefaultStartingHappiness, testUser.CharacterHappiness); // Starting happiness
+            Assert.AreEqual(GameConstants.DefaultEyeScale, testUser.EyeScale);
+            Assert.AreEqual(GameConstants.DefaultOutfit, testUser.CurrentOutfit);
+            Assert.AreEqual(GameConstants.DefaultAccessory, testUser.CurrentAccessory);
             Assert.IsTrue(testUser.IsActive);
         }
         

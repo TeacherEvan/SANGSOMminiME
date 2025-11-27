@@ -149,7 +149,7 @@ namespace SangsomMiniMe.Core
             
             var analyticsEvent = new AnalyticsEvent("session_start", user.UserId)
                 .AddParameter("days_active", user.DaysActive)
-                .AddParameter("current_level", user.ExperiencePoints / GameConstants.ExperiencePerLevel + 1);
+                .AddParameter("current_level", GameUtilities.CalculateLevel(user.ExperiencePoints));
             
             TrackEvent(analyticsEvent);
         }
@@ -211,7 +211,7 @@ namespace SangsomMiniMe.Core
                 TotalEvents = eventsCount,
                 HomeworkCompletions = homeworkEvents,
                 CharacterInteractions = interactionEvents,
-                CurrentLevel = user.ExperiencePoints / GameConstants.ExperiencePerLevel + 1,
+                CurrentLevel = GameUtilities.CalculateLevel(user.ExperiencePoints),
                 TotalHomeworkCompleted = user.HomeworkCompleted,
                 AverageHappiness = user.CharacterHappiness
             };

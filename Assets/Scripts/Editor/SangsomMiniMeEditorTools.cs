@@ -179,7 +179,7 @@ namespace SangsomMiniMe.Editor
             
             foreach (var user in users)
             {
-                Debug.Log($"User: {user.DisplayName} ({user.UserName}) - Level {user.ExperiencePoints / 100 + 1}, {user.Coins} coins");
+                Debug.Log($"User: {user.DisplayName} ({user.UserName}) - Level {GameUtilities.CalculateLevel(user.ExperiencePoints)}, {user.Coins} coins");
             }
         }
         
@@ -209,9 +209,9 @@ namespace SangsomMiniMe.Editor
             var user = UserManager.Instance?.CurrentUser;
             if (user != null)
             {
-                int oldLevel = user.ExperiencePoints / 100 + 1;
+                int oldLevel = GameUtilities.CalculateLevel(user.ExperiencePoints);
                 user.AddExperience(amount);
-                int newLevel = user.ExperiencePoints / 100 + 1;
+                int newLevel = GameUtilities.CalculateLevel(user.ExperiencePoints);
                 UserManager.Instance.SaveCurrentUser();
                 
                 Debug.Log($"Added {amount} XP to {user.DisplayName}. Total: {user.ExperiencePoints}");
@@ -266,7 +266,7 @@ namespace SangsomMiniMe.Editor
             {
                 Debug.Log("=== Current User Stats ===");
                 Debug.Log($"Name: {user.DisplayName} ({user.UserName})");
-                Debug.Log($"Level: {user.ExperiencePoints / 100 + 1}");
+                Debug.Log($"Level: {GameUtilities.CalculateLevel(user.ExperiencePoints)}");
                 Debug.Log($"Experience: {user.ExperiencePoints}");
                 Debug.Log($"Coins: {user.Coins}");
                 Debug.Log($"Happiness: {user.CharacterHappiness:F1}%");

@@ -69,7 +69,8 @@ namespace SangsomMiniMe.Core
         /// </summary>
         public static float GetLevelProgress(int experiencePoints)
         {
-            return (experiencePoints % GameConstants.ExperiencePerLevel) / (float)GameConstants.ExperiencePerLevel;
+            int expInLevel = experiencePoints % GameConstants.ExperiencePerLevel;
+            return expInLevel / (float)GameConstants.ExperiencePerLevel;
         }
         
         /// <summary>
