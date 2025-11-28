@@ -11,26 +11,26 @@ alwaysApply: false
 - **Context-aware code generation**: Use full project context for intelligent suggestions
 - **Iterative improvement**: Build on existing code rather than replacing wholesale
 - **Educational focus**: Generate code that teaches good practices through examples
-- **Performance-first**: All generated code should be optimized for mobile/web deployment
+- **Performance-first**: All generated code should be optimized for desktop/web deployment
 
-### Prompt Engineering for Unity
-- **Be specific about Unity version**: Target Unity 2022.3 LTS or newer
-- **Include performance requirements**: Mobile-friendly, 60fps target
-- **Specify coding standards**: C# 8.0+, async/await patterns, nullable reference types
+### Prompt Engineering for Blender
+- **Be specific about Blender version**: Target Blender 5.0.0 or newer
+- **Include performance requirements**: Desktop-friendly, 60fps target
+- **Specify coding standards**: Python 3.11+, type hints, async patterns
 - **Educational context**: Remember this is for student engagement and learning
 
 ## Code Review Standards
 
 ### Generated Code Quality
-- **Readable and documented**: Every generated method includes summary comments
-- **Error handling included**: Comprehensive try-catch blocks and null checks
-- **Unity best practices**: Proper component caching, efficient Update patterns
+- **Readable and documented**: Every generated method includes docstrings
+- **Error handling included**: Comprehensive try-except blocks and null checks
+- **Blender best practices**: Proper operator patterns, efficient update loops
 - **Scalable architecture**: Systems that can grow with student count and features
 
 ### Integration Patterns
 - **Modular design**: Components that work independently and together
-- **Event-driven architecture**: Loose coupling using Unity Events and C# events
-- **Data-driven systems**: ScriptableObjects for configuration and content
+- **Event-driven architecture**: Loose coupling using Blender handlers and Python callbacks
+- **Data-driven systems**: JSON/YAML configuration for content
 - **Test-friendly code**: Dependency injection and separation of concerns
 
 ## Project-Specific Context
@@ -43,8 +43,8 @@ alwaysApply: false
 - **Administrative tools** for teachers and school oversight
 
 ### Technical Constraints
-- **Unity WebGL deployment** for cross-platform accessibility
-- **Mobile optimization** ensuring smooth performance on tablets/phones
+- **Blender export deployment** for cross-platform accessibility
+- **Desktop optimization** ensuring smooth performance on computers
 - **Scalable user management** supporting hundreds of students per school
 - **Cultural sensitivity** especially for Thai cultural elements (wai gesture, etc.)
 
@@ -52,71 +52,74 @@ alwaysApply: false
 
 <example>
 AI-generated code should follow this pattern:
-```csharp
-/// <summary>
-/// Manages character customization with real-time preview and save functionality.
-/// Optimized for mobile performance with efficient UI updates.
-/// </summary>
-public class CharacterCustomizationManager : MonoBehaviour
-{
-    [Header("UI References")]
-    [SerializeField] private Slider eyeSizeSlider;
-    [SerializeField] private Button saveButton;
+```python
+"""
+Manages character customization with real-time preview and save functionality.
+Optimized for desktop performance with efficient UI updates.
+"""
+import bpy
+from bpy.types import Operator
+from bpy.props import FloatProperty
+from typing import Optional
+
+class CharacterCustomizationManager(Operator):
+    """Character customization manager operator"""
+    bl_idname = "sangsom.customize_character"
+    bl_label = "Customize Character"
+    bl_options = {'REGISTER', 'UNDO'}
     
-    [Header("Character References")]
-    [SerializeField] private Transform characterPreview;
-    [SerializeField] private EyeScalingSystem eyeScaler;
+    eye_size: FloatProperty(
+        name="Eye Size",
+        default=1.0,
+        min=0.5,
+        max=2.0
+    )
     
-    private CharacterData currentCharacterData;
-    private bool hasUnsavedChanges;
+    current_character_data: Optional[dict] = None
+    has_unsaved_changes: bool = False
     
-    /// <summary>
-    /// Initialize the customization system with proper error handling
-    /// </summary>
-    private async void Start()
-    {
-        try
-        {
-            await LoadCharacterData();
-            SetupUIListeners();
-            RefreshPreview();
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"Failed to initialize character customization: {ex.Message}");
-            ShowErrorUI("Unable to load character. Please try again.");
-        }
-    }
+    @classmethod
+    def poll(cls, context):
+        """Check if the operator can run"""
+        return context.active_object is not None
     
-    /// <summary>
-    /// Update eye size with immediate visual feedback
-    /// </summary>
-    private void OnEyeSizeChanged(float newSize)
-    {
-        if (currentCharacterData == null || eyeScaler == null) return;
+    def execute(self, context):
+        """
+        Initialize the customization system with proper error handling
+        """
+        try:
+            self.load_character_data()
+            self.setup_ui_listeners()
+            self.refresh_preview()
+            return {'FINISHED'}
+        except Exception as ex:
+            self.report({'ERROR'}, f"Failed to initialize character customization: {ex}")
+            return {'CANCELLED'}
+    
+    def on_eye_size_changed(self, new_size: float) -> None:
+        """
+        Update eye size with immediate visual feedback
+        """
+        if self.current_character_data is None:
+            return
         
-        currentCharacterData.EyeSize = Mathf.Clamp01(newSize);
-        eyeScaler.UpdateEyeSize(currentCharacterData.EyeSize);
-        MarkUnsavedChanges();
-    }
-}
+        self.current_character_data['eye_size'] = max(0.5, min(2.0, new_size))
+        self.update_eye_size(self.current_character_data['eye_size'])
+        self.mark_unsaved_changes()
 ```
 </example>
 
 <example type="invalid">
 Avoid generating unfocused, non-educational code:
-```csharp
-// ❌ DON'T: Generate unclear, undocumented code
-public class BadCode : MonoBehaviour 
-{
-    public float x; // No context, no documentation
+```python
+# ❌ DON'T: Generate unclear, undocumented code
+class BadCode:
+    x = 1.0  # No context, no documentation
     
-    void Update() 
-    {
-        // Performance killer, no error handling
-        GameObject.Find("Character").transform.localScale = Vector3.one * x;
-    }
-}
+    def update(self):
+        # Performance killer, no error handling
+        obj = bpy.data.objects.get("Character")
+        obj.scale = (self.x, self.x, self.x)
 ```
 </example>
 

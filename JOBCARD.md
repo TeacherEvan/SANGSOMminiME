@@ -15,18 +15,18 @@
 The Sangsom Mini-Me project has a solid foundation with:
 
 1. **Core Systems Implemented**:
-   - ✅ User Profile Management (`UserProfile.cs`)
-   - ✅ User Authentication (`UserManager.cs`)
-   - ✅ Character Controller (`CharacterController.cs`)
-   - ✅ Game Manager (`GameManager.cs`)
-   - ✅ Login UI (`LoginUI.cs`)
-   - ✅ Game UI (`GameUI.cs`)
-   - ✅ System Tester (`SystemTester.cs`)
+   - ✅ User Profile Management (`user_profile.py`)
+   - ✅ User Authentication (`user_manager.py`)
+   - ✅ Character Controller (`character_controller.py`)
+   - ✅ Game Manager (`game_manager.py`)
+   - ✅ Login UI (`login_ui.py`)
+   - ✅ Game UI (`game_ui.py`)
+   - ✅ System Tester (`system_tester.py`)
 
 2. **Architecture Strengths**:
-   - Proper namespace organization (`SangsomMiniMe.Core`, `SangsomMiniMe.Character`, `SangsomMiniMe.UI`)
-   - Assembly definitions for Runtime, Editor, and Tests
-   - Event-driven design with delegates
+   - Proper module organization (`SangsomMiniMe.Core`, `SangsomMiniMe.Character`, `SangsomMiniMe.UI`)
+   - Python modules for Runtime, Editor, and Tests
+   - Event-driven design with callbacks
    - Singleton pattern for managers
    - JSON-based data persistence
 
@@ -45,9 +45,9 @@ The Sangsom Mini-Me project has a solid foundation with:
 ### 1. Testing Infrastructure
 
 **Files Created**:
-- `Assets/Scripts/Tests/Tests.asmdef` - Assembly definition for test suite
-- `Assets/Scripts/Tests/UserProfileTests.cs` - Unit tests for UserProfile class
-- `Assets/Scripts/Tests/GameUtilitiesTests.cs` - Unit tests for utility functions
+- `Assets/Scripts/Tests/__init__.py` - Module definition for test suite
+- `Assets/Scripts/Tests/user_profile_tests.py` - Unit tests for UserProfile class
+- `Assets/Scripts/Tests/game_utilities_tests.py` - Unit tests for utility functions
 
 **Test Coverage**:
 - User profile creation and defaults
@@ -59,12 +59,12 @@ The Sangsom Mini-Me project has a solid foundation with:
 - Level calculation utilities
 - Mood state determination
 
-### 2. ScriptableObject Configuration System
+### 2. JSON/YAML Configuration System
 
-**File Created**: `Assets/Scripts/Runtime/GameConfiguration.cs`
+**File Created**: `Assets/Scripts/Runtime/game_configuration.py`
 
 **Features**:
-- Designer-friendly inspector interface
+- Designer-friendly configuration
 - Runtime-configurable game balance
 - Validated settings with proper ranges
 - Support for all game systems:
@@ -78,7 +78,7 @@ The Sangsom Mini-Me project has a solid foundation with:
 
 ### 3. Game Constants System
 
-**File Created**: `Assets/Scripts/Runtime/GameConstants.cs`
+**File Created**: `Assets/Scripts/Runtime/game_constants.py`
 
 **Includes**:
 - User profile defaults
@@ -87,11 +87,11 @@ The Sangsom Mini-Me project has a solid foundation with:
 - Reward values
 - Animation parameter names
 - UI layer names
-- PlayerPrefs keys
+- Settings keys
 
 ### 4. Type-Safe Enumerations
 
-**File Created**: `Assets/Scripts/Runtime/GameEnums.cs`
+**File Created**: `Assets/Scripts/Runtime/game_enums.py`
 
 **Enums Defined**:
 - `CharacterAnimation` - All animation types
@@ -103,7 +103,7 @@ The Sangsom Mini-Me project has a solid foundation with:
 
 ### 5. Game Utilities Library
 
-**File Created**: `Assets/Scripts/Runtime/GameUtilities.cs`
+**File Created**: `Assets/Scripts/Runtime/game_utilities.py`
 
 **Utility Methods**:
 - Mood state calculation from happiness
@@ -117,7 +117,7 @@ The Sangsom Mini-Me project has a solid foundation with:
 
 ### 6. Educational Analytics System
 
-**File Created**: `Assets/Scripts/Runtime/EducationalAnalytics.cs`
+**File Created**: `Assets/Scripts/Runtime/educational_analytics.py`
 
 **Features**:
 - Event tracking with timestamps
@@ -133,7 +133,7 @@ The Sangsom Mini-Me project has a solid foundation with:
 
 ### 7. Editor Development Tools
 
-**File Created**: `Assets/Scripts/Editor/SangsomMiniMeEditorTools.cs`
+**File Created**: `Assets/Scripts/Editor/sangsom_minime_editor_tools.py`
 
 **Tool Features**:
 - User creation and management
@@ -171,7 +171,7 @@ The Sangsom Mini-Me project has a solid foundation with:
    - Utility methods for common validations
 
 3. **Configuration Management**
-   - ScriptableObject-based configuration
+   - JSON/YAML-based configuration
    - Separated design-time from runtime configuration
 
 ---
@@ -260,7 +260,7 @@ The Sangsom Mini-Me project has a solid foundation with:
    - Integration tests for full user flow
 
 2. **Implement GameConfiguration Usage**
-   - Connect ScriptableObject to existing systems
+   - Connect JSON/YAML config to existing systems
    - Replace hardcoded values with config references
 
 3. **UI Enhancements**
@@ -304,36 +304,36 @@ The Sangsom Mini-Me project has a solid foundation with:
 
 ## Technical Notes
 
-### Assembly Structure
+### Module Structure
 
 ```
 SangsomMiniMe.Runtime (Assets/Scripts/Runtime/)
-├── Core Systems: UserProfile, UserManager, GameManager
-├── Character: CharacterController
-├── UI: LoginUI, GameUI
-├── Configuration: GameConfiguration (ScriptableObject)
-├── Data: GameConstants, GameEnums, GameUtilities
-└── Analytics: EducationalAnalytics
+├── Core Systems: user_profile, user_manager, game_manager
+├── Character: character_controller
+├── UI: login_ui, game_ui
+├── Configuration: game_configuration (JSON/YAML)
+├── Data: game_constants, game_enums, game_utilities
+└── Analytics: educational_analytics
 
 SangsomMiniMe.Editor (Assets/Scripts/Editor/)
-└── Development Tools: SangsomMiniMeEditorTools
+└── Development Tools: sangsom_minime_editor_tools
 
 SangsomMiniMe.Tests (Assets/Scripts/Tests/)
-├── UserProfileTests
-└── GameUtilitiesTests
+├── user_profile_tests
+└── game_utilities_tests
 ```
 
 ### Dependencies
 
-- Unity 2022.3 LTS
-- TextMeshPro (for UI text)
-- Unity Test Framework (for testing)
+- Blender 5.0.0
+- Python 3.11+ (for scripting)
+- Blender Test Framework (for testing)
 
 ### File Naming Conventions
 
-- PascalCase for all C# files
+- snake_case for all Python files
 - Clear descriptive names
-- Suffix indicates purpose (Tests, Config, etc.)
+- Suffix indicates purpose (tests, config, etc.)
 
 ---
 
@@ -341,8 +341,8 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 
 - [x] All new code compiles without errors
 - [x] Unit tests validate core functionality
-- [x] ScriptableObject configuration works in editor
-- [x] Editor tools functional in Play Mode
+- [x] JSON/YAML configuration works in editor
+- [x] Editor tools functional in Blender
 - [x] Analytics tracking events correctly
 - [x] Documentation complete
 - [x] Code follows namespace conventions

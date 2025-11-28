@@ -4,17 +4,18 @@ globs:
 alwaysApply: true
 ---
 ---
-description: Educational 3D Tamagotchi-style care simulation game with Unity development guidelines and optimized project structure
-globs: ["**/*.cs", "**/*.unity", "**/*.prefab", "Assets/**/*", "Scripts/**/*", "**/*.md"]
+---
+description: Educational 3D Tamagotchi-style care simulation game with Blender development guidelines and optimized project structure
+globs: ["**/*.py", "**/*.blend", "**/*.fbx", "Assets/**/*", "Scripts/**/*", "**/*.md"]
 version: "2.0.0"
 priority: 1
-tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
+tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
 ---
 
 # Sangsom Mini-Me Project Rules
 
 @context {
-  "type": "unity-game-project",
+  "type": "blender-project",
   "genre": "educational-simulation",
   "target_platform": "multi-platform",
   "development_stage": "prototype",
@@ -24,13 +25,13 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
 
 @project_structure {
   "root_organization": {
-    "docs_external": "Keep all documentation outside Unity folder",
-    "unity_isolated": "Clean Unity project structure with no external dependencies",
+    "docs_external": "Keep all documentation outside Blender folder",
+    "blender_isolated": "Clean Blender project structure with no external dependencies",
     "builds_ignored": "All build outputs in separate git-ignored directory"
   },
-  "unity_architecture": {
+  "blender_architecture": {
     "assets_by_type": "Group art assets by type, not by character",
-    "scripts_separated": "Runtime/Editor/Tests in separate assemblies",
+    "scripts_separated": "Runtime/Editor/Tests in separate modules",
     "third_party_isolated": "All external packages in dedicated folder"
   }
 }
@@ -60,7 +61,7 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
 ## Optimized File Architecture (2025)
 
 @file_structure {
-  "philosophy": "Separate concerns, isolate dependencies, optimize compilation",
+  "philosophy": "Separate concerns, isolate dependencies, optimize workflow",
   "structure": {
     "project_root": {
       "README.md": "Project overview and setup",
@@ -70,33 +71,33 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
     "docs_folder": {
       "path": "Docs/",
       "purpose": "External documentation, UI mockups, architecture diagrams",
-      "isolation": "Completely outside Unity to prevent unnecessary imports"
+      "isolation": "Completely outside Blender to prevent unnecessary imports"
     },
-    "unity_folder": {
-      "path": "Unity/",
+    "blender_folder": {
+      "path": "Blender/",
       "structure": {
         "Assets/": {
-          "3rdParty/": "Asset store packages after import",
+          "3rdParty/": "External packages after import",
           "Art/": ["Animation/", "Audio/", "Fonts/", "Materials/", "Models/", "Shaders/", "Sprites/", "Textures/"],
           "Characters/": "Per-character folders with Photos/, Models/, Animations/",
-          "Prefabs/": "Reusable game objects",
+          "Prefabs/": "Reusable objects",
           "Resources/": "Runtime loadable assets",
-          "Scenes/": "Game scenes",
+          "Scenes/": "Blender scenes",
           "Scripts/": {
-            "Editor/": "Custom editor tools and inspectors",
+            "Editor/": "Custom editor tools and addons",
             "Runtime/": "Game logic and systems",
             "Tests/": "Unit and integration tests"
           },
-          "ScriptableObjects/": "Data containers",
+          "Data/": "Data containers",
           "Settings/": "Project configuration"
         },
         "Packages/": "Package manager dependencies",
-        "ProjectSettings/": "Unity project configuration"
+        "ProjectSettings/": "Blender project configuration"
       }
     },
     "builds_folder": {
       "path": "Builds/",
-      "purpose": "CI generated builds and installers",
+      "purpose": "CI generated builds and exports",
       "git_status": "ignored"
     }
   }
@@ -105,7 +106,7 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
 @architecture_guidelines [
   {
     "rule": "docs_isolation",
-    "description": "Keep Docs/ outside Unity folder to prevent engine imports",
+    "description": "Keep Docs/ outside Blender folder to prevent engine imports",
     "severity": "error"
   },
   {
@@ -114,8 +115,8 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
     "severity": "error"
   },
   {
-    "rule": "script_assemblies",
-    "description": "Split Scripts/ into Runtime, Editor, Tests assemblies with .asmdef files",
+    "rule": "script_modules",
+    "description": "Split Scripts/ into Runtime, Editor, Tests modules with proper Python structure",
     "severity": "warning"
   },
   {
@@ -133,10 +134,10 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
 ## Development Stack & Implementation
 
 @technical_stack {
-  "game_engine": "Unity 3D",
+  "3d_engine": "Blender 5.0.0",
   "ai_assistant": "Cursor AI for code generation and asset creation",
-  "modeling": "AI-generated models with Unity integration",
-  "animation": "Unity Animator with custom controllers",
+  "modeling": "AI-generated models with Blender integration",
+  "animation": "Blender Animation System with custom controllers",
   "database": "User account management and progress tracking",
   "security": "Password-protected administrative access"
 }
@@ -190,50 +191,50 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
 ## AI-Optimized Development Phases
 
 @agent_collaboration_workflow {
-  "methodology": "Unity-Focused Human-AI Development Cycles",
-  "testing_approach": "Unity Editor Play Mode > Automated Test Scripts",
-  "ai_integration": "Unity Code Generation + Asset Pipeline Automation",
-  "developer_role": "Unity Editor Operator & Game Experience Validator"
+  "methodology": "Blender-Focused Human-AI Development Cycles",
+  "testing_approach": "Blender Viewport Preview > Automated Test Scripts",
+  "ai_integration": "Blender Code Generation + Asset Pipeline Automation",
+  "developer_role": "Blender Editor Operator & Experience Validator"
 }
 
 @development_roadmap [
   {
     "phase": 1,
-    "title": "Unity Project Foundation",
+    "title": "Blender Project Foundation",
     "duration": "1 sprint",
-    "approach": "unity_setup_workflow",
+    "approach": "blender_setup_workflow",
     "collaboration_pattern": "developer_guided_ai_assistance",
     "tasks": [
       {
-        "task": "Unity Project Creation",
-        "method": "unity_hub_new_project",
-        "acceptance": "Developer creates new Unity 3D project with proper folder structure",
-        "ai_role": "Provide Unity project setup guidance and folder structure recommendations",
-        "human_role": "Execute Unity Hub project creation and validate structure"
+        "task": "Blender Project Creation",
+        "method": "blender_new_project",
+        "acceptance": "Developer creates new Blender project with proper folder structure",
+        "ai_role": "Provide Blender project setup guidance and folder structure recommendations",
+        "human_role": "Execute Blender project creation and validate structure"
       },
       {
         "task": "Implement Optimized File Architecture",
-        "method": "unity_folder_organization",
+        "method": "blender_folder_organization",
         "acceptance": "Developer confirms Assets/ folder follows @project_structure guidelines",
-        "ai_role": "Generate folder creation scripts and .asmdef files",
-        "human_role": "Execute folder creation and verify Unity recognizes structure"
+        "ai_role": "Generate folder creation scripts and Python modules",
+        "human_role": "Execute folder creation and verify Blender recognizes structure"
       },
       {
         "task": "Leandi Character Asset Import",
-        "method": "unity_asset_import_pipeline",
+        "method": "blender_asset_import_pipeline",
         "acceptance": "Developer successfully imports Leandi photos into Characters/Leandi/Photos/",
         "ai_role": "Create import settings and texture optimization",
-        "human_role": "Drag-drop photos and validate import settings in Unity Inspector"
+        "human_role": "Import photos and validate import settings in Blender"
       },
       {
         "task": "Basic Scene Setup",
-        "method": "unity_scene_creation",
+        "method": "blender_scene_creation",
         "acceptance": "Developer has main scene with basic lighting and camera setup",
         "ai_role": "Generate scene setup scripts and lighting configurations",
-        "human_role": "Create scene in Unity Editor and test play mode"
+        "human_role": "Create scene in Blender and test viewport rendering"
       }
     ],
-    "test_limit": "Unity Editor validation only - no external test runners needed"
+    "test_limit": "Blender viewport validation only - no external test runners needed"
   },
   {
     "phase": 2,
@@ -382,13 +383,13 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
 
 @migration_checklist [
   {
-    "task": "create_unity_folder",
-    "description": "Set up clean Unity/ directory with optimized structure",
+    "task": "create_blender_folder",
+    "description": "Set up clean Blender/ directory with optimized structure",
     "priority": "high"
   },
   {
     "task": "move_leandi_photos",
-    "description": "Move Leandi/ images to Unity/Assets/Characters/Leandi/Photos/",
+    "description": "Move Leandi/ images to Blender/Assets/Characters/Leandi/Photos/",
     "priority": "high"
   },
   {
@@ -397,13 +398,13 @@ tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification"]
     "priority": "medium"
   },
   {
-    "task": "setup_asmdef_files",
-    "description": "Create assembly definition files for Scripts/ organization",
+    "task": "setup_python_modules",
+    "description": "Create Python module files for Scripts/ organization",
     "priority": "medium"
   },
   {
     "task": "configure_gitignore",
-    "description": "Update .gitignore for Builds/ folder and Unity artifacts",
+    "description": "Update .gitignore for Builds/ folder and Blender artifacts",
     "priority": "high"
   }
 ]

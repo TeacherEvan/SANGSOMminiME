@@ -29,25 +29,25 @@ This implementation creates a basic user interaction system for the Sangsom Mini
 
 ## Current Stack Assessment
 
-The current Unity-based stack is **excellent** for this educational application:
+The current Blender-based stack is **excellent** for this educational application:
 
-### ✅ Unity 2022.3 LTS
-- **Cross-platform deployment**: Works on Windows, Mac, Android, iOS, and WebGL
-- **Educational licensing**: Unity offers free licenses for educational institutions
+### ✅ Blender 5.0.0
+- **Cross-platform deployment**: Works on Windows, Mac, and Linux
+- **Educational licensing**: Blender is completely free and open source
 - **Strong community**: Extensive documentation and learning resources
-- **Performance**: Optimized for both mobile and desktop platforms
+- **Performance**: Optimized for both desktop and workstation platforms
 
-### ✅ WebGL Deployment
-- **School-friendly**: Runs in any web browser without installation
+### ✅ Web Export
+- **School-friendly**: Export to web formats for browser access
 - **No IT restrictions**: Bypasses many school IT security restrictions
 - **Instant access**: Students can access their Mini-Me from any computer
-- **Cross-platform**: Works on Chromebooks, tablets, and any device with a web browser
+- **Cross-platform**: Works on any device with a web browser
 
-### ✅ C# Programming
-- **Educational value**: Students can learn programming through game modification
+### ✅ Python Programming
+- **Educational value**: Students can learn programming through project modification
 - **Industry standard**: Teaches relevant professional skills
-- **Type safety**: Reduces bugs and improves code reliability
-- **Unity integration**: Native Unity scripting language
+- **Type hints**: Reduces bugs and improves code reliability
+- **Blender integration**: Native Blender scripting language
 
 ## How to Test the User Interaction System
 
@@ -87,12 +87,12 @@ This creates a user with:
 ## File Structure
 ```
 Assets/Scripts/Runtime/
-├── UserProfile.cs          # User data model
-├── UserManager.cs          # User authentication and data management
-├── CharacterController.cs  # Character behavior and customization
-├── LoginUI.cs             # User interface for login/registration
-├── GameUI.cs              # Main game interface
-└── GameManager.cs         # Overall game coordination
+├── user_profile.py          # User data model
+├── user_manager.py          # User authentication and data management
+├── character_controller.py  # Character behavior and customization
+├── login_ui.py             # User interface for login/registration
+├── game_ui.py              # Main game interface
+└── game_manager.py         # Overall game coordination
 ```
 
 ## Next Steps for Full Implementation
