@@ -36,22 +36,30 @@ Style requirements:
 - **Hair variations**: Swappable hair meshes with physics-enabled strands
 
 ### Technical Implementation
-```csharp
-[System.Serializable]
-public class CharacterCustomization 
-{
-    [Header("Facial Features")]
-    [Range(0.5f, 2.0f)] public float eyeSize = 1.0f;
-    [Range(0.8f, 1.2f)] public float faceWidth = 1.0f;
+```python
+from dataclasses import dataclass
+from typing import List, Optional
+from bpy.props import FloatProperty
+
+@dataclass
+class CharacterCustomization:
+    """Character customization data"""
     
-    [Header("Outfit System")]
-    public OutfitData currentOutfit;
-    public List<AccessoryData> equippedAccessories;
+    # Facial Features
+    eye_size: float = 1.0  # Range: 0.5 to 2.0
+    face_width: float = 1.0  # Range: 0.8 to 1.2
     
-    [Header("Animation")]
-    public RuntimeAnimatorController animatorController;
-    public float expressionBlendSpeed = 2.0f;
-}
+    # Outfit System
+    current_outfit: Optional['OutfitData'] = None
+    equipped_accessories: List['AccessoryData'] = None
+    
+    # Animation
+    animator_controller: Optional[str] = None
+    expression_blend_speed: float = 2.0
+    
+    def __post_init__(self):
+        if self.equipped_accessories is None:
+            self.equipped_accessories = []
 ```
 
 ## Animation Requirements
@@ -86,26 +94,47 @@ public class CharacterCustomization
 - **Special effects**: Glowing items, animated accessories
 
 ### Implementation Structure
-```csharp
-[CreateAssetMenu(fileName = "New Outfit", menuName = "Character/Outfit Data")]
-public class OutfitData : ScriptableObject
-{
-    [Header("Visual")]
-    public Sprite icon;
-    public GameObject outfitPrefab;
-    public Material[] materials;
+```python
+import bpy
+from dataclasses import dataclass
+from typing import List, Optional
+from enum import Enum
+
+class OutfitCategory(Enum):
+    CASUAL = "casual"
+    FORMAL = "formal"
+    CULTURAL = "cultural"
+    SEASONAL = "seasonal"
+    FANTASY = "fantasy"
+
+class OutfitStyle(Enum):
+    MODERN = "modern"
+    TRADITIONAL = "traditional"
+    PLAYFUL = "playful"
+
+@dataclass
+class OutfitData:
+    """Outfit data configuration"""
     
-    [Header("Gameplay")]
-    public int coinCost;
-    public int gemCost;
-    public bool requiresAchievement;
-    public string unlockCondition;
+    # Visual
+    icon_path: str = ""
+    outfit_blend_file: str = ""
+    material_names: List[str] = None
     
-    [Header("Categories")]
-    public OutfitCategory category;
-    public OutfitStyle style;
-    public bool isSeasonalItem;
-}
+    # Gameplay
+    coin_cost: int = 0
+    gem_cost: int = 0
+    requires_achievement: bool = False
+    unlock_condition: str = ""
+    
+    # Categories
+    category: OutfitCategory = OutfitCategory.CASUAL
+    style: OutfitStyle = OutfitStyle.MODERN
+    is_seasonal_item: bool = False
+    
+    def __post_init__(self):
+        if self.material_names is None:
+            self.material_names = []
 ```
 
 ## Quality Assurance Standards
@@ -113,12 +142,12 @@ public class OutfitData : ScriptableObject
 ### Visual Consistency
 - **Unified art style**: All characters should feel like they belong in the same world
 - **Consistent proportions**: Maintain anime aesthetic ratios across all models
-- **Optimized poly counts**: Target 8-12k polygons for mobile compatibility
+- **Optimized poly counts**: Target 8-12k polygons for desktop compatibility
 - **Texture resolution**: 512x512 for accessories, 1024x1024 for main character
 - **Color palette harmony**: Use consistent color schemes across outfits
 
 ### Technical Requirements
-- **Rigging standards**: Humanoid rig for Unity's animation system
+- **Rigging standards**: Humanoid rig for Blender's animation system
 - **Bone hierarchy**: Consistent naming convention for all character bones
 - **Physics integration**: Cloth physics for skirts, hair physics for longer styles
 - **LOD system**: Multiple detail levels for performance optimization
@@ -128,66 +157,64 @@ public class OutfitData : ScriptableObject
 
 <example>
 Proper character generation workflow:
-```csharp
-public class CharacterGenerator : MonoBehaviour
-{
-    [Header("Photo References")]
-    public Texture2D[] referencePhotos;
+```python
+import bpy
+from typing import List, Optional
+from dataclasses import dataclass
+
+class CharacterGenerator:
+    """Character generation manager"""
     
-    [Header("Generation Settings")]
-    public AnimeStyleSettings styleSettings;
-    public CustomizationProfile defaultCustomization;
+    def __init__(self):
+        self.reference_photos: List[str] = []
+        self.style_settings: Optional['AnimeStyleSettings'] = None
+        self.default_customization: Optional['CustomizationProfile'] = None
     
-    public async Task<GameObject> GenerateCharacterAsync(string studentName)
-    {
-        // Load reference photos from student folder
-        var photoPath = $"Assets/Characters/{studentName}/Photos/";
-        var photos = LoadPhotosFromDirectory(photoPath);
+    async def generate_character_async(self, student_name: str) -> Optional[bpy.types.Object]:
+        """Generate character from photos"""
         
-        // Generate AI prompt with style requirements
-        var prompt = BuildAnimeStylePrompt(photos, styleSettings);
+        # Load reference photos from student folder
+        photo_path = f"Assets/Characters/{student_name}/Photos/"
+        photos = self.load_photos_from_directory(photo_path)
         
-        // Create base character model
-        var baseModel = await AIModelGenerator.GenerateFromPrompt(prompt);
+        # Generate AI prompt with style requirements
+        prompt = self.build_anime_style_prompt(photos, self.style_settings)
         
-        // Apply customization systems
-        SetupCustomizationRig(baseModel);
-        AttachAnimationController(baseModel);
-        ConfigureBlendShapes(baseModel);
+        # Create base character model
+        base_model = await self.ai_model_generator.generate_from_prompt(prompt)
         
-        // Save generated character
-        var characterPath = $"Assets/Characters/{studentName}/Models/";
-        return SaveCharacterAsset(baseModel, characterPath);
-    }
+        # Apply customization systems
+        self.setup_customization_rig(base_model)
+        self.attach_animation_controller(base_model)
+        self.configure_blend_shapes(base_model)
+        
+        # Save generated character
+        character_path = f"Assets/Characters/{student_name}/Models/"
+        return self.save_character_asset(base_model, character_path)
     
-    private void SetupCustomizationRig(GameObject character)
-    {
-        // Ensure eye scaling bones are properly configured
-        var eyeScaler = character.AddComponent<EyeScalingSystem>();
-        eyeScaler.Initialize(character.transform);
+    def setup_customization_rig(self, character: bpy.types.Object) -> None:
+        """Setup customization rig for character"""
         
-        // Setup attachment points for accessories
-        var attachmentSystem = character.AddComponent<AccessoryAttachmentSystem>();
-        attachmentSystem.ConfigureAttachmentPoints();
-    }
-}
+        # Ensure eye scaling bones are properly configured
+        eye_scaler = EyeScalingSystem(character)
+        eye_scaler.initialize()
+        
+        # Setup attachment points for accessories
+        attachment_system = AccessoryAttachmentSystem(character)
+        attachment_system.configure_attachment_points()
 ```
 </example>
 
 <example type="invalid">
 Avoid inflexible character generation:
-```csharp
-// ❌ DON'T: Rigid, non-scalable approach
-public class BadCharacterGenerator : MonoBehaviour 
-{
-    public GameObject characterPrefab; // Single fixed model
+```python
+# ❌ DON'T: Rigid, non-scalable approach
+class BadCharacterGenerator:
+    character_blend_file = "character.blend"  # Single fixed model
     
-    public void MakeCharacter() 
-    {
-        // No customization, no photo input, no AI generation
-        Instantiate(characterPrefab);
-    }
-}
+    def make_character(self):
+        # No customization, no photo input, no AI generation
+        bpy.ops.wm.open_mainfile(filepath=self.character_blend_file)
 ```
 </example>
 

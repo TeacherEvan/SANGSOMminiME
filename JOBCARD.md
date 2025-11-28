@@ -325,9 +325,9 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 
 ### Dependencies
 
-- Unity 2022.3 LTS
-- TextMeshPro (for UI text)
-- Unity Test Framework (for testing)
+- Blender 5.0.0
+- Python 3.11+ (for scripting)
+- Blender Test Framework (for testing)
 
 ### File Naming Conventions
 
