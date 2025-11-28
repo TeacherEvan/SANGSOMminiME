@@ -26,7 +26,7 @@ This project leverages cutting-edge AI-assisted development for maximum producti
 - **Blender 5.0.0**: 3D modeling and animation with Python scripting
 - **Cursor AI**: AI-powered code generation and debugging assistance  
 - **Python 3.11+**: Modern scripting with type hints
-- **ScriptableObject Architecture**: Data-driven design for scalability
+- **Data-driven Architecture**: JSON/YAML configuration for scalability
 - **Multi-Structural Folders**: Optimized project organization for performance
 
 ## 📁 **Project Structure**

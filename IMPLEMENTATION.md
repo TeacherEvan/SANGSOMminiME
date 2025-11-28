@@ -87,12 +87,12 @@ This creates a user with:
 ## File Structure
 ```
 Assets/Scripts/Runtime/
-├── UserProfile.cs          # User data model
-├── UserManager.cs          # User authentication and data management
-├── CharacterController.cs  # Character behavior and customization
-├── LoginUI.cs             # User interface for login/registration
-├── GameUI.cs              # Main game interface
-└── GameManager.cs         # Overall game coordination
+├── user_profile.py          # User data model
+├── user_manager.py          # User authentication and data management
+├── character_controller.py  # Character behavior and customization
+├── login_ui.py             # User interface for login/registration
+├── game_ui.py              # Main game interface
+└── game_manager.py         # Overall game coordination
 ```
 
 ## Next Steps for Full Implementation
