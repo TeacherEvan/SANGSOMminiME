@@ -15,6 +15,9 @@ namespace SangsomMiniMe.Character
         [SerializeField] private Transform accessoryPoint;
         [SerializeField] private SkinnedMeshRenderer characterRenderer;
 
+        [Header("Configuration")]
+        [SerializeField] private GameConfiguration gameConfig;
+
         [Header("Customization")]
         [SerializeField] private Material[] outfitMaterials;
         [SerializeField] private GameObject[] accessories;
@@ -98,7 +101,9 @@ namespace SangsomMiniMe.Character
 
         public void SetEyeScale(float scale)
         {
-            scale = Mathf.Clamp(scale, 0.5f, 2.0f);
+            float minScale = gameConfig != null ? gameConfig.MinEyeScale : GameConstants.MinEyeScale;
+            float maxScale = gameConfig != null ? gameConfig.MaxEyeScale : GameConstants.MaxEyeScale;
+            scale = Mathf.Clamp(scale, minScale, maxScale);
             currentEyeScale = scale;
 
             if (eyeScale1 != null)
@@ -109,7 +114,7 @@ namespace SangsomMiniMe.Character
             // Save to current user if logged in
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
-                Core.UserManager.Instance.CurrentUser.SetEyeScale(scale);
+                Core.UserManager.Instance.CurrentUser.SetEyeScale(scale, gameConfig);
                 Core.UserManager.Instance.SaveCurrentUser();
             }
         }
@@ -124,12 +129,12 @@ namespace SangsomMiniMe.Character
                     characterRenderer.material = outfitMaterials[outfitIndex];
                 }
 
-                // Save to current user if logged in
+                // Update user profile (save will be handled by auto-save)
                 if (Core.UserManager.Instance?.CurrentUser != null)
                 {
                     string outfitName = outfitIndex == 0 ? "default" : $"outfit_{outfitIndex}";
                     Core.UserManager.Instance.CurrentUser.SetOutfit(outfitName);
-                    Core.UserManager.Instance.SaveCurrentUser();
+                    Core.UserManager.Instance.MarkDirty();
                 }
             }
         }
@@ -171,12 +176,12 @@ namespace SangsomMiniMe.Character
                     currentAccessoryIndex = 0; // No accessory
                 }
 
-                // Save to current user if logged in
+                // Update user profile (save will be handled by auto-save)
                 if (Core.UserManager.Instance?.CurrentUser != null)
                 {
                     string accessoryName = currentAccessoryIndex == 0 ? "none" : $"accessory_{currentAccessoryIndex}";
                     Core.UserManager.Instance.CurrentUser.SetAccessory(accessoryName);
-                    Core.UserManager.Instance.SaveCurrentUser();
+                    Core.UserManager.Instance.MarkDirty();
                 }
             }
         }
@@ -206,14 +211,17 @@ namespace SangsomMiniMe.Character
 
         private void UpdateHappinessDisplay()
         {
+            float happyThreshold = gameConfig != null ? gameConfig.HappyThreshold : GameConstants.HappyThreshold;
+            float sadThreshold = gameConfig != null ? gameConfig.SadThreshold : GameConstants.SadThreshold;
+
             // Update particle effects and indicators based on happiness
             if (happinessParticles != null)
             {
-                if (currentHappiness > 70f)
+                if (currentHappiness > happyThreshold)
                 {
                     happinessParticles.gameObject.SetActive(true);
                     var emission = happinessParticles.emission;
-                    emission.rateOverTime = (currentHappiness - 70f) / 30f * 10f; // Scale particles with happiness
+                    emission.rateOverTime = (currentHappiness - happyThreshold) / (100f - happyThreshold) * 10f; // Scale particles with happiness
                 }
                 else
                 {
@@ -223,7 +231,7 @@ namespace SangsomMiniMe.Character
 
             if (sadnessIndicator != null)
             {
-                sadnessIndicator.SetActive(currentHappiness < 30f);
+                sadnessIndicator.SetActive(currentHappiness < sadThreshold);
             }
         }
 
@@ -236,7 +244,8 @@ namespace SangsomMiniMe.Character
         public void PlayDance()
         {
             PlayAnimation("Dance", DanceHash);
-            IncreaseHappiness(2f);
+            float happinessBonus = gameConfig != null ? gameConfig.DanceHappinessBonus : GameConstants.DanceHappinessBonus;
+            IncreaseHappiness(happinessBonus);
         }
 
         public void PlayWave()
@@ -278,7 +287,7 @@ namespace SangsomMiniMe.Character
             // Wait for animation to start
             yield return null;
 
-            float waitTime = Core.GameConstants.DefaultAnimationDuration;
+            float waitTime = gameConfig != null ? gameConfig.AnimationDuration : Core.GameConstants.DefaultAnimationDuration;
 
             // Try to get actual animation length
             if (characterAnimator != null)
@@ -300,11 +309,11 @@ namespace SangsomMiniMe.Character
         {
             SetHappiness(currentHappiness + amount);
 
-            // Update user profile
+            // Update user profile (save will be handled by auto-save)
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
                 Core.UserManager.Instance.CurrentUser.IncreaseHappiness(amount);
-                Core.UserManager.Instance.SaveCurrentUser();
+                Core.UserManager.Instance.MarkDirty();
             }
         }
 
@@ -312,11 +321,11 @@ namespace SangsomMiniMe.Character
         {
             SetHappiness(currentHappiness - amount);
 
-            // Update user profile
+            // Update user profile (save will be handled by auto-save)
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
                 Core.UserManager.Instance.CurrentUser.DecreaseHappiness(amount);
-                Core.UserManager.Instance.SaveCurrentUser();
+                Core.UserManager.Instance.MarkDirty();
             }
         }
 

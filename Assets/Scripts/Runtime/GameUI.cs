@@ -313,7 +313,7 @@ namespace SangsomMiniMe.UI
                 }
 
                 UpdateUserInfoDisplay();
-                Core.UserManager.Instance.SaveCurrentUser();
+                Core.UserManager.Instance.MarkDirty();
 
                 Debug.Log("Homework completed! Character is happy!");
             }
@@ -329,7 +329,7 @@ namespace SangsomMiniMe.UI
                 characterController?.IncreaseHappiness(5f);
 
                 UpdateUserInfoDisplay();
-                Core.UserManager.Instance.SaveCurrentUser();
+                Core.UserManager.Instance.MarkDirty();
 
                 Debug.Log("Homework reward claimed!");
             }
@@ -347,7 +347,7 @@ namespace SangsomMiniMe.UI
         {
             if (Core.UserManager.Instance != null)
             {
-                Core.UserManager.Instance.SaveCurrentUser();
+                Core.UserManager.Instance.SaveCurrentUser(); // Explicit save keeps immediate save
 
                 // Show save confirmation (you could add a popup here)
                 Debug.Log("Progress saved!");

@@ -22,6 +22,23 @@ def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
+def write_export_metadata(metadata_path: Path, character_name: str, selected_objects: list) -> None:
+    """Write metadata file for exported character."""
+    with open(metadata_path, 'w', encoding='utf-8') as f:
+        f.write(f"Character: {character_name}\n")
+        f.write(f"Blender Version: {bpy.app.version_string}\n")
+        f.write(f"Exported Objects: {len(selected_objects)}\n")
+        f.write(f"Object Names:\n")
+        for obj in selected_objects:
+            f.write(f"  - {obj.name} ({obj.type})\n")
+        
+        # Animation info
+        if bpy.data.actions:
+            f.write(f"\nAnimations ({len(bpy.data.actions)}):\n")
+            for action in bpy.data.actions:
+                f.write(f"  - {action.name} ({action.frame_range[0]:.0f}-{action.frame_range[1]:.0f})\n")
+
+
 def export_character():
     """Export selected character to Unity Assets folder."""
     project_root = get_project_root()
@@ -38,14 +55,14 @@ def export_character():
     export_dir.mkdir(parents=True, exist_ok=True)
     
     # Check if we have selection
-    selected_objects = [obj for obj in bpy.context.selected_objects]
+    selected_objects = list(bpy.context.selected_objects)
     if not selected_objects:
         print("⚠️  No objects selected. Selecting all mesh objects...")
         bpy.ops.object.select_all(action='DESELECT')
         for obj in bpy.data.objects:
             if obj.type == 'MESH':
                 obj.select_set(True)
-        selected_objects = [obj for obj in bpy.context.selected_objects]
+        selected_objects = list(bpy.context.selected_objects)
     
     if not selected_objects:
         print("❌ No mesh objects found to export!")
@@ -64,7 +81,6 @@ def export_character():
             use_selection=True,
             export_animations=True,
             export_materials='EXPORT',
-            export_colors=True,
             export_lights=False,
             export_cameras=False,
             export_apply=True,  # Apply modifiers
@@ -105,19 +121,7 @@ def export_character():
     # ===========================
     metadata_path = export_dir / f"{character_name.lower()}_metadata.txt"
     try:
-        with open(metadata_path, 'w', encoding='utf-8') as f:
-            f.write(f"Character: {character_name}\n")
-            f.write(f"Blender Version: {bpy.app.version_string}\n")
-            f.write(f"Exported Objects: {len(selected_objects)}\n")
-            f.write(f"Object Names:\n")
-            for obj in selected_objects:
-                f.write(f"  - {obj.name} ({obj.type})\n")
-            
-            # Animation info
-            if bpy.data.actions:
-                f.write(f"\nAnimations ({len(bpy.data.actions)}):\n")
-                for action in bpy.data.actions:
-                    f.write(f"  - {action.name} ({action.frame_range[0]:.0f}-{action.frame_range[1]:.0f})\n")
+        write_export_metadata(metadata_path, character_name, selected_objects)
         print(f"✅ Metadata saved to: {metadata_path}")
     except Exception as e:
         print(f"⚠️  Metadata export failed: {e}")
@@ -128,7 +132,7 @@ def export_character():
         print(f"   Location: {export_dir}")
         return True
     else:
-        print(f"❌ Export failed!")
+        print("❌ Export failed!")
         return False
 
 

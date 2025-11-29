@@ -17,6 +17,7 @@ namespace SangsomMiniMe.Core
         private List<UserProfile> userProfiles = new List<UserProfile>();
         private UserProfile currentUser;
         private string saveFilePath;
+        private bool isDirty = false; // Optimization: track if save is needed
 
         public static UserManager Instance { get; private set; }
 
@@ -51,7 +52,7 @@ namespace SangsomMiniMe.Core
             Debug.Log($"UserManager initialized. Found {userProfiles.Count} user profiles.");
         }
 
-        public UserProfile CreateUser(string userName, string displayName)
+        public UserProfile CreateUser(string userName, string displayName, GameConfiguration config = null)
         {
             if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(displayName))
             {
@@ -66,7 +67,7 @@ namespace SangsomMiniMe.Core
                 return null;
             }
 
-            var newUser = new UserProfile(userName, displayName);
+            var newUser = new UserProfile(userName, displayName, config);
             userProfiles.Add(newUser);
 
             SaveUserProfiles();
@@ -131,11 +132,32 @@ namespace SangsomMiniMe.Core
             }
         }
 
+        /// <summary>
+        /// Mark data as dirty for optimized saving (batch saves with auto-save)
+        /// </summary>
+        public void MarkDirty()
+        {
+            isDirty = true;
+        }
+
         public void SaveCurrentUser()
         {
             if (currentUser != null)
             {
                 SaveUserProfiles();
+                isDirty = false;
+            }
+        }
+
+        /// <summary>
+        /// Save only if data has changed (optimized for auto-save)
+        /// </summary>
+        public void SaveIfDirty()
+        {
+            if (isDirty && currentUser != null)
+            {
+                SaveUserProfiles();
+                isDirty = false;
             }
         }
 

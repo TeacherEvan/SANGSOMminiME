@@ -48,18 +48,30 @@ namespace SangsomMiniMe.Core
         public int DaysActive => daysActive;
         public float CharacterHappiness => characterHappiness;
 
-        public UserProfile(string userName, string displayName)
+        public UserProfile(string userName, string displayName, GameConfiguration config = null)
         {
             this.userId = Guid.NewGuid().ToString();
             this.userName = userName;
             this.displayName = displayName;
             this.createdDate = DateTime.Now;
             this.experiencePoints = 0;
-            this.coins = 100; // Starting coins
+
+            // Use config if provided, otherwise use defaults
+            if (config != null)
+            {
+                this.coins = config.StartingCoins;
+                this.characterHappiness = config.StartingHappiness;
+                this.daysActive = config.StartingDaysActive;
+            }
+            else
+            {
+                this.coins = GameConstants.DefaultStartingCoins;
+                this.characterHappiness = GameConstants.DefaultHappiness;
+                this.daysActive = 1;
+            }
+
             this.isActive = true;
             this.homeworkCompleted = 0;
-            this.daysActive = 1;
-            this.characterHappiness = 75f; // Start with happy character
         }
 
         public void AddExperience(int amount)
@@ -85,12 +97,22 @@ namespace SangsomMiniMe.Core
             return false;
         }
 
-        public void CompleteHomework()
+        public void CompleteHomework(GameConfiguration config = null)
         {
             homeworkCompleted++;
-            AddExperience(10);
-            AddCoins(5);
-            IncreaseHappiness(5f);
+
+            if (config != null)
+            {
+                AddExperience(config.HomeworkExperienceReward);
+                AddCoins(config.HomeworkCoinReward);
+                IncreaseHappiness(config.HomeworkHappinessReward);
+            }
+            else
+            {
+                AddExperience(GameConstants.HomeworkExperienceReward);
+                AddCoins(GameConstants.HomeworkCoinReward);
+                IncreaseHappiness(GameConstants.HomeworkHappinessReward);
+            }
         }
 
         public void IncreaseHappiness(float amount)
@@ -105,9 +127,11 @@ namespace SangsomMiniMe.Core
             OnHappinessChanged?.Invoke(characterHappiness);
         }
 
-        public void SetEyeScale(float scale)
+        public void SetEyeScale(float scale, GameConfiguration config = null)
         {
-            eyeScale = Mathf.Clamp(scale, 0.5f, 2.0f);
+            float minScale = config != null ? config.MinEyeScale : GameConstants.MinEyeScale;
+            float maxScale = config != null ? config.MaxEyeScale : GameConstants.MaxEyeScale;
+            eyeScale = Mathf.Clamp(scale, minScale, maxScale);
         }
 
         public void SetOutfit(string outfit)
