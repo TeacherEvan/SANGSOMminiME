@@ -24,18 +24,19 @@ This guide establishes a seamless workflow between:
 ### VSCode Extensions (Install These)
 
 ```bash
-# Core Python Development
+# ESSENTIAL - Blender Integration (launches Blender, runs scripts, debugging)
+code --install-extension JacquesLucke.blender-development
+
+# ESSENTIAL - Python Development
 code --install-extension ms-python.python
 code --install-extension ms-python.vscode-pylance
 
-# Blender-Specific
-code --install-extension JacquesLucke.blender-development
+# Recommended
 code --install-extension ms-vscode.powershell
-
-# Optional but Recommended
 code --install-extension GitHub.copilot
-code --install-extension ms-python.debugpy
 ```
+
+> **Important**: The `JacquesLucke.blender-development` extension is the core of this integration. It provides `Blender: Start`, `Blender: Run Script`, and debugging capabilities.
 
 ---
 
@@ -65,20 +66,51 @@ SANGSOMminiME/
 
 ## ⚙️ **Step 1: Configure Blender to Use VSCode**
 
-### 1.1 Set VSCode as External Script Editor
+### 1.1 Set VSCode as External Script Editor (Optional)
+
+> **Note**: This step is OPTIONAL. The primary workflow uses the **Blender Development extension** (Step 1.3) which launches Blender FROM VSCode. This setting only enables "Edit Externally" from within Blender.
 
 In Blender:
 1. `Edit` → `Preferences` → `File Paths`
-2. Under **Text Editor**, click the folder icon
-3. Navigate to VSCode executable:
-   - **Windows**: `C:\Users\<YourName>\AppData\Local\Programs\Microsoft VS Code\Code.exe`
-   - **macOS**: `/Applications/Visual Studio Code.app/Contents/MacOS/Electron`
-   - **Linux**: `/usr/bin/code`
-4. Click **Save Preferences**
+2. Scroll down to the **Applications** section
+3. Under **Text Editor**:
+   - **Program**: Set the path to VSCode:
+     - **Windows**: `C:\Users\eboth\AppData\Local\Programs\Microsoft VS Code\Code.exe`
+     - **macOS**: `/Applications/Visual Studio Code.app/Contents/MacOS/Electron`
+     - **Linux**: `/usr/bin/code`
+   - **Arguments**: `-g $filepath:$line:$column` (this tells VSCode to open the file at the specific line/column)
+4. Click the **☰** menu (hamburger icon) → **Save Preferences**
 
-**Verification**: In Blender's `Text Editor`, you should now see a "VSCode" button in the header.
+**Usage**: In Blender's Text Editor, use `Text` → `Edit Externally` (or place cursor and press the shortcut) to open the current script in VSCode.
 
-### 1.2 Enable Blender Python Console Integration
+### 1.2 Install the Blender Development Extension (REQUIRED)
+
+This is the **PRIMARY** integration method. The extension launches Blender from VSCode and provides:
+- Script execution with `Blender: Run Script`
+- Full debugging with breakpoints
+- Addon hot-reloading with `Blender: Reload Addons`
+- Addon scaffolding with `Blender: New Addon`
+
+**Install**:
+
+```bash
+code --install-extension JacquesLucke.blender-development
+```
+
+**First-Time Setup**:
+1. Open VSCode in this project folder
+2. Press `Ctrl+Shift+P` → type `Blender: Start`
+3. Select your Blender executable (e.g., `C:\Program Files\Blender Foundation\Blender 5.0\blender.exe`)
+4. Wait for Blender to launch (first run installs Python dependencies automatically)
+
+**Daily Workflow**:
+- `Ctrl+Shift+P` → `Blender: Start` - Launch Blender
+- `Ctrl+Shift+P` → `Blender: Run Script` - Execute current Python file in Blender
+- `Ctrl+Shift+P` → `Blender: Reload Addons` - Hot-reload after code changes
+
+> **Tip**: Add `"blender.executables": [{"path": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe", "isDefault": true}]` to `.vscode/settings.json` to skip the executable prompt.
+
+### 1.3 Enable Blender CLI in Terminal (Optional)
 
 Add to your PowerShell profile (opens with `notepad $PROFILE`):
 
@@ -249,9 +281,21 @@ This file automates Blender operations from VSCode:
 
 ## 🐛 **Step 4: Setup Debugging**
 
-### 4.1 Install `debugpy` in Blender's Python
+Debugging works automatically when you start Blender via the extension. No manual setup required!
 
-Blender's bundled Python needs debugging support:
+### 4.1 Basic Debugging (Recommended)
+
+When Blender is started via `Blender: Start`:
+1. Set breakpoints in VSCode by clicking left of line numbers
+2. Run your script with `Ctrl+Shift+P` → `Blender: Run Script`
+3. Execution pauses at breakpoints automatically
+4. Use the debug toolbar to step through code
+
+### 4.2 Advanced: Manual debugpy Setup (Optional)
+
+For debugging scripts run directly in Blender (not via the extension):
+
+**Install `debugpy` in Blender's Python**:
 
 ```powershell
 # Find Blender's Python executable
@@ -493,32 +537,36 @@ npm run blender:install-addon # Install Mini-Me addon
 
 ### Daily Development Loop
 
-1. **Edit Blender Scripts in VSCode**
+1. **Start Blender from VSCode** (Recommended)
 
    ```powershell
-   # Open VSCode to Blender folder
+   # Press Ctrl+Shift+P in VSCode, then type:
+   # Blender: Start
+   # This launches Blender with debugging support
+   ```
+
+2. **Edit Blender Scripts in VSCode**
+
+   ```powershell
+   # Open any Python file
    code Blender/character_controller.py
    ```
 
-2. **Test in Blender**
+3. **Run Scripts in Blender**
 
    ```powershell
-   # Run directly without opening GUI
-   npm run blender:test
-   
-   # Or open Blender GUI
-   blender Blender/characters/leandi.blend
-   # → Load script in Text Editor
-   # → Alt+P to run
+   # With Blender running (started via extension):
+   # Press Ctrl+Shift+P → Blender: Run Script
+   # The current file executes in Blender immediately
    ```
 
-3. **Debug Issues**
-   - Add `enable_debugging()` to script
-   - Run script in Blender
-   - `F5` in VSCode → "Blender: Attach Debugger"
-   - Step through code with breakpoints
+4. **Debug Issues**
+   - Set breakpoints in VSCode (click left of line numbers)
+   - Run script via `Blender: Run Script`
+   - Execution pauses at breakpoints automatically
+   - Step through code with F10 (step over) / F11 (step into)
 
-4. **Export to Unity**
+5. **Export to Unity**
 
    ```powershell
    # Manual export
@@ -530,7 +578,7 @@ npm run blender:install-addon # Install Mini-Me addon
    # → Automatically exports to Assets/Characters/
    ```
 
-5. **Verify Changes**
+6. **Verify Changes**
 
    ```powershell
    npm run blender:validate  # Syntax check
@@ -629,7 +677,14 @@ except Exception as e:
 ## 🎯 **Quick Reference Commands**
 
 ```powershell
-# === Blender CLI ===
+# === PRIMARY WORKFLOW (Recommended) ===
+# In VSCode, press Ctrl+Shift+P then type:
+Blender: Start                            # Launch Blender with debug support
+Blender: Run Script                       # Execute current Python file
+Blender: Reload Addons                    # Hot-reload addon after changes
+Blender: New Addon                        # Scaffold a new addon project
+
+# === Blender CLI (Alternative) ===
 blender --version                          # Check version
 blender --background                       # Headless mode
 blender --python script.py                 # Run script
@@ -646,15 +701,10 @@ npm run blender:validate                  # Lint Python
 npm run blender:export                    # Export character
 npm run blender:watch                     # Auto-export on save
 npm run blender:install-addon             # Install addon
-
-# === Debugging ===
-1. Add enable_debugging() to script
-2. Run in Blender
-3. F5 in VSCode → "Blender: Attach Debugger"
 ```
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: January 30, 2025  
+**Document Version**: 1.1  
+**Last Updated**: November 29, 2025  
 **Maintained By**: Sangsom Mini-Me Development Team

@@ -1,0 +1,18 @@
+{
+    "target_fps": 60,
+    "starting_coins": 100,
+    "starting_happiness": 75.0,
+    "starting_days_active": 1,
+    "min_eye_scale": 0.5,
+    "max_eye_scale": 2.0,
+    "homework_xp_reward": 10,
+    "homework_coin_reward": 5,
+    "homework_happiness_reward": 5.0,
+    "happy_threshold": 70.0,
+    "sad_threshold": 30.0,
+    "dance_happiness_bonus": 2.0,
+    "auto_save_interval": 30.0,
+    "enable_auto_save": true,
+    "animation_duration": 2.0,
+    "experience_per_level": 100
+}

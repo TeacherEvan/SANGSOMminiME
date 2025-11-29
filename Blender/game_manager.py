@@ -2,6 +2,7 @@ import bpy
 import time
 from user_manager import UserManager
 from character_controller import CharacterController
+from game_configuration import get_game_config
 
 class GameManager:
     _instance = None
@@ -14,13 +15,14 @@ class GameManager:
     
     def __init__(self):
         if GameManager._instance is not None:
-            raise Exception("This class is a singleton!")
+            raise RuntimeError("GameManager is a singleton! Use get_instance() instead.")
         
+        self.game_config = get_game_config()
         self.user_manager = UserManager.get_instance()
         self.character_controller = None
         self.is_running = False
         self.last_update_time = 0
-        self.update_interval = 1.0 / 60.0  # 60 FPS target
+        self.update_interval = 1.0 / self.game_config.target_fps
         
         print("GameManager initialized")
 
@@ -74,16 +76,16 @@ class GameManager:
         
         # 1. Update User Profile
         user = self.user_manager.current_user
-        user.add_experience(50)
-        user.add_coins(100)
+        user.add_experience(self.game_config.homework_xp_reward)
+        user.add_coins(self.game_config.homework_coin_reward)
         
         # 2. Update Character
         if self.character_controller:
-            self.character_controller.increase_happiness(15)
+            self.character_controller.increase_happiness(self.game_config.homework_happiness_reward)
             self.character_controller.play_animation("dance") # Celebration
             
         # 3. Save Data
-        self.user_manager.save_data()
+        self.user_manager.save_profiles()
 
 # Global accessor
 def get_game_manager():
