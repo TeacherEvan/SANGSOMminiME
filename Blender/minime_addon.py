@@ -265,27 +265,39 @@ class MINIME_OT_export_character(Operator):
     bl_description = "Export the character in a format suitable for deployment"
     
     def execute(self, context):
-        # Get export path
-        export_path = bpy.path.abspath("//exports/")
-        
-        # Create exports directory if needed
-        import os
-        os.makedirs(export_path, exist_ok=True)
-        
-        props = context.scene.minime_props
-        filename = f"{props.character_name}.glb"
-        filepath = os.path.join(export_path, filename)
-        
-        # Export as GLB (best for web)
-        bpy.ops.export_scene.gltf(
-            filepath=filepath,
-            export_format='GLB',
-            export_animations=True,
-            export_materials='EXPORT'
-        )
-        
-        self.report({'INFO'}, f"Exported to: {filepath}")
-        return {'FINISHED'}
+        try:
+            # Ensure we can import from local files
+            import sys
+            import os
+            from pathlib import Path
+            
+            addon_dir = os.path.dirname(os.path.realpath(__file__))
+            if addon_dir not in sys.path:
+                sys.path.insert(0, addon_dir)
+            
+            # Import the shared export logic
+            from export_character import export_character_logic
+            
+            props = context.scene.minime_props
+            character_name = props.character_name
+            
+            # Use the shared logic
+            # Note: export_character_logic handles directory creation and export settings
+            success = export_character_logic(character_name=character_name)
+            
+            if success:
+                self.report({'INFO'}, f"Export complete for {character_name}")
+                return {'FINISHED'}
+            else:
+                self.report({'ERROR'}, "Export failed - check console for details")
+                return {'CANCELLED'}
+                
+        except ImportError:
+            self.report({'ERROR'}, "Could not import export_character.py")
+            return {'CANCELLED'}
+        except Exception as e:
+            self.report({'ERROR'}, f"Export error: {str(e)}")
+            return {'CANCELLED'}
 
 
 # ============================================================================

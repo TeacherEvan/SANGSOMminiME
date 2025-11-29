@@ -61,7 +61,8 @@
             "command": "python",
             "args": [
                 "-m",
-                "py_compile"
+                "compileall",
+                "."
             ],
             "options": {
                 "cwd": "${workspaceFolder}/Blender"
@@ -78,6 +79,18 @@
                     "line": 2
                 }
             },
+            "group": "test"
+        },
+        {
+            "label": "Blender: Run Unit Tests",
+            "type": "shell",
+            "command": "blender",
+            "args": [
+                "--background",
+                "--python",
+                "${workspaceFolder}/Blender/run_tests.py"
+            ],
+            "problemMatcher": [],
             "group": "test"
         },
         {

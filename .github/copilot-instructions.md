@@ -15,12 +15,15 @@
 ## Tests & Validation
 - Assets/Scripts/Tests contains NUnit PlayMode tests (see UserProfileTests.cs, GameUtilitiesTests.cs); run them in Unity Test Runner or via `Unity.exe -runTests -testResults results.xml -projectPath <repo>`.
 - When touching persistence or calculators, add coverage inside Tests.asmdef to avoid regressions on serialized data.
-- Blender Python should at least pass `python -m py_compile Blender/*.py` and, when possible, be dry-run in Blender’s Scripting workspace using startup_script.py.
+- Blender Python validation:
+  - Syntax check: `python -m compileall Blender/` (or use VSCode Task "Blender: Validate All Scripts")
+  - Unit tests: `blender --background --python Blender/run_tests.py` (or use VSCode Task "Blender: Run Unit Tests")
 
 ## Blender Workflow
 - Run Blender/startup_script.py on open to register project paths, 60 fps scene settings, camera, lighting, and collection hierarchy; without it imports from Assets/Scripts fail.
 - character_controller.py mirrors Unity's CharacterController features (eye scaling, happiness, Thai gestures); keep method names consistent so documentation stays aligned.
 - minime_addon.py exposes tooling in Blender's "Mini-Me" panel; extend it instead of scattering ad-hoc operators.
+- export_character.py contains shared export logic used by both CLI and Addon; modify `export_character_logic()` to update export settings for all tools.
 - **VSCode Integration**: Use `.vscode/tasks.json` for automated exports (`Ctrl+Shift+P` → Run Task → "Blender: Export Leandi Character") or run `npm run blender:watch` for auto-export on .blend file saves.
 - **Debugging**: Install `debugpy` in Blender's Python, add `enable_debugging()` to scripts, run in Blender, then `F5` in VSCode → "Blender: Attach Debugger". See `Docs/BLENDER_VSCODE_INTEGRATION.md` for complete setup.
 

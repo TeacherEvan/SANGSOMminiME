@@ -28,6 +28,7 @@ This folder contains Blender Python scripts for the Sangsom Mini-Me educational 
 ## Usage
 
 ### Startup Script
+
 ```python
 # Sets up:
 # - Project paths in Python
@@ -38,6 +39,7 @@ This folder contains Blender Python scripts for the Sangsom Mini-Me educational 
 ```
 
 ### Character Controller
+
 ```python
 from character_controller import CharacterController
 
@@ -59,6 +61,7 @@ print(controller.mood)  # MoodState.HAPPY
 ```
 
 ### User Manager
+
 ```python
 from user_manager import UserManager
 
@@ -76,12 +79,23 @@ user.complete_homework()  # Gives XP, coins, happiness
 print(f"Level: {user.get_level()}")
 ```
 
+### Export Character
+
+```python
+# Run from CLI
+# blender --background character.blend --python export_character.py
+
+# Or import logic in other scripts
+from export_character import export_character_logic
+export_character_logic(character_name="Leandi")
+```
+
 ### Mini-Me Addon
 After installation, find "Mini-Me" tab in 3D View sidebar (press N):
 - **Setup Project**: Initialize scene and collections
 - **Character**: Create templates, adjust customization
 - **Animations**: Create and play animations
-- **Export**: Export character as GLB
+- **Export**: Export character as GLB (uses shared logic from `export_character.py`)
 
 ## File Naming Conventions
 
@@ -115,4 +129,3 @@ After installation, find "Mini-Me" tab in 3D View sidebar (press N):
 ## License
 
 Educational Use License - See project root LICENSE file.
-

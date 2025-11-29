@@ -86,7 +86,14 @@ class CharacterController:
         self._on_animation_completed: List[Callable] = []
         self._on_happiness_changed: List[Callable] = []
         
+        # Cache for assets
+        self._accessories: Dict[str, bpy.types.Object] = {}
+        self._materials: Dict[str, bpy.types.Material] = {}
+        self._actions: Dict[str, bpy.types.Action] = {}
+        self._bones: Dict[str, bpy.types.PoseBone] = {}
+        
         self._find_character_objects()
+        self._scan_assets()
     
     def _find_character_objects(self):
         """Find the character's armature and mesh objects in the scene."""
@@ -112,6 +119,44 @@ class CharacterController:
                     self.mesh = obj
                     break
     
+    def _scan_assets(self):
+        """Scan and cache available assets (accessories, materials, actions)."""
+        # Cache accessories
+        self._accessories.clear()
+        for obj in bpy.data.objects:
+            if "accessory" in obj.name.lower():
+                # Use the part of the name after "accessory_" or just the name
+                key = obj.name.lower()
+                if "accessory_" in key:
+                    key = key.split("accessory_")[1]
+                self._accessories[key] = obj
+        
+        # Cache materials (outfits)
+        self._materials.clear()
+        for mat in bpy.data.materials:
+            if "outfit" in mat.name.lower():
+                key = mat.name.lower()
+                if "outfit_" in key:
+                    key = key.split("outfit_")[1]
+                self._materials[key] = mat
+                
+        # Cache actions
+        self._actions.clear()
+        for action in bpy.data.actions:
+            self._actions[action.name] = action
+            # Also cache by simple name if it follows convention
+            if self.character_name.lower() in action.name.lower():
+                simple_name = action.name.lower().replace(f"{self.character_name.lower()}_", "")
+                self._actions[simple_name] = action
+        
+        # Cache bones if armature exists
+        self._bones.clear()
+        if self.armature:
+            for bone in self.armature.pose.bones:
+                self._bones[bone.name] = bone
+                # Also cache by simple name (e.g. "eye_L" -> "eye_l")
+                self._bones[bone.name.lower()] = bone
+    
     @property
     def is_animating(self) -> bool:
         """Check if the character is currently animating."""
@@ -136,12 +181,12 @@ class CharacterController:
         else:
             return MoodState.VERY_SAD
     
-    def play_animation(self, animation: CharacterAnimation) -> bool:
+    def play_animation(self, animation: CharacterAnimation | str) -> bool:
         """
         Play a character animation.
         
         Args:
-            animation: The animation to play
+            animation: The animation to play (Enum or string name)
             
         Returns:
             True if animation started successfully, False otherwise
@@ -153,16 +198,21 @@ class CharacterController:
             print(f"Warning: No armature found for character '{self.character_name}'")
             return False
         
+        # Resolve animation name
+        anim_value = animation.value if isinstance(animation, CharacterAnimation) else animation
+        
         # Look for the animation action
-        action_name = f"{self.character_name}_{animation.value}"
-        action = bpy.data.actions.get(action_name)
+        action_name = f"{self.character_name}_{anim_value}"
+        
+        # Try cache first
+        action = self._actions.get(action_name) or self._actions.get(anim_value)
         
         if action is None:
-            # Try without character name prefix
-            action = bpy.data.actions.get(animation.value)
+            # Fallback to direct lookup
+            action = bpy.data.actions.get(action_name) or bpy.data.actions.get(anim_value)
         
         if action is None:
-            print(f"Warning: Animation '{animation.value}' not found")
+            print(f"Warning: Animation '{anim_value}' not found")
             return False
         
         # Set the animation
@@ -174,13 +224,13 @@ class CharacterController:
         
         # Trigger callbacks
         for callback in self._on_animation_started:
-            callback(animation.value)
+            callback(anim_value)
         
         # Special effects for certain animations
-        if animation == CharacterAnimation.DANCE:
+        if anim_value == CharacterAnimation.DANCE.value:
             self.increase_happiness(2.0)
         
-        print(f"Playing animation: {animation.value}")
+        print(f"Playing animation: {anim_value}")
         return True
     
     def play_idle(self):
@@ -220,10 +270,20 @@ class CharacterController:
         
         # Apply to bones if armature exists
         if self.armature:
+            # Try cache first
             for bone_name in ["eye_L", "eye_R", "Eye.L", "Eye.R"]:
-                if bone_name in self.armature.pose.bones:
+                # Try exact match or lowercase match from cache
+                bone = self._bones.get(bone_name) or self._bones.get(bone_name.lower())
+                
+                if bone:
+                    bone.scale = (scale, scale, scale)
+                elif bone_name in self.armature.pose.bones:
+                    # Fallback to direct lookup
                     bone = self.armature.pose.bones[bone_name]
                     bone.scale = (scale, scale, scale)
+                    # Update cache
+                    self._bones[bone_name] = bone
+                    self._bones[bone_name.lower()] = bone
         
         print(f"Eye scale set to: {scale}")
     
@@ -238,13 +298,18 @@ class CharacterController:
         
         # Apply material if mesh exists
         if self.mesh:
-            material_name = f"outfit_{outfit_name}"
-            material = bpy.data.materials.get(material_name)
+            # Try cache first
+            material = self._materials.get(outfit_name.lower())
+            
+            if not material:
+                material_name = f"outfit_{outfit_name}"
+                material = bpy.data.materials.get(material_name)
             
             if material and len(self.mesh.material_slots) > 0:
                 self.mesh.material_slots[0].material = material
-        
-        print(f"Outfit set to: {outfit_name}")
+                print(f"Outfit set to: {outfit_name}")
+            else:
+                print(f"Warning: Outfit material '{outfit_name}' not found")
     
     def set_accessory(self, accessory_name: str):
         """
@@ -255,19 +320,36 @@ class CharacterController:
         """
         self.config.accessory = accessory_name
         
-        # Look for accessory objects
-        for obj in bpy.data.objects:
-            if "accessory" in obj.name.lower():
-                # Hide all accessories first
-                obj.hide_viewport = True
-                obj.hide_render = True
+        # Hide all known accessories
+        for acc_obj in self._accessories.values():
+            acc_obj.hide_viewport = True
+            acc_obj.hide_render = True
+            
+        # Show the selected accessory
+        if accessory_name != "none":
+            acc_obj = self._accessories.get(accessory_name.lower())
+            if acc_obj:
+                acc_obj.hide_viewport = False
+                acc_obj.hide_render = False
+                print(f"Accessory set to: {accessory_name}")
+            else:
+                # Fallback scan if not in cache (maybe added recently)
+                found = False
+                for obj in bpy.data.objects:
+                    if "accessory" in obj.name.lower() and accessory_name.lower() in obj.name.lower():
+                        obj.hide_viewport = False
+                        obj.hide_render = False
+                        found = True
+                        # Update cache
+                        self._accessories[accessory_name.lower()] = obj
+                        break
                 
-                # Show the selected accessory
-                if accessory_name != "none" and accessory_name.lower() in obj.name.lower():
-                    obj.hide_viewport = False
-                    obj.hide_render = False
-        
-        print(f"Accessory set to: {accessory_name}")
+                if found:
+                    print(f"Accessory set to: {accessory_name} (found via fallback)")
+                else:
+                    print(f"Warning: Accessory '{accessory_name}' not found")
+        else:
+            print("Accessories cleared")
     
     def set_happiness(self, happiness: float):
         """

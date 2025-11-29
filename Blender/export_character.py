@@ -39,19 +39,30 @@ def write_export_metadata(metadata_path: Path, character_name: str, selected_obj
                 f.write(f"  - {action.name} ({action.frame_range[0]:.0f}-{action.frame_range[1]:.0f})\n")
 
 
-def export_character():
-    """Export selected character to Unity Assets folder."""
+def export_character_logic(character_name: str | None = None, target_dir: Path | None = None) -> bool:
+    """
+    Core export logic reusable by CLI and Addon.
+    
+    Args:
+        character_name: Name of the character (optional, auto-detected if None)
+        target_dir: Target directory for export (optional, auto-detected if None)
+    """
     project_root = get_project_root()
     
-    # Determine character name from blend file or selection
-    character_name = "Leandi"  # Default
-    if bpy.data.filepath:
-        blend_name = Path(bpy.data.filepath).stem
-        if blend_name and blend_name != "untitled":
-            character_name = blend_name.title()
+    # Determine character name if not provided
+    if not character_name:
+        character_name = "Leandi"  # Default
+        if bpy.data.filepath:
+            blend_name = Path(bpy.data.filepath).stem
+            if blend_name and blend_name != "untitled":
+                character_name = blend_name.title()
     
     # Setup export directory
-    export_dir = project_root / "Assets" / "Characters" / character_name
+    if not target_dir:
+        export_dir = project_root / "Assets" / "Characters" / character_name
+    else:
+        export_dir = target_dir
+        
     export_dir.mkdir(parents=True, exist_ok=True)
     
     # Check if we have selection
@@ -134,6 +145,11 @@ def export_character():
     else:
         print("❌ Export failed!")
         return False
+
+
+def export_character():
+    """Wrapper for backward compatibility."""
+    return export_character_logic()
 
 
 def export_all_characters():

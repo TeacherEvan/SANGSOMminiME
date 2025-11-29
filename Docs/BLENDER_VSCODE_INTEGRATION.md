@@ -220,12 +220,15 @@ This file automates Blender operations from VSCode:
             "command": "python",
             "args": [
                 "-m",
-                "py_compile",
-                "${workspaceFolder}/Blender/*.py"
+                "compileall",
+                "."
             ],
+            "options": {
+                "cwd": "${workspaceFolder}/Blender"
+            },
             "problemMatcher": {
                 "owner": "python",
-                "fileLocation": ["relative", "${workspaceFolder}"],
+                "fileLocation": ["relative", "${workspaceFolder}/Blender"],
                 "pattern": {
                     "regexp": "^  File \"(.*)\", line (\\d+)",
                     "file": 1,
@@ -338,7 +341,7 @@ class CharacterController:
 
 ### 5.1 Create Export Automation Script
 
-Create `Blender/export_character.py`:
+Create `Blender/export_character.py` with a modular design:
 
 ```python
 """
@@ -350,34 +353,47 @@ import bpy
 import os
 from pathlib import Path
 
-def export_character():
-    """Export selected character to Unity Assets folder."""
-    project_root = Path(__file__).parent.parent
-    export_dir = project_root / "Assets" / "Characters" / "Leandi"
+def get_project_root() -> Path:
+    """Get the project root directory."""
+    if bpy.data.filepath:
+        return Path(bpy.data.filepath).parent.parent
+    # Fallback for unsaved files or other contexts
+    return Path(os.getcwd()).parent
+
+def export_character_logic(character_name: str | None = None, target_dir: Path | None = None) -> bool:
+    """
+    Core export logic reusable by CLI and Addon.
+    
+    Args:
+        character_name: Name of the character (optional, auto-detected if None)
+        target_dir: Target directory for export (optional, auto-detected if None)
+    """
+    project_root = get_project_root()
+    
+    # Determine character name if not provided
+    if not character_name:
+        character_name = "Leandi"  # Default
+        if bpy.data.filepath:
+            blend_name = Path(bpy.data.filepath).stem
+            if blend_name and blend_name != "untitled":
+                character_name = blend_name.title()
+    
+    # Setup export directory
+    if not target_dir:
+        export_dir = project_root / "Assets" / "Characters" / character_name
+    else:
+        export_dir = target_dir
+        
     export_dir.mkdir(parents=True, exist_ok=True)
     
-    # Export as GLB for Unity
-    glb_path = export_dir / "leandi_character.glb"
-    bpy.ops.export_scene.gltf(
-        filepath=str(glb_path),
-        export_format='GLB',
-        use_selection=True,
-        export_animations=True,
-        export_materials='EXPORT',
-        export_lights=False,
-        export_cameras=False
-    )
-    print(f"✅ Exported to: {glb_path}")
+    # ... (Export logic for GLB and FBX) ...
     
-    # Also export FBX for compatibility
-    fbx_path = export_dir / "leandi_character.fbx"
-    bpy.ops.export_scene.fbx(
-        filepath=str(fbx_path),
-        use_selection=True,
-        global_scale=1.0,
-        bake_anim=True
-    )
-    print(f"✅ Exported to: {fbx_path}")
+    print(f"✅ Export complete for {character_name}!")
+    return True
+
+def export_character():
+    """Wrapper for backward compatibility."""
+    return export_character_logic()
 
 if __name__ == "__main__":
     export_character()
