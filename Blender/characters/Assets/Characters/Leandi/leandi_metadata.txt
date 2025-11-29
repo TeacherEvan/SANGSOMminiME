@@ -1,0 +1,5 @@
+Character: Leandi
+Blender Version: 5.0.0
+Exported Objects: 1
+Object Names:
+  - Cube (MESH)

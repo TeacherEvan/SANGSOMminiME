@@ -22,7 +22,7 @@ def install():
         module_name = "minime_addon"
         
         # Check if already enabled to avoid error, or just enable it
-        if module_name not in bpy.context.preferences.addons:
+        if bpy.context.preferences and module_name not in bpy.context.preferences.addons:
             bpy.ops.preferences.addon_enable(module=module_name)
             
         # Save preferences so it persists
