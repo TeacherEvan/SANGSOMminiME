@@ -1,0 +1,33 @@
+{
+  "name": "sangsom-mini-me",
+  "version": "1.0.0",
+  "description": "Educational Tamagotchi Universe - Unity & Blender Project",
+  "scripts": {
+    "verify": "node scripts/verify.js",
+    "lint:markdown": "markdownlint **/*.md --ignore node_modules --ignore .venv",
+    "lint:python": "python -m py_compile Blender/*.py Assets/Scripts/**/*.py",
+    "test:unity": "echo 'Run Unity tests via Unity Test Runner'",
+    "check:all": "npm run lint:markdown && npm run lint:python",
+    "blender:watch": "node scripts/blender-automation.js",
+    "blender:export": "blender --background Blender/characters/leandi.blend --python Blender/export_character.py",
+    "blender:validate": "python -m py_compile Blender/*.py",
+    "blender:install-addon": "blender --background --python-expr \"import bpy; bpy.ops.preferences.addon_install(filepath='Blender/minime_addon.py'); bpy.ops.preferences.addon_enable(module='minime_addon'); bpy.ops.wm.save_userpref()\"",
+    "blender:test": "blender --background --python Blender/startup_script.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TeacherEvan/SANGSOMminiME.git"
+  },
+  "keywords": [
+    "education",
+    "unity",
+    "blender",
+    "tamagotchi",
+    "ai-assisted"
+  ],
+  "author": "Teacher Evan",
+  "license": "SEE LICENSE IN LICENSE",
+  "devDependencies": {
+    "markdownlint-cli": "^0.37.0"
+  }
+}

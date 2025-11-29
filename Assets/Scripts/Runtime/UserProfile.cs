@@ -16,17 +16,22 @@ namespace SangsomMiniMe.Core
         [SerializeField] private int experiencePoints;
         [SerializeField] private int coins;
         [SerializeField] private bool isActive;
-        
+
         // Character customization preferences
         [SerializeField] private float eyeScale = 1.0f;
         [SerializeField] private string currentOutfit = "default";
         [SerializeField] private string currentAccessory = "none";
-        
+
         // Progress tracking
         [SerializeField] private int homeworkCompleted;
         [SerializeField] private int daysActive;
         [SerializeField] private float characterHappiness = 50f;
-        
+
+        // Events
+        public event System.Action<int> OnCoinsChanged;
+        public event System.Action<int> OnExperienceChanged;
+        public event System.Action<float> OnHappinessChanged;
+
         public string UserId => userId;
         public string UserName => userName;
         public string DisplayName => displayName;
@@ -34,15 +39,15 @@ namespace SangsomMiniMe.Core
         public int ExperiencePoints => experiencePoints;
         public int Coins => coins;
         public bool IsActive => isActive;
-        
+
         public float EyeScale => eyeScale;
         public string CurrentOutfit => currentOutfit;
         public string CurrentAccessory => currentAccessory;
-        
+
         public int HomeworkCompleted => homeworkCompleted;
         public int DaysActive => daysActive;
         public float CharacterHappiness => characterHappiness;
-        
+
         public UserProfile(string userName, string displayName)
         {
             this.userId = Guid.NewGuid().ToString();
@@ -56,27 +61,30 @@ namespace SangsomMiniMe.Core
             this.daysActive = 1;
             this.characterHappiness = 75f; // Start with happy character
         }
-        
+
         public void AddExperience(int amount)
         {
             experiencePoints += amount;
+            OnExperienceChanged?.Invoke(experiencePoints);
         }
-        
+
         public void AddCoins(int amount)
         {
             coins += amount;
+            OnCoinsChanged?.Invoke(coins);
         }
-        
+
         public bool SpendCoins(int amount)
         {
             if (coins >= amount)
             {
                 coins -= amount;
+                OnCoinsChanged?.Invoke(coins);
                 return true;
             }
             return false;
         }
-        
+
         public void CompleteHomework()
         {
             homeworkCompleted++;
@@ -84,27 +92,29 @@ namespace SangsomMiniMe.Core
             AddCoins(5);
             IncreaseHappiness(5f);
         }
-        
+
         public void IncreaseHappiness(float amount)
         {
             characterHappiness = Mathf.Clamp(characterHappiness + amount, 0f, 100f);
+            OnHappinessChanged?.Invoke(characterHappiness);
         }
-        
+
         public void DecreaseHappiness(float amount)
         {
             characterHappiness = Mathf.Clamp(characterHappiness - amount, 0f, 100f);
+            OnHappinessChanged?.Invoke(characterHappiness);
         }
-        
+
         public void SetEyeScale(float scale)
         {
             eyeScale = Mathf.Clamp(scale, 0.5f, 2.0f);
         }
-        
+
         public void SetOutfit(string outfit)
         {
             currentOutfit = outfit;
         }
-        
+
         public void SetAccessory(string accessory)
         {
             currentAccessory = accessory;

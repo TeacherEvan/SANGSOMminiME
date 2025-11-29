@@ -19,7 +19,7 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   "genre": "educational-simulation",
   "target_platform": "multi-platform",
   "development_stage": "prototype",
-  "ai_integration": "cursor-assisted",
+  "ai_integration": "VScode-assisted",
   "universe": "minime-expandable-ecosystem"
 }
 
@@ -135,7 +135,7 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
 
 @technical_stack {
   "3d_engine": "Blender 5.0.0",
-  "ai_assistant": "Cursor AI for code generation and asset creation",
+  "ai_assistant": "VSCode for code generation and asset creation",
   "modeling": "AI-generated models with Blender integration",
   "animation": "Blender Animation System with custom controllers",
   "database": "User account management and progress tracking",
@@ -411,6 +411,7 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
 
 @version "2.0.0"
 @last_updated "2025-01-30"
+
 
 
 

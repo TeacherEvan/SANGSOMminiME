@@ -13,21 +13,21 @@ namespace SangsomMiniMe.Core
         [Header("User Management Settings")]
         [SerializeField] private bool enableDataPersistence = true;
         [SerializeField] private string saveFileName = "userProfiles.json";
-        
+
         private List<UserProfile> userProfiles = new List<UserProfile>();
         private UserProfile currentUser;
         private string saveFilePath;
-        
+
         public static UserManager Instance { get; private set; }
-        
+
         public UserProfile CurrentUser => currentUser;
         public List<UserProfile> AllUsers => userProfiles.ToList(); // Return copy for safety
-        
+
         // Events
         public System.Action<UserProfile> OnUserLoggedIn;
         public System.Action OnUserLoggedOut;
         public System.Action<UserProfile> OnUserCreated;
-        
+
         private void Awake()
         {
             // Singleton pattern
@@ -42,39 +42,52 @@ namespace SangsomMiniMe.Core
                 Destroy(gameObject);
             }
         }
-        
+
         private void InitializeUserManager()
         {
             saveFilePath = Path.Combine(Application.persistentDataPath, saveFileName);
             LoadUserProfiles();
-            
+
             Debug.Log($"UserManager initialized. Found {userProfiles.Count} user profiles.");
         }
-        
+
         public UserProfile CreateUser(string userName, string displayName)
         {
+            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(displayName))
+            {
+                Debug.LogWarning("Create user failed: Invalid username or display name");
+                return null;
+            }
+
             // Check if username already exists
             if (userProfiles.Any(u => u.UserName.Equals(userName, System.StringComparison.OrdinalIgnoreCase)))
             {
                 Debug.LogWarning($"Username '{userName}' already exists!");
                 return null;
             }
-            
+
             var newUser = new UserProfile(userName, displayName);
             userProfiles.Add(newUser);
-            
+
             SaveUserProfiles();
             OnUserCreated?.Invoke(newUser);
-            
+
             Debug.Log($"Created new user: {displayName} ({userName})");
             return newUser;
         }
-        
+
         public bool LoginUser(string userName)
         {
-            var user = userProfiles.FirstOrDefault(u => 
-                u.UserName.Equals(userName, System.StringComparison.OrdinalIgnoreCase) && u.IsActive);
-            
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                Debug.LogWarning("Login failed: Empty username provided");
+                return false;
+            }
+
+            var user = userProfiles.FirstOrDefault(u =>
+                u.UserName?.Equals(userName, System.StringComparison.OrdinalIgnoreCase) == true
+                && u.IsActive);
+
             if (user != null)
             {
                 currentUser = user;
@@ -82,11 +95,11 @@ namespace SangsomMiniMe.Core
                 Debug.Log($"User logged in: {currentUser.DisplayName}");
                 return true;
             }
-            
+
             Debug.LogWarning($"Login failed for username: {userName}");
             return false;
         }
-        
+
         public void LogoutUser()
         {
             if (currentUser != null)
@@ -96,13 +109,13 @@ namespace SangsomMiniMe.Core
                 OnUserLoggedOut?.Invoke();
             }
         }
-        
+
         public UserProfile GetUserByName(string userName)
         {
-            return userProfiles.FirstOrDefault(u => 
+            return userProfiles.FirstOrDefault(u =>
                 u.UserName.Equals(userName, System.StringComparison.OrdinalIgnoreCase));
         }
-        
+
         public void DeleteUser(string userName)
         {
             var user = GetUserByName(userName);
@@ -117,7 +130,7 @@ namespace SangsomMiniMe.Core
                 Debug.Log($"Deleted user: {userName}");
             }
         }
-        
+
         public void SaveCurrentUser()
         {
             if (currentUser != null)
@@ -125,11 +138,11 @@ namespace SangsomMiniMe.Core
                 SaveUserProfiles();
             }
         }
-        
+
         private void SaveUserProfiles()
         {
             if (!enableDataPersistence) return;
-            
+
             try
             {
                 var jsonData = JsonUtility.ToJson(new UserProfileCollection { profiles = userProfiles }, true);
@@ -141,11 +154,11 @@ namespace SangsomMiniMe.Core
                 Debug.LogError($"Failed to save user profiles: {e.Message}");
             }
         }
-        
+
         private void LoadUserProfiles()
         {
             if (!enableDataPersistence) return;
-            
+
             try
             {
                 if (File.Exists(saveFilePath))
@@ -166,7 +179,7 @@ namespace SangsomMiniMe.Core
                 userProfiles = new List<UserProfile>();
             }
         }
-        
+
         private void OnApplicationPause(bool pauseStatus)
         {
             if (pauseStatus)
@@ -174,7 +187,7 @@ namespace SangsomMiniMe.Core
                 SaveUserProfiles();
             }
         }
-        
+
         private void OnApplicationFocus(bool hasFocus)
         {
             if (!hasFocus)
@@ -182,13 +195,13 @@ namespace SangsomMiniMe.Core
                 SaveUserProfiles();
             }
         }
-        
+
         private void OnDestroy()
         {
             SaveUserProfiles();
         }
     }
-    
+
     [System.Serializable]
     public class UserProfileCollection
     {

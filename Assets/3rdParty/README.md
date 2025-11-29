@@ -7,3 +7,4 @@ External packages and dependencies isolated for clean management.
 - Keep all external assets here for easy upgrades
 - Document license requirements
 - Track versions in DEPENDENCIES.md
+

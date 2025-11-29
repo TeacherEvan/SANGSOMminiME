@@ -136,6 +136,16 @@ htmlcov/
 data/user_profiles.json
 *.save
 
+# NPM and Node
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Non-critical errors tracking
+non-critical-errors.json
+
 # Temporary files
 *.bak
 *.temp

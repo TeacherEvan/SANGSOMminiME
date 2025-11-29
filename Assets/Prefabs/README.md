@@ -7,3 +7,4 @@ Reusable game objects and components.
 - Group by feature/system
 - Keep prefab variants organized
 - Document any required components
+

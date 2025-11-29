@@ -96,7 +96,15 @@ class MINIME_OT_setup_project(Operator):
             try:
                 from startup_script import main as setup_main
                 setup_main()
-                self.report({'INFO'}, "Project setup complete!")
+                
+                # Initialize GameManager
+                try:
+                    from game_manager import GameManager
+                    GameManager.get_instance().start_game()
+                    self.report({'INFO'}, "Project setup complete & Game Started!")
+                except ImportError:
+                    self.report({'WARNING'}, "GameManager not found, game loop not started.")
+                    
             except ImportError:
                 # Run basic setup inline
                 self._basic_setup()

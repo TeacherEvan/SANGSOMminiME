@@ -14,7 +14,7 @@ alwaysApply: false
 ## Project Overview
 - **Educational 3D Tamagotchi**: Students care for personalized Mini-Me characters through homework completion
 - **Minime Universe**: Expandable ecosystem with educational side games feeding resources to main character
-- **Blender + Cursor AI**: Modern AI-assisted development with automated code generation
+- **Blender + VSCode**: Modern AI-assisted development with automated code generation
 - **Target**: Schools/educators with multi-user account management
 
 ## Core Development Principles
@@ -151,4 +151,5 @@ class BadCharacter:
         pass
 ```
 </example>
+
 

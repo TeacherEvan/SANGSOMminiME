@@ -3,7 +3,7 @@ description: gameplay
 globs: 
 alwaysApply: false
 ---
-# Cursor AI Integration Standards
+# VSCode Integration Standards
 
 ## Code Generation Principles
 
@@ -122,4 +122,5 @@ class BadCode:
         obj.scale = (self.x, self.x, self.x)
 ```
 </example>
+
 

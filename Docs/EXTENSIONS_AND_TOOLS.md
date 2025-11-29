@@ -11,7 +11,7 @@
 
 2. **Auto-Rig Pro** (Commercial, Recommended)
    - Purpose: One-click character rigging
-   - Link: https://blendermarket.com/products/auto-rig-pro
+   - Link: <https://blendermarket.com/products/auto-rig-pro>
    - Why: Faster rigging workflow, export-friendly
 
 3. **Pose Library** (Built-in, Blender 4.0+)
@@ -33,12 +33,12 @@
 
 6. **MB-Lab / MPFB** (Free)
    - Purpose: Generate human base meshes
-   - Link: https://github.com/animate1978/MB-Lab
+   - Link: <https://github.com/animate1978/MB-Lab>
    - Why: Quick character base for anime stylization
 
 7. **Retopoflow** (Commercial)
    - Purpose: Clean retopology tools
-   - Link: https://blendermarket.com/products/retopoflow
+   - Link: <https://blendermarket.com/products/retopoflow>
    - Why: Create game-ready topology from sculpts
 
 ### Texturing & Materials
@@ -88,9 +88,9 @@
 
 ### AI Character Generation
 
-1. **Cursor AI** (IDE)
+1. **VSCode** (IDE)
    - Purpose: AI-assisted code generation
-   - Link: https://cursor.sh
+   - Link: <https://VScode.sh>
    - Usage: Generate Blender Python scripts, fix bugs
 
 2. **Midjourney / DALL-E / Stable Diffusion**
@@ -105,24 +105,24 @@
 
 4. **Krita** (Free)
    - Purpose: Digital painting, texture creation
-   - Link: https://krita.org
+   - Link: <https://krita.org>
    - Why: Free Photoshop alternative
 
 5. **GIMP** (Free)
    - Purpose: Image editing
-   - Link: https://gimp.org
+   - Link: <https://gimp.org>
    - Why: Texture preparation
 
 ### Reference & Planning
 
 6. **PureRef** (Pay what you want)
    - Purpose: Reference image organization
-   - Link: https://pureref.com
+   - Link: <https://pureref.com>
    - Why: Keep character references visible
 
 7. **Figma** (Free tier)
    - Purpose: UI/UX design
-   - Link: https://figma.com
+   - Link: <https://figma.com>
    - Why: Design game interfaces
 
 ---
@@ -180,24 +180,28 @@ print("Settings applied!")
 ## Learning Resources
 
 ### Blender Fundamentals
+
 - Blender Guru (YouTube): Beginner tutorials
 - CGCookie: Professional courses
-- Blender Manual: https://docs.blender.org/manual
+- Blender Manual: <https://docs.blender.org/manual>
 
 ### Character Creation
+
 - Royal Skies: Anime character tutorials
 - Danny Mac: Blender rigging tutorials
 - Imphenzia: Low-poly character techniques
 
 ### Blender Python Scripting
-- Blender Python API: https://docs.blender.org/api
+
+- Blender Python API: <https://docs.blender.org/api>
 - Scripting for Artists (Blender Studio)
 - Python for Beginners (Real Python)
 
 ### Game Development
-- Three.js Documentation: https://threejs.org/docs
-- Babylon.js Playground: https://playground.babylonjs.com
-- WebGL Fundamentals: https://webglfundamentals.org
+
+- Three.js Documentation: <https://threejs.org/docs>
+- Babylon.js Playground: <https://playground.babylonjs.com>
+- WebGL Fundamentals: <https://webglfundamentals.org>
 
 ---
 
@@ -205,7 +209,7 @@ print("Settings applied!")
 
 ```
 [ ] Blender 5.0.0 installed
-[ ] Cursor AI installed and configured
+[ ] VSCode installed and configured
 [ ] Enable built-in addons:
     [ ] Rigify
     [ ] Node Wrangler
@@ -225,21 +229,25 @@ print("Settings applied!")
 ### Common Issues
 
 **Addon won't install:**
+
 - Ensure Blender version is 4.0+
 - Check file permissions
 - Run Blender as administrator (Windows)
 
 **Scripts not running:**
+
 - Check Python console for errors (Window > Toggle System Console)
 - Verify Python path setup
 - Restart Blender after script changes
 
 **Performance issues:**
+
 - Lower viewport samples
 - Disable unneeded overlays
 - Use simplified materials for editing
 
 **Export problems:**
+
 - Apply all transforms before export (Ctrl+A)
 - Check for non-manifold geometry
 - Limit texture sizes to 2048x2048

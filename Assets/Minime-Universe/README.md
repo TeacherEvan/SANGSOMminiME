@@ -13,3 +13,4 @@ This folder contains the educational mini-games ecosystem that contributes resou
 - Educational value in every game
 - Resources earned benefit main character
 - No stress mechanics - all games are designed for cozy, learning-focused gameplay
+

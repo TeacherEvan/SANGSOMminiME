@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace SangsomMiniMe.Character
 {
@@ -13,11 +14,11 @@ namespace SangsomMiniMe.Character
         [SerializeField] private Transform eyeScale2;
         [SerializeField] private Transform accessoryPoint;
         [SerializeField] private SkinnedMeshRenderer characterRenderer;
-        
+
         [Header("Customization")]
         [SerializeField] private Material[] outfitMaterials;
         [SerializeField] private GameObject[] accessories;
-        
+
         [Header("Animation")]
         [SerializeField] private AnimationClip idleClip;
         [SerializeField] private AnimationClip danceClip;
@@ -25,17 +26,17 @@ namespace SangsomMiniMe.Character
         [SerializeField] private AnimationClip waiClip;
         [SerializeField] private AnimationClip curtsyClip;
         [SerializeField] private AnimationClip bowClip;
-        
+
         [Header("Happiness Indicators")]
         [SerializeField] private ParticleSystem happinessParticles;
         [SerializeField] private GameObject sadnessIndicator;
-        
+
         private float currentEyeScale = 1.0f;
         private int currentOutfitIndex = 0;
         private int currentAccessoryIndex = 0;
         private float currentHappiness = 75f;
         private bool isAnimating = false;
-        
+
         // Animation state hashes for performance
         private static readonly int IdleHash = Animator.StringToHash("Idle");
         private static readonly int DanceHash = Animator.StringToHash("Dance");
@@ -43,20 +44,20 @@ namespace SangsomMiniMe.Character
         private static readonly int WaiHash = Animator.StringToHash("Wai");
         private static readonly int CurtsyHash = Animator.StringToHash("Curtsy");
         private static readonly int BowHash = Animator.StringToHash("Bow");
-        
+
         public float CurrentHappiness => currentHappiness;
         public bool IsAnimating => isAnimating;
-        
+
         // Events
         public System.Action<string> OnAnimationStarted;
         public System.Action<string> OnAnimationCompleted;
         public System.Action<float> OnHappinessChanged;
-        
+
         private void Start()
         {
             Initialize();
         }
-        
+
         private void Initialize()
         {
             // Set default values
@@ -64,17 +65,17 @@ namespace SangsomMiniMe.Character
             SetOutfit(currentOutfitIndex);
             SetAccessory(currentAccessoryIndex);
             UpdateHappinessDisplay();
-            
+
             // Subscribe to user manager events
             if (Core.UserManager.Instance != null)
             {
                 Core.UserManager.Instance.OnUserLoggedIn += OnUserLoggedIn;
                 Core.UserManager.Instance.OnUserLoggedOut += OnUserLoggedOut;
             }
-            
+
             Debug.Log("Character Controller initialized");
         }
-        
+
         private void OnUserLoggedIn(Core.UserProfile user)
         {
             // Apply user's character customization
@@ -82,10 +83,10 @@ namespace SangsomMiniMe.Character
             SetOutfitByName(user.CurrentOutfit);
             SetAccessoryByName(user.CurrentAccessory);
             SetHappiness(user.CharacterHappiness);
-            
+
             Debug.Log($"Character customized for user: {user.DisplayName}");
         }
-        
+
         private void OnUserLoggedOut()
         {
             // Reset to default appearance
@@ -94,17 +95,17 @@ namespace SangsomMiniMe.Character
             SetAccessory(0);
             SetHappiness(50f);
         }
-        
+
         public void SetEyeScale(float scale)
         {
             scale = Mathf.Clamp(scale, 0.5f, 2.0f);
             currentEyeScale = scale;
-            
+
             if (eyeScale1 != null)
                 eyeScale1.localScale = Vector3.one * scale;
             if (eyeScale2 != null)
                 eyeScale2.localScale = Vector3.one * scale;
-            
+
             // Save to current user if logged in
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
@@ -112,7 +113,7 @@ namespace SangsomMiniMe.Character
                 Core.UserManager.Instance.SaveCurrentUser();
             }
         }
-        
+
         public void SetOutfit(int outfitIndex)
         {
             if (outfitMaterials != null && outfitIndex >= 0 && outfitIndex < outfitMaterials.Length)
@@ -122,7 +123,7 @@ namespace SangsomMiniMe.Character
                 {
                     characterRenderer.material = outfitMaterials[outfitIndex];
                 }
-                
+
                 // Save to current user if logged in
                 if (Core.UserManager.Instance?.CurrentUser != null)
                 {
@@ -132,7 +133,7 @@ namespace SangsomMiniMe.Character
                 }
             }
         }
-        
+
         public void SetOutfitByName(string outfitName)
         {
             if (outfitName == "default")
@@ -147,7 +148,7 @@ namespace SangsomMiniMe.Character
                 }
             }
         }
-        
+
         public void SetAccessory(int accessoryIndex)
         {
             // Hide all accessories first
@@ -158,7 +159,7 @@ namespace SangsomMiniMe.Character
                     if (accessory != null)
                         accessory.SetActive(false);
                 }
-                
+
                 // Show selected accessory
                 if (accessoryIndex > 0 && accessoryIndex < accessories.Length && accessories[accessoryIndex] != null)
                 {
@@ -169,7 +170,7 @@ namespace SangsomMiniMe.Character
                 {
                     currentAccessoryIndex = 0; // No accessory
                 }
-                
+
                 // Save to current user if logged in
                 if (Core.UserManager.Instance?.CurrentUser != null)
                 {
@@ -179,7 +180,7 @@ namespace SangsomMiniMe.Character
                 }
             }
         }
-        
+
         public void SetAccessoryByName(string accessoryName)
         {
             if (accessoryName == "none")
@@ -194,7 +195,7 @@ namespace SangsomMiniMe.Character
                 }
             }
         }
-        
+
         public void SetHappiness(float happiness)
         {
             happiness = Mathf.Clamp(happiness, 0f, 100f);
@@ -202,7 +203,7 @@ namespace SangsomMiniMe.Character
             UpdateHappinessDisplay();
             OnHappinessChanged?.Invoke(currentHappiness);
         }
-        
+
         private void UpdateHappinessDisplay()
         {
             // Update particle effects and indicators based on happiness
@@ -219,45 +220,45 @@ namespace SangsomMiniMe.Character
                     happinessParticles.gameObject.SetActive(false);
                 }
             }
-            
+
             if (sadnessIndicator != null)
             {
                 sadnessIndicator.SetActive(currentHappiness < 30f);
             }
         }
-        
+
         // Animation methods
         public void PlayIdle()
         {
             PlayAnimation("Idle", IdleHash);
         }
-        
+
         public void PlayDance()
         {
             PlayAnimation("Dance", DanceHash);
             IncreaseHappiness(2f);
         }
-        
+
         public void PlayWave()
         {
             PlayAnimation("Wave", WaveHash);
         }
-        
+
         public void PlayWai()
         {
             PlayAnimation("Wai", WaiHash);
         }
-        
+
         public void PlayCurtsy()
         {
             PlayAnimation("Curtsy", CurtsyHash);
         }
-        
+
         public void PlayBow()
         {
             PlayAnimation("Bow", BowHash);
         }
-        
+
         private void PlayAnimation(string animationName, int animationHash)
         {
             if (characterAnimator != null && !isAnimating)
@@ -265,23 +266,40 @@ namespace SangsomMiniMe.Character
                 characterAnimator.SetTrigger(animationHash);
                 isAnimating = true;
                 OnAnimationStarted?.Invoke(animationName);
-                
-                // Reset animation flag after a delay (would normally be handled by animation events)
-                Invoke(nameof(ResetAnimationFlag), 2f);
-                
+
+                StartCoroutine(WaitForAnimationComplete(animationName));
+
                 Debug.Log($"Playing animation: {animationName}");
             }
         }
-        
-        private void ResetAnimationFlag()
+
+        private IEnumerator WaitForAnimationComplete(string animationName)
         {
+            // Wait for animation to start
+            yield return null;
+
+            float waitTime = Core.GameConstants.DefaultAnimationDuration;
+
+            // Try to get actual animation length
+            if (characterAnimator != null)
+            {
+                var clipInfo = characterAnimator.GetCurrentAnimatorClipInfo(0);
+                if (clipInfo.Length > 0)
+                {
+                    waitTime = clipInfo[0].clip.length;
+                }
+            }
+
+            yield return new WaitForSeconds(waitTime);
+
             isAnimating = false;
+            OnAnimationCompleted?.Invoke(animationName);
         }
-        
+
         public void IncreaseHappiness(float amount)
         {
             SetHappiness(currentHappiness + amount);
-            
+
             // Update user profile
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
@@ -289,11 +307,11 @@ namespace SangsomMiniMe.Character
                 Core.UserManager.Instance.SaveCurrentUser();
             }
         }
-        
+
         public void DecreaseHappiness(float amount)
         {
             SetHappiness(currentHappiness - amount);
-            
+
             // Update user profile
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
@@ -301,7 +319,7 @@ namespace SangsomMiniMe.Character
                 Core.UserManager.Instance.SaveCurrentUser();
             }
         }
-        
+
         // Interaction methods for UI buttons
         public void OnCharacterClicked()
         {
@@ -318,7 +336,7 @@ namespace SangsomMiniMe.Character
                 }
             }
         }
-        
+
         private void OnDestroy()
         {
             // Unsubscribe from events

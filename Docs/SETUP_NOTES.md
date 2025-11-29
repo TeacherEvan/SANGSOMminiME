@@ -3,13 +3,15 @@
 ## Quick Start (5 Minutes)
 
 ### Prerequisites
+
 - [Blender 5.0.0](https://www.blender.org/download/) or later
-- [Cursor AI](https://cursor.sh) (recommended for development)
+- [VSCode](https://code.visualstudio.com/) (recommended for development)
 - Python 3.11+ (bundled with Blender)
 
 ### First-Time Setup
 
 1. **Clone the Repository**
+
    ```bash
    git clone https://github.com/yourusername/SANGSOMminiME.git
    cd SANGSOMminiME
@@ -68,7 +70,7 @@ SANGSOMminiME/
 ├── Docs/                      # Documentation
 │   ├── SETUP_NOTES.md        # This file
 │   └── EXTENSIONS_AND_TOOLS.md
-├── .cursor/                   # Cursor AI rules
+├── .vscode/                   # VSCode rules
 │   └── rules/                # AI development guidelines
 ├── README.md                  # Project overview
 ├── IMPLEMENTATION.md          # Implementation details
@@ -87,6 +89,7 @@ SANGSOMminiME/
    - Include: front view, side view, and expression reference
 
 2. **Generate Character Base**
+
    ```
    Option A: Use Mini-Me addon
    - Open Mini-Me panel (3D View > Sidebar > Mini-Me)
@@ -113,18 +116,20 @@ SANGSOMminiME/
    - Use Mini-Me addon to create placeholders
    - Import from Mixamo or create manually
 
-### Scripting with Cursor AI
+### Scripting with VSCode
 
-1. **Open Project in Cursor**
+1. **Open Project in VSCode**
+
    ```bash
-   cursor /path/to/SANGSOMminiME
+   code /path/to/SANGSOMminiME
    ```
 
 2. **AI Rules are Auto-Loaded**
-   - Rules in `.cursor/rules/` configure AI behavior
+   - Rules in `.vscode/rules/` configure AI behavior
    - Follow established patterns and conventions
 
 3. **Example Prompts**
+
    ```
    "Create a happiness decay system that reduces character happiness by 1% per hour of inactivity"
    
@@ -149,6 +154,7 @@ SANGSOMminiME/
 ## Common Tasks
 
 ### Import Character Reference Photos
+
 ```python
 # Run in Blender Scripting workspace
 import bpy
@@ -167,6 +173,7 @@ print("Photos imported!")
 ```
 
 ### Export Character for Web
+
 ```python
 # Export selected character as GLB
 import bpy
@@ -181,6 +188,7 @@ bpy.ops.export_scene.gltf(
 ```
 
 ### Create Animation Action
+
 ```python
 # Create a new animation action
 import bpy
@@ -202,6 +210,7 @@ if armature and armature.type == 'ARMATURE':
 ## Troubleshooting
 
 ### "Module not found" errors
+
 ```python
 # Add project paths to Python
 import sys
@@ -209,16 +218,19 @@ sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
 ```
 
 ### Addon not appearing
+
 - Ensure Blender version is 4.0+
 - Check Add-ons preferences for errors
 - Try running `minime_addon.py` directly in Scripting workspace
 
 ### Performance issues
+
 - Simplify viewport shading
 - Lower subdivision levels
 - Disable unnecessary overlays
 
 ### Export problems
+
 - Apply all transforms (Ctrl+A > All Transforms)
 - Check for loose vertices/edges
 - Ensure proper UV mapping

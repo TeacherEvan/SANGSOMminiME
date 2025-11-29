@@ -1,0 +1,94 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Blender: Run Startup Script",
+            "type": "shell",
+            "command": "blender",
+            "args": [
+                "--background",
+                "--python",
+                "${workspaceFolder}/Blender/startup_script.py"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "panel": "new"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Blender: Export Leandi Character",
+            "type": "shell",
+            "command": "blender",
+            "args": [
+                "--background",
+                "${workspaceFolder}/Blender/characters/leandi.blend",
+                "--python",
+                "${workspaceFolder}/Blender/export_character.py"
+            ],
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "Blender: Open in GUI",
+            "type": "shell",
+            "command": "blender",
+            "args": [
+                "${workspaceFolder}/Blender/characters/leandi.blend"
+            ],
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Blender: Install Addon",
+            "type": "shell",
+            "command": "blender",
+            "args": [
+                "--background",
+                "--python-expr",
+                "import bpy; bpy.ops.preferences.addon_install(filepath='${workspaceFolder}/Blender/minime_addon.py'); bpy.ops.preferences.addon_enable(module='minime_addon'); bpy.ops.wm.save_userpref()"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Blender: Validate All Scripts",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "py_compile"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Blender"
+            },
+            "problemMatcher": {
+                "owner": "python",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "pattern": {
+                    "regexp": "^  File \"(.*)\", line (\\d+)",
+                    "file": 1,
+                    "line": 2
+                }
+            },
+            "group": "test"
+        },
+        {
+            "label": "npm: verify",
+            "type": "npm",
+            "script": "verify",
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}

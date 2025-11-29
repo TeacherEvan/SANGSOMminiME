@@ -24,3 +24,4 @@ Organized art assets for the Sangsom Mini-Me project.
 - Textures: Max 2048x2048, prefer 1024x1024
 - Models: Max 10k triangles for characters
 - Audio: Use compressed formats (OGG/MP3)
+

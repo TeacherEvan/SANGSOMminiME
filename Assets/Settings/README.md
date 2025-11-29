@@ -7,3 +7,4 @@ Project configuration and settings files.
 - Game configuration assets
 - Build settings profiles
 - Quality settings presets
+

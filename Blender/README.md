@@ -115,3 +115,4 @@ After installation, find "Mini-Me" tab in 3D View sidebar (press N):
 ## License
 
 Educational Use License - See project root LICENSE file.
+

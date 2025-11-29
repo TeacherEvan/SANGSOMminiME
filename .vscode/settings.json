@@ -1,1 +1,42 @@
- 
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    "python.analysis.extraPaths": [
+        "./Assets/Scripts/Runtime",
+        "./Assets/Scripts/Editor",
+        "./Assets/Scripts/Tests",
+        "./Blender"
+    ],
+    "python.autoComplete.extraPaths": [
+        "./Assets/Scripts/Runtime",
+        "./Assets/Scripts/Editor",
+        "./Assets/Scripts/Tests",
+        "./Blender"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    "files.exclude": {
+        "**/*.blend1": true,
+        "**/*.pyc": true,
+        "**/__pycache__": true,
+        "**/.venv": true
+    },
+    "editor.formatOnSave": true,
+    "cSpell.words": [
+        "Sangsom",
+        "SANGSOM",
+        "Tamagotchi",
+        "tamagotchi",
+        "Minime",
+        "minime",
+        "Leandi",
+        "asmdef",
+        "asmdefs",
+        "venv",
+        "UGUI",
+        "Creat"
+    ],
+    "cSpell.enableFiletypes": [
+        "markdown",
+        "javascript",
+        "json"
+    ]
+}
