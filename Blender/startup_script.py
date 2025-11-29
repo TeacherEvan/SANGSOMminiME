@@ -23,6 +23,19 @@ VERSION = "1.0.0"
 TARGET_FPS = 60
 
 
+def enable_debugging():
+    """Enable remote debugging with debugpy."""
+    try:
+        import debugpy
+        if not debugpy.is_client_connected():
+            debugpy.listen(("localhost", 5678))
+            print("🐛 Debugger listening on port 5678")
+    except ImportError:
+        print("⚠️ debugpy not found. Debugging disabled.")
+    except Exception as e:
+        print(f"⚠️ Failed to enable debugging: {e}")
+
+
 def get_project_root() -> Path:
     """Get the project root directory."""
     # Try to find project root from blend file location
@@ -212,6 +225,9 @@ def print_project_info():
 def main():
     """Main initialization function."""
     print("\n🚀 Initializing Sangsom Mini-Me Blender Project...")
+    
+    # Enable debugging
+    enable_debugging()
     
     # Setup in order
     setup_project_paths()

@@ -4,7 +4,7 @@
         {
             "label": "Blender: Run Startup Script",
             "type": "shell",
-            "command": "blender",
+            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
             "args": [
                 "--background",
                 "--python",
@@ -24,7 +24,7 @@
         {
             "label": "Blender: Export Leandi Character",
             "type": "shell",
-            "command": "blender",
+            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
             "args": [
                 "--background",
                 "${workspaceFolder}/Blender/characters/leandi.blend",
@@ -37,7 +37,7 @@
         {
             "label": "Blender: Open in GUI",
             "type": "shell",
-            "command": "blender",
+            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
             "args": [
                 "${workspaceFolder}/Blender/characters/leandi.blend"
             ],
@@ -47,7 +47,7 @@
         {
             "label": "Blender: Install Addon",
             "type": "shell",
-            "command": "blender",
+            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
             "args": [
                 "--background",
                 "--python-expr",
@@ -84,7 +84,7 @@
         {
             "label": "Blender: Run Unit Tests",
             "type": "shell",
-            "command": "blender",
+            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
             "args": [
                 "--background",
                 "--python",

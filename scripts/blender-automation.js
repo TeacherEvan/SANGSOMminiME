@@ -29,7 +29,7 @@ const { exec } = require('child_process');
 // ============================================================================
 
 const WATCH_DIR = path.join(__dirname, '..', 'Blender', 'characters');
-const BLENDER_EXE = 'blender'; // Assumes 'blender' is in PATH
+const BLENDER_EXE = 'C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe';
 const EXPORT_SCRIPT = path.join(__dirname, '..', 'Blender', 'export_character.py');
 const DEBOUNCE_MS = 3000; // Wait 3 seconds after last change before exporting
 

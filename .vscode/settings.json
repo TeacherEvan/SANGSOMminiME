@@ -1,4 +1,11 @@
 {
+    "blender.executables": [
+        {
+            "path": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
+            "name": "Blender 5.0",
+            "isDefault": true
+        }
+    ],
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
     "python.analysis.extraPaths": [
         "./Assets/Scripts/Runtime",
