@@ -50,8 +50,8 @@
             "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
             "args": [
                 "--background",
-                "--python-expr",
-                "import bpy; bpy.ops.preferences.addon_install(filepath='${workspaceFolder}/Blender/minime_addon.py'); bpy.ops.preferences.addon_enable(module='minime_addon'); bpy.ops.wm.save_userpref()"
+                "--python",
+                "${workspaceFolder}/Blender/install_addon.py"
             ],
             "problemMatcher": []
         },
