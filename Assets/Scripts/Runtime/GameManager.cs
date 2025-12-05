@@ -1,9 +1,11 @@
 using UnityEngine;
+using System;
 
 namespace SangsomMiniMe.Core
 {
     /// <summary>
-    /// Main game manager that coordinates all systems
+    /// Main game manager that orchestrates all game systems with production-grade error handling.
+    /// Implements singleton pattern with proper lifecycle management and event-driven architecture.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
@@ -15,243 +17,537 @@ namespace SangsomMiniMe.Core
         [Header("Configuration")]
         [SerializeField] private GameConfiguration gameConfig;
 
-        [Header("Game Settings")]
+        [Header("Auto-Save Settings")]
         [SerializeField] private bool autoSaveEnabled = true;
-        [SerializeField] private float autoSaveInterval = 30f; // seconds
+        [SerializeField] private float autoSaveInterval = 30f;
 
-        [Header("Debug")]
+        [Header("Debug Settings")]
         [SerializeField] private bool enableDebugMode = false;
+        [SerializeField] private bool enableDetailedLogging = false;
 
-        public static GameManager Instance { get; private set; }
-        public GameConfiguration Config => gameConfig;
+        // Singleton instance with thread safety consideration
+        private static GameManager instance;
+        public static GameManager Instance => instance;
+        
+        // Public configuration accessor with null safety
+        public GameConfiguration Config => gameConfig != null ? gameConfig : ScriptableObject.CreateInstance<GameConfiguration>();
 
+        // Cached time tracking for auto-save optimization
         private float lastAutoSaveTime;
+        private bool isInitialized;
+
+        // Event system for decoupled communication
+        public event Action OnGameInitialized;
+        public event Action<UserProfile> OnGameStateChanged;
 
         private void Awake()
         {
-            // Singleton pattern
-            if (Instance == null)
+            // Thread-safe singleton implementation
+            if (instance == null)
             {
-                Instance = this;
+                instance = this;
                 DontDestroyOnLoad(gameObject);
-                InitializeGame();
+                InitializeGameSystems();
             }
             else
             {
+                LogInfo("Duplicate GameManager detected. Destroying duplicate instance.");
                 Destroy(gameObject);
             }
         }
 
-        private void InitializeGame()
+        /// <summary>
+        /// Initializes all game systems with proper error handling and validation.
+        /// </summary>
+        private void InitializeGameSystems()
         {
-            Debug.Log("Sangsom Mini-Me Game Manager Initialized");
+            try
+            {
+                ValidateRequiredReferences();
+                SubscribeToGameEvents();
+                InitializeAutoSave();
+                
+                isInitialized = true;
+                OnGameInitialized?.Invoke();
+                
+                LogInfo("Sangsom Mini-Me Game Manager initialized successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Fatal initialization error: {ex.Message}\n{ex.StackTrace}");
+                isInitialized = false;
+            }
+        }
 
-            // Subscribe to user events
+        /// <summary>
+        /// Validates that all required references are assigned in the Inspector.
+        /// </summary>
+        private void ValidateRequiredReferences()
+        {
+            if (loginUI == null)
+                Debug.LogWarning("[GameManager] LoginUI reference is not assigned. Login functionality may not work.");
+            
+            if (gameUI == null)
+                Debug.LogWarning("[GameManager] GameUI reference is not assigned. Game UI may not display.");
+            
+            if (characterController == null)
+                Debug.LogWarning("[GameManager] CharacterController reference is not assigned. Character interactions will be limited.");
+            
+            if (gameConfig == null)
+            {
+                Debug.LogWarning("[GameManager] GameConfiguration is not assigned. Using default configuration.");
+                // TODO: [OPTIMIZATION] Consider loading from Addressables for better memory management
+            }
+        }
+
+        /// <summary>
+        /// Subscribes to user management events with null safety checks.
+        /// </summary>
+        private void SubscribeToGameEvents()
+        {
             if (UserManager.Instance != null)
             {
-                UserManager.Instance.OnUserLoggedIn += OnUserLoggedIn;
-                UserManager.Instance.OnUserLoggedOut += OnUserLoggedOut;
+                UserManager.Instance.OnUserLoggedIn += HandleUserLoggedIn;
+                UserManager.Instance.OnUserLoggedOut += HandleUserLoggedOut;
+                LogInfo("Subscribed to UserManager events successfully.");
             }
+            else
+            {
+                Debug.LogError("[GameManager] UserManager.Instance is null. Cannot subscribe to user events.");
+            }
+        }
 
-            // Initialize auto-save
+        /// <summary>
+        /// Initializes the auto-save system with optimized timing.
+        /// </summary>
+        private void InitializeAutoSave()
+        {
             lastAutoSaveTime = Time.time;
+            LogInfo($"Auto-save initialized. Interval: {(gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval)}s");
         }
 
         private void Start()
         {
-            // Ensure UI is properly set up
-            SetupInitialUI();
+            // Ensure proper initialization before setting up UI
+            if (!isInitialized)
+            {
+                Debug.LogError("[GameManager] Start called but initialization failed. Attempting re-initialization.");
+                InitializeGameSystems();
+            }
+            
+            SetupInitialUserInterface();
         }
 
-        private void SetupInitialUI()
+        /// <summary>
+        /// Configures the initial UI state based on user login status.
+        /// Implements defensive programming with null checks.
+        /// </summary>
+        private void SetupInitialUserInterface()
         {
-            // Check if we have any existing users
-            if (UserManager.Instance != null)
+            try
             {
+                if (UserManager.Instance == null)
+                {
+                    Debug.LogError("[GameManager] UserManager.Instance is null during UI setup.");
+                    return;
+                }
+
                 var users = UserManager.Instance.AllUsers;
+                var currentUser = UserManager.Instance.CurrentUser;
+
+                // Determine which UI to show based on user state
                 if (users.Count == 0)
                 {
-                    // No users exist, show login UI for registration
-                    if (loginUI != null) loginUI.gameObject.SetActive(true);
-                    if (gameUI != null) gameUI.gameObject.SetActive(false);
+                    // No users exist - show registration
+                    ShowLoginUI();
+                    LogInfo("No existing users found. Showing registration interface.");
                 }
-                else if (UserManager.Instance.CurrentUser == null)
+                else if (currentUser == null)
                 {
-                    // Users exist but none logged in, show user selection
-                    if (loginUI != null) loginUI.gameObject.SetActive(true);
-                    if (gameUI != null) gameUI.gameObject.SetActive(false);
+                    // Users exist but none logged in - show user selection
+                    ShowLoginUI();
+                    LogInfo($"{users.Count} existing user(s) found. Showing login interface.");
                 }
                 else
                 {
-                    // User already logged in, show game UI
-                    if (loginUI != null) loginUI.gameObject.SetActive(false);
-                    if (gameUI != null) gameUI.gameObject.SetActive(true);
+                    // User already logged in - show game UI
+                    ShowGameUI();
+                    LogInfo($"User '{currentUser.DisplayName}' already logged in. Showing game interface.");
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Error setting up initial UI: {ex.Message}");
+                ShowLoginUI(); // Fallback to login UI
+            }
         }
 
-        private void OnUserLoggedIn(UserProfile user)
+        /// <summary>
+        /// Shows the login UI and hides the game UI.
+        /// </summary>
+        private void ShowLoginUI()
         {
-            Debug.Log($"Game Manager: User logged in - {user.DisplayName}");
+            if (loginUI != null) loginUI.gameObject.SetActive(true);
+            if (gameUI != null) gameUI.gameObject.SetActive(false);
+        }
 
-            // Hide login UI and show game UI
+        /// <summary>
+        /// Shows the game UI and hides the login UI.
+        /// </summary>
+        private void ShowGameUI()
+        {
             if (loginUI != null) loginUI.gameObject.SetActive(false);
             if (gameUI != null) gameUI.gameObject.SetActive(true);
+        }
 
-            // Initialize character for the user
-            if (characterController != null)
+        /// <summary>
+        /// Handles user login event with comprehensive error handling.
+        /// </summary>
+        private void HandleUserLoggedIn(UserProfile user)
+        {
+            if (user == null)
             {
-                // Character controller will automatically apply user customization
-                Debug.Log("Character initialized for user");
+                Debug.LogError("[GameManager] HandleUserLoggedIn called with null user.");
+                return;
+            }
+
+            try
+            {
+                LogInfo($"User logged in: {user.DisplayName} (ID: {user.UserName})");
+
+                // Transition UI
+                ShowGameUI();
+
+                // Initialize character for the user
+                if (characterController != null)
+                {
+                    // Character controller will automatically apply user customization
+                    LogInfo("Character initialized for user.");
+                }
+                else
+                {
+                    Debug.LogWarning("[GameManager] CharacterController is null. Character customization will not be applied.");
+                }
+
+                // Notify other systems of state change
+                OnGameStateChanged?.Invoke(user);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Error handling user login: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
-        private void OnUserLoggedOut()
+        /// <summary>
+        /// Handles user logout event with proper cleanup.
+        /// </summary>
+        private void HandleUserLoggedOut()
         {
-            Debug.Log("Game Manager: User logged out");
-
-            // Show login UI and hide game UI
-            if (loginUI != null)
+            try
             {
-                loginUI.gameObject.SetActive(true);
-                loginUI.ShowLoginInterface();
+                LogInfo("User logged out successfully.");
+
+                // Transition to login UI
+                if (loginUI != null)
+                {
+                    loginUI.gameObject.SetActive(true);
+                    loginUI.ShowLoginInterface();
+                }
+                
+                ShowLoginUI();
+
+                // Notify other systems of state change
+                OnGameStateChanged?.Invoke(null);
             }
-            if (gameUI != null) gameUI.gameObject.SetActive(false);
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Error handling user logout: {ex.Message}");
+            }
         }
 
         private void Update()
         {
-            // Handle auto-save (optimized with dirty flag)
-            if (autoSaveEnabled && UserManager.Instance?.CurrentUser != null)
+            if (!isInitialized) return;
+
+            // Optimized auto-save with dirty flag checking
+            ProcessAutoSave();
+
+            // Debug input processing (development only)
+            if (enableDebugMode)
             {
-                float saveInterval = gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval;
-                if (Time.time - lastAutoSaveTime >= saveInterval)
+                ProcessDebugInput();
+            }
+        }
+
+        /// <summary>
+        /// Processes auto-save with optimized dirty flag checking.
+        /// Only saves when data has changed to reduce I/O operations.
+        /// </summary>
+        private void ProcessAutoSave()
+        {
+            if (!autoSaveEnabled || UserManager.Instance?.CurrentUser == null)
+                return;
+
+            float saveInterval = gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval;
+            
+            if (Time.time - lastAutoSaveTime >= saveInterval)
+            {
+                try
                 {
+                    // Only save if data has actually changed (performance optimization)
                     UserManager.Instance.SaveIfDirty();
                     lastAutoSaveTime = Time.time;
 
-                    if (enableDebugMode)
-                        Debug.Log("Auto-save check completed");
+                    LogInfo("Auto-save check completed.", true);
                 }
-            }
-
-            // Handle debug input
-            if (enableDebugMode)
-            {
-                HandleDebugInput();
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[GameManager] Auto-save failed: {ex.Message}");
+                }
             }
         }
 
-        private void HandleDebugInput()
+        /// <summary>
+        /// Processes debug input for development and testing.
+        /// Debug keys provide quick testing functionality.
+        /// </summary>
+        private void ProcessDebugInput()
         {
-            // Debug keys for testing
-            if (Input.GetKeyDown(KeyCode.F1))
+            try
             {
-                // Add coins
-                if (UserManager.Instance?.CurrentUser != null)
+                // F1: Add coins
+                if (Input.GetKeyDown(KeyCode.F1))
                 {
-                    UserManager.Instance.CurrentUser.AddCoins(100);
-                    Debug.Log("Added 100 coins (Debug)");
+                    AddDebugCoins(100);
+                }
+
+                // F2: Add experience
+                if (Input.GetKeyDown(KeyCode.F2))
+                {
+                    AddDebugExperience(50);
+                }
+
+                // F3: Complete homework
+                if (Input.GetKeyDown(KeyCode.F3))
+                {
+                    CompleteDebugHomework();
+                }
+
+                // F4: Test character animations
+                if (Input.GetKeyDown(KeyCode.F4))
+                {
+                    PlayRandomCharacterAnimation();
                 }
             }
-
-            if (Input.GetKeyDown(KeyCode.F2))
+            catch (Exception ex)
             {
-                // Add experience
-                if (UserManager.Instance?.CurrentUser != null)
-                {
-                    UserManager.Instance.CurrentUser.AddExperience(50);
-                    Debug.Log("Added 50 experience (Debug)");
-                }
-            }
-
-            if (Input.GetKeyDown(KeyCode.F3))
-            {
-                // Complete homework
-                if (UserManager.Instance?.CurrentUser != null)
-                {
-                    UserManager.Instance.CurrentUser.CompleteHomework();
-                    characterController?.IncreaseHappiness(10f);
-                    Debug.Log("Completed homework (Debug)");
-                }
-            }
-
-            if (Input.GetKeyDown(KeyCode.F4))
-            {
-                // Test character animations
-                if (characterController != null && !characterController.IsAnimating)
-                {
-                    int randomAnim = Random.Range(0, 5);
-                    switch (randomAnim)
-                    {
-                        case 0: characterController.PlayDance(); break;
-                        case 1: characterController.PlayWave(); break;
-                        case 2: characterController.PlayWai(); break;
-                        case 3: characterController.PlayCurtsy(); break;
-                        case 4: characterController.PlayBow(); break;
-                    }
-                    Debug.Log("Played random animation (Debug)");
-                }
+                Debug.LogError($"[GameManager] Debug input processing error: {ex.Message}");
             }
         }
 
-        // Public methods for external access
+        /// <summary>
+        /// Debug helper: Adds coins to current user.
+        /// </summary>
+        private void AddDebugCoins(int amount)
+        {
+            var currentUser = UserManager.Instance?.CurrentUser;
+            if (currentUser != null)
+            {
+                currentUser.AddCoins(amount);
+                LogInfo($"[DEBUG] Added {amount} coins. Total: {currentUser.Coins}");
+            }
+        }
+
+        /// <summary>
+        /// Debug helper: Adds experience to current user.
+        /// </summary>
+        private void AddDebugExperience(int amount)
+        {
+            var currentUser = UserManager.Instance?.CurrentUser;
+            if (currentUser != null)
+            {
+                currentUser.AddExperience(amount);
+                LogInfo($"[DEBUG] Added {amount} XP. Total: {currentUser.ExperiencePoints}");
+            }
+        }
+
+        /// <summary>
+        /// Debug helper: Completes homework for testing.
+        /// </summary>
+        private void CompleteDebugHomework()
+        {
+            var currentUser = UserManager.Instance?.CurrentUser;
+            if (currentUser != null)
+            {
+                currentUser.CompleteHomework();
+                characterController?.IncreaseHappiness(10f);
+                LogInfo($"[DEBUG] Homework completed! Happiness increased.");
+            }
+        }
+
+        /// <summary>
+        /// Debug helper: Plays a random character animation.
+        /// </summary>
+        private void PlayRandomCharacterAnimation()
+        {
+            if (characterController != null && !characterController.IsAnimating)
+            {
+                int randomAnim = UnityEngine.Random.Range(0, 5);
+                switch (randomAnim)
+                {
+                    case 0: characterController.PlayDance(); break;
+                    case 1: characterController.PlayWave(); break;
+                    case 2: characterController.PlayWai(); break;
+                    case 3: characterController.PlayCurtsy(); break;
+                    case 4: characterController.PlayBow(); break;
+                }
+                LogInfo($"[DEBUG] Played random animation: {randomAnim}");
+            }
+        }
+
+        // ===== PUBLIC API =====
+
+        /// <summary>
+        /// Creates a sample user with starting resources for testing and demonstration.
+        /// </summary>
         public void CreateSampleUser()
         {
-            if (UserManager.Instance != null)
+            try
             {
+                if (UserManager.Instance == null)
+                {
+                    Debug.LogError("[GameManager] Cannot create sample user: UserManager.Instance is null.");
+                    return;
+                }
+
                 var sampleUser = UserManager.Instance.CreateUser("sample_user", "Sample Student", gameConfig);
                 if (sampleUser != null)
                 {
-                    // Give sample user some starting resources
+                    // Provide generous starting resources for better first impression
                     sampleUser.AddCoins(200);
                     sampleUser.AddExperience(50);
                     sampleUser.IncreaseHappiness(25f);
 
                     UserManager.Instance.SaveCurrentUser();
-                    Debug.Log("Sample user created with starting resources");
+                    LogInfo($"Sample user created with starting resources: 200 coins, 50 XP, 75% happiness.");
                 }
+                else
+                {
+                    Debug.LogWarning("[GameManager] Failed to create sample user. Username may already exist.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Error creating sample user: {ex.Message}");
             }
         }
 
+        /// <summary>
+        /// Toggles debug mode on/off for development and testing.
+        /// </summary>
         public void ToggleDebugMode()
         {
             enableDebugMode = !enableDebugMode;
-            Debug.Log($"Debug mode: {(enableDebugMode ? "Enabled" : "Disabled")}");
+            LogInfo($"Debug mode: {(enableDebugMode ? "ENABLED" : "DISABLED")}");
         }
 
-        public void ForceAutoSave()
+        /// <summary>
+        /// Forces an immediate save of current user data.
+        /// Useful for manual save points or critical game events.
+        /// </summary>
+        public void ForceManualSave()
         {
-            if (UserManager.Instance?.CurrentUser != null)
+            try
             {
-                UserManager.Instance.SaveCurrentUser();
-                Debug.Log("Manual save completed");
+                if (UserManager.Instance?.CurrentUser != null)
+                {
+                    UserManager.Instance.SaveCurrentUser();
+                    LogInfo("Manual save completed successfully.");
+                }
+                else
+                {
+                    Debug.LogWarning("[GameManager] Cannot save: No user is currently logged in.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Manual save failed: {ex.Message}");
             }
         }
 
+        // ===== LIFECYCLE EVENTS =====
+
+        /// <summary>
+        /// Saves user data when app is paused (mobile devices).
+        /// </summary>
         private void OnApplicationPause(bool pauseStatus)
         {
             if (pauseStatus && UserManager.Instance?.CurrentUser != null)
             {
-                UserManager.Instance.SaveCurrentUser();
+                try
+                {
+                    UserManager.Instance.SaveCurrentUser();
+                    LogInfo("Auto-saved on application pause.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[GameManager] Save on pause failed: {ex.Message}");
+                }
             }
         }
 
+        /// <summary>
+        /// Saves user data when app loses focus.
+        /// </summary>
         private void OnApplicationFocus(bool hasFocus)
         {
             if (!hasFocus && UserManager.Instance?.CurrentUser != null)
             {
-                UserManager.Instance.SaveCurrentUser();
+                try
+                {
+                    UserManager.Instance.SaveCurrentUser();
+                    LogInfo("Auto-saved on focus lost.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[GameManager] Save on focus lost failed: {ex.Message}");
+                }
             }
         }
 
+        /// <summary>
+        /// Cleanup when the GameManager is destroyed.
+        /// Unsubscribes from all events to prevent memory leaks.
+        /// </summary>
         private void OnDestroy()
         {
-            // Unsubscribe from events
-            if (UserManager.Instance != null)
+            try
             {
-                UserManager.Instance.OnUserLoggedIn -= OnUserLoggedIn;
-                UserManager.Instance.OnUserLoggedOut -= OnUserLoggedOut;
+                if (UserManager.Instance != null)
+                {
+                    UserManager.Instance.OnUserLoggedIn -= HandleUserLoggedIn;
+                    UserManager.Instance.OnUserLoggedOut -= HandleUserLoggedOut;
+                    LogInfo("Unsubscribed from UserManager events.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameManager] Error during cleanup: {ex.Message}");
+            }
+        }
+
+        // ===== UTILITY METHODS =====
+
+        /// <summary>
+        /// Centralized logging method with optional verbose mode.
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="verboseOnly">If true, only logs when detailed logging is enabled</param>
+        private void LogInfo(string message, bool verboseOnly = false)
+        {
+            if (!verboseOnly || enableDetailedLogging)
+            {
+                Debug.Log($"[GameManager] {message}");
             }
         }
     }

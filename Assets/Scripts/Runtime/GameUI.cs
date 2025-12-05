@@ -1,29 +1,32 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
+using System.Collections;
 
 namespace SangsomMiniMe.UI
 {
     /// <summary>
-    /// Main game UI for character interaction and customization
+    /// Main game UI with enhanced UX, loading states, and smooth transitions.
+    /// Implements optimistic updates and visual feedback for better user experience.
     /// </summary>
     public class GameUI : MonoBehaviour
     {
-        [Header("User Info")]
+        [Header("User Info Display")]
         [SerializeField] private TextMeshProUGUI userNameText;
         [SerializeField] private TextMeshProUGUI coinsText;
         [SerializeField] private TextMeshProUGUI experienceText;
         [SerializeField] private Slider happinessSlider;
         [SerializeField] private TextMeshProUGUI happinessText;
 
-        [Header("Character Controls")]
+        [Header("Character Interaction Buttons")]
         [SerializeField] private Button danceButton;
         [SerializeField] private Button waveButton;
         [SerializeField] private Button waiButton;
         [SerializeField] private Button curtsyButton;
         [SerializeField] private Button bowButton;
 
-        [Header("Customization")]
+        [Header("Customization Controls")]
         [SerializeField] private Slider eyeScaleSlider;
         [SerializeField] private Button prevOutfitButton;
         [SerializeField] private Button nextOutfitButton;
@@ -32,342 +35,882 @@ namespace SangsomMiniMe.UI
         [SerializeField] private TextMeshProUGUI outfitText;
         [SerializeField] private TextMeshProUGUI accessoryText;
 
-        [Header("Homework System")]
+        [Header("Homework & Rewards")]
         [SerializeField] private Button completeHomeworkButton;
         [SerializeField] private TextMeshProUGUI homeworkCountText;
         [SerializeField] private Button homeworkRewardButton;
+        [SerializeField] private GameObject rewardNotification;
 
-        [Header("Account")]
+        [Header("Account Management")]
         [SerializeField] private Button logoutButton;
         [SerializeField] private Button saveProgressButton;
 
+        [Header("Visual Feedback")]
+        [SerializeField] private GameObject loadingIndicator;
+        [SerializeField] private TextMeshProUGUI feedbackText;
+        [SerializeField] private float feedbackDisplayDuration = 2f;
+        [SerializeField] private CanvasGroup mainCanvasGroup;
+
+        [Header("Animation Settings")]
+        [SerializeField] private float uiFadeInDuration = 0.3f;
+        [SerializeField] private float buttonPressScale = 0.95f;
+
+        // Cached references
         private Character.CharacterController characterController;
         private Core.UserProfile currentUser;
+        
+        // State tracking
         private int currentOutfitIndex = 0;
         private int currentAccessoryIndex = 0;
-        private int maxOutfits = 3; // Will be determined by available materials
-        private int maxAccessories = 3; // Will be determined by available accessories
+        private int maxOutfits = 3;
+        private int maxAccessories = 3;
+        private bool isProcessingAction = false;
+
+        // Coroutine tracking
+        private Coroutine feedbackCoroutine;
+        private Coroutine fadeCoroutine;
 
         private void Start()
         {
-            InitializeUI();
+            InitializeUIComponents();
             SetupEventListeners();
-            FindCharacterController();
-
-            // Subscribe to user events
-            if (Core.UserManager.Instance != null)
-            {
-                Core.UserManager.Instance.OnUserLoggedIn += OnUserLoggedIn;
-                Core.UserManager.Instance.OnUserLoggedOut += OnUserLoggedOut;
-
-                // Check if user is already logged in
-                if (Core.UserManager.Instance.CurrentUser != null)
-                {
-                    OnUserLoggedIn(Core.UserManager.Instance.CurrentUser);
-                }
-            }
+            FindAndCacheCharacterController();
+            SubscribeToUserManagementEvents();
         }
 
-        private void InitializeUI()
+        /// <summary>
+        /// Initializes all UI components with proper default states.
+        /// </summary>
+        private void InitializeUIComponents()
         {
-            // Setup happiness slider
-            if (happinessSlider != null)
+            try
             {
-                happinessSlider.minValue = 0f;
-                happinessSlider.maxValue = 100f;
-                happinessSlider.interactable = false;
-            }
+                // Configure happiness slider (read-only visual indicator)
+                if (happinessSlider != null)
+                {
+                    happinessSlider.minValue = 0f;
+                    happinessSlider.maxValue = 100f;
+                    happinessSlider.value = 50f;
+                    happinessSlider.interactable = false;
+                }
 
-            // Setup eye scale slider
-            if (eyeScaleSlider != null)
-            {
-                eyeScaleSlider.minValue = 0.5f;
-                eyeScaleSlider.maxValue = 2.0f;
-                eyeScaleSlider.value = 1.0f;
-            }
+                // Configure eye scale slider (interactive customization)
+                if (eyeScaleSlider != null)
+                {
+                    eyeScaleSlider.minValue = Core.GameConstants.MinEyeScale;
+                    eyeScaleSlider.maxValue = Core.GameConstants.MaxEyeScale;
+                    eyeScaleSlider.value = 1.0f;
+                }
 
-            // Initially hide UI if no user is logged in
-            if (Core.UserManager.Instance?.CurrentUser == null)
+                // Hide loading and feedback elements initially
+                SetLoadingState(false);
+                HideFeedbackText();
+                
+                if (rewardNotification != null)
+                    rewardNotification.SetActive(false);
+
+                // Initially hide UI if no user is logged in
+                if (Core.UserManager.Instance?.CurrentUser == null)
+                {
+                    gameObject.SetActive(false);
+                }
+                else
+                {
+                    // Fade in if already active
+                    StartFadeIn();
+                }
+
+                Debug.Log("[GameUI] UI components initialized successfully.");
+            }
+            catch (Exception ex)
             {
-                gameObject.SetActive(false);
+                Debug.LogError($"[GameUI] Error initializing UI components: {ex.Message}");
             }
         }
 
+        /// <summary>
+        /// Sets up all button click listeners and input events.
+        /// </summary>
         private void SetupEventListeners()
         {
-            // Character animation buttons
-            if (danceButton != null)
-                danceButton.onClick.AddListener(() => characterController?.PlayDance());
-            if (waveButton != null)
-                waveButton.onClick.AddListener(() => characterController?.PlayWave());
-            if (waiButton != null)
-                waiButton.onClick.AddListener(() => characterController?.PlayWai());
-            if (curtsyButton != null)
-                curtsyButton.onClick.AddListener(() => characterController?.PlayCurtsy());
-            if (bowButton != null)
-                bowButton.onClick.AddListener(() => characterController?.PlayBow());
-
-            // Customization controls
-            if (eyeScaleSlider != null)
-                eyeScaleSlider.onValueChanged.AddListener(OnEyeScaleChanged);
-            if (prevOutfitButton != null)
-                prevOutfitButton.onClick.AddListener(OnPrevOutfitClicked);
-            if (nextOutfitButton != null)
-                nextOutfitButton.onClick.AddListener(OnNextOutfitClicked);
-            if (prevAccessoryButton != null)
-                prevAccessoryButton.onClick.AddListener(OnPrevAccessoryClicked);
-            if (nextAccessoryButton != null)
-                nextAccessoryButton.onClick.AddListener(OnNextAccessoryClicked);
-
-            // Homework system
-            if (completeHomeworkButton != null)
-                completeHomeworkButton.onClick.AddListener(OnCompleteHomeworkClicked);
-            if (homeworkRewardButton != null)
-                homeworkRewardButton.onClick.AddListener(OnHomeworkRewardClicked);
-
-            // Account buttons
-            if (logoutButton != null)
-                logoutButton.onClick.AddListener(OnLogoutClicked);
-            if (saveProgressButton != null)
-                saveProgressButton.onClick.AddListener(OnSaveProgressClicked);
-        }
-
-        private void FindCharacterController()
-        {
-            characterController = FindObjectOfType<Character.CharacterController>();
-            if (characterController != null)
+            try
             {
-                characterController.OnHappinessChanged += OnCharacterHappinessChanged;
+                // Character animation buttons with visual feedback
+                SetupButtonWithFeedback(danceButton, () => TriggerCharacterAction(
+                    () => characterController?.PlayDance(), "Playing dance animation..."));
+                
+                SetupButtonWithFeedback(waveButton, () => TriggerCharacterAction(
+                    () => characterController?.PlayWave(), "Waving..."));
+                
+                SetupButtonWithFeedback(waiButton, () => TriggerCharacterAction(
+                    () => characterController?.PlayWai(), "Performing Thai Wai gesture..."));
+                
+                SetupButtonWithFeedback(curtsyButton, () => TriggerCharacterAction(
+                    () => characterController?.PlayCurtsy(), "Performing curtsy..."));
+                
+                SetupButtonWithFeedback(bowButton, () => TriggerCharacterAction(
+                    () => characterController?.PlayBow(), "Bowing..."));
+
+                // Customization controls
+                if (eyeScaleSlider != null)
+                    eyeScaleSlider.onValueChanged.AddListener(HandleEyeScaleChanged);
+                
+                SetupButtonWithFeedback(prevOutfitButton, HandlePreviousOutfit);
+                SetupButtonWithFeedback(nextOutfitButton, HandleNextOutfit);
+                SetupButtonWithFeedback(prevAccessoryButton, HandlePreviousAccessory);
+                SetupButtonWithFeedback(nextAccessoryButton, HandleNextAccessory);
+
+                // Homework system with optimistic UI updates
+                SetupButtonWithFeedback(completeHomeworkButton, HandleCompleteHomework);
+                SetupButtonWithFeedback(homeworkRewardButton, HandleClaimHomeworkReward);
+
+                // Account buttons
+                SetupButtonWithFeedback(logoutButton, HandleLogout);
+                SetupButtonWithFeedback(saveProgressButton, HandleManualSave);
+
+                Debug.Log("[GameUI] Event listeners configured successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error setting up event listeners: {ex.Message}");
             }
         }
 
-        private void OnUserLoggedIn(Core.UserProfile user)
+        /// <summary>
+        /// Sets up a button with visual feedback animation.
+        /// </summary>
+        private void SetupButtonWithFeedback(Button button, UnityEngine.Events.UnityAction action)
         {
-            // Unsubscribe from previous user if any
-            if (currentUser != null)
+            if (button == null) return;
+
+            button.onClick.AddListener(() =>
             {
-                UnsubscribeFromUserEvents();
+                // Visual press feedback
+                StartCoroutine(AnimateButtonPress(button.transform));
+                action?.Invoke();
+            });
+        }
+
+        /// <summary>
+        /// Animates a button press for better visual feedback.
+        /// </summary>
+        private IEnumerator AnimateButtonPress(Transform buttonTransform)
+        {
+            Vector3 originalScale = buttonTransform.localScale;
+            Vector3 pressedScale = originalScale * buttonPressScale;
+
+            // Scale down
+            float elapsed = 0f;
+            float duration = 0.1f;
+            while (elapsed < duration)
+            {
+                buttonTransform.localScale = Vector3.Lerp(originalScale, pressedScale, elapsed / duration);
+                elapsed += Time.deltaTime;
+                yield return null;
             }
 
-            currentUser = user;
-            gameObject.SetActive(true);
+            // Scale back up
+            elapsed = 0f;
+            while (elapsed < duration)
+            {
+                buttonTransform.localScale = Vector3.Lerp(pressedScale, originalScale, elapsed / duration);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
 
-            SubscribeToUserEvents();
-            UpdateUserInfoDisplay();
-            UpdateCustomizationFromUser();
-
-            Debug.Log($"Game UI updated for user: {user.DisplayName}");
+            buttonTransform.localScale = originalScale;
         }
 
-        private void OnUserLoggedOut()
+        /// <summary>
+        /// Finds and caches the character controller reference.
+        /// </summary>
+        private void FindAndCacheCharacterController()
         {
-            UnsubscribeFromUserEvents();
-            currentUser = null;
-            gameObject.SetActive(false);
+            try
+            {
+                characterController = FindObjectOfType<Character.CharacterController>();
+                if (characterController != null)
+                {
+                    characterController.OnHappinessChanged += HandleCharacterHappinessChanged;
+                    Debug.Log("[GameUI] Character controller found and subscribed.");
+                }
+                else
+                {
+                    Debug.LogWarning("[GameUI] Character controller not found in scene. Character interactions will be limited.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error finding character controller: {ex.Message}");
+            }
         }
 
-        private void SubscribeToUserEvents()
+        /// <summary>
+        /// Subscribes to user management events.
+        /// </summary>
+        private void SubscribeToUserManagementEvents()
+        {
+            try
+            {
+                if (Core.UserManager.Instance != null)
+                {
+                    Core.UserManager.Instance.OnUserLoggedIn += HandleUserLoggedIn;
+                    Core.UserManager.Instance.OnUserLoggedOut += HandleUserLoggedOut;
+
+                    // Check if user is already logged in
+                    if (Core.UserManager.Instance.CurrentUser != null)
+                    {
+                        HandleUserLoggedIn(Core.UserManager.Instance.CurrentUser);
+                    }
+
+                    Debug.Log("[GameUI] Subscribed to UserManager events.");
+                }
+                else
+                {
+                    Debug.LogWarning("[GameUI] UserManager.Instance is null. Cannot subscribe to events.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error subscribing to user events: {ex.Message}");
+            }
+        }
+
+        // ===== USER EVENT HANDLERS =====
+
+        /// <summary>
+        /// Handles user login with smooth UI transition.
+        /// </summary>
+        private void HandleUserLoggedIn(Core.UserProfile user)
+        {
+            try
+            {
+                if (user == null)
+                {
+                    Debug.LogWarning("[GameUI] HandleUserLoggedIn called with null user.");
+                    return;
+                }
+
+                // Unsubscribe from previous user if any
+                UnsubscribeFromCurrentUserEvents();
+
+                // Set new current user
+                currentUser = user;
+                
+                // Show UI with fade-in animation
+                gameObject.SetActive(true);
+                StartFadeIn();
+
+                // Subscribe to new user events
+                SubscribeToCurrentUserEvents();
+                
+                // Update all UI elements
+                RefreshAllUIElements();
+
+                ShowFeedbackText($"Welcome back, {user.DisplayName}!", Color.green);
+                Debug.Log($"[GameUI] UI updated for user: {user.DisplayName}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error handling user login: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handles user logout with cleanup.
+        /// </summary>
+        private void HandleUserLoggedOut()
+        {
+            try
+            {
+                UnsubscribeFromCurrentUserEvents();
+                currentUser = null;
+                
+                // Fade out and hide UI
+                StartCoroutine(FadeOutAndHide());
+                
+                Debug.Log("[GameUI] UI hidden after user logout.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error handling user logout: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Subscribes to current user's events.
+        /// </summary>
+        private void SubscribeToCurrentUserEvents()
         {
             if (currentUser != null)
             {
                 currentUser.OnCoinsChanged += UpdateCoinsDisplay;
                 currentUser.OnExperienceChanged += UpdateExperienceDisplay;
-                currentUser.OnHappinessChanged += OnCharacterHappinessChanged; // Reusing existing handler logic
+                currentUser.OnHappinessChanged += HandleCharacterHappinessChanged;
             }
         }
 
-        private void UnsubscribeFromUserEvents()
+        /// <summary>
+        /// Unsubscribes from current user's events to prevent memory leaks.
+        /// </summary>
+        private void UnsubscribeFromCurrentUserEvents()
         {
             if (currentUser != null)
             {
                 currentUser.OnCoinsChanged -= UpdateCoinsDisplay;
                 currentUser.OnExperienceChanged -= UpdateExperienceDisplay;
-                currentUser.OnHappinessChanged -= OnCharacterHappinessChanged;
+                currentUser.OnHappinessChanged -= HandleCharacterHappinessChanged;
             }
         }
 
+        // ===== UI DISPLAY UPDATES =====
+
+        /// <summary>
+        /// Updates the coins display with visual feedback.
+        /// </summary>
         private void UpdateCoinsDisplay(int coins)
         {
             if (coinsText != null)
-                coinsText.text = $"Coins: {coins}";
+            {
+                coinsText.text = $"💰 {coins:N0}";
+                // TODO: [OPTIMIZATION] Add coin increase animation for better UX
+            }
         }
 
+        /// <summary>
+        /// Updates the experience and level display.
+        /// </summary>
         private void UpdateExperienceDisplay(int experience)
         {
             if (experienceText != null)
             {
                 int level = experience / Core.GameConstants.ExperiencePerLevel + 1;
                 int expInLevel = experience % Core.GameConstants.ExperiencePerLevel;
-                experienceText.text = $"Level {level} ({expInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+                experienceText.text = $"⭐ Level {level} ({expInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
             }
         }
 
-        private void UpdateUserInfoDisplay()
+        /// <summary>
+        /// Refreshes all UI elements with current user data.
+        /// </summary>
+        private void RefreshAllUIElements()
         {
             if (currentUser == null) return;
 
-            if (userNameText != null)
-                userNameText.text = currentUser.DisplayName;
-
-            UpdateCoinsDisplay(currentUser.Coins);
-            UpdateExperienceDisplay(currentUser.ExperiencePoints);
-
-            if (happinessSlider != null)
+            try
             {
-                happinessSlider.value = currentUser.CharacterHappiness;
+                // Update user info
+                if (userNameText != null)
+                    userNameText.text = currentUser.DisplayName;
+
+                UpdateCoinsDisplay(currentUser.Coins);
+                UpdateExperienceDisplay(currentUser.ExperiencePoints);
+
+                // Update happiness
+                if (happinessSlider != null)
+                    happinessSlider.value = currentUser.CharacterHappiness;
+
+                if (happinessText != null)
+                    happinessText.text = $"😊 {currentUser.CharacterHappiness:F0}%";
+
+                // Update homework count
+                if (homeworkCountText != null)
+                    homeworkCountText.text = $"📚 Completed: {currentUser.HomeworkCompleted}";
+
+                // Update customization displays
+                UpdateCustomizationFromUser();
             }
-
-            if (happinessText != null)
-                happinessText.text = $"Happiness: {currentUser.CharacterHappiness:F0}%";
-
-            if (homeworkCountText != null)
-                homeworkCountText.text = $"Homework Completed: {currentUser.HomeworkCompleted}";
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error refreshing UI elements: {ex.Message}");
+            }
         }
 
+        /// <summary>
+        /// Updates customization sliders from user data.
+        /// </summary>
         private void UpdateCustomizationFromUser()
         {
             if (currentUser == null) return;
 
-            // Update eye scale slider
-            if (eyeScaleSlider != null)
+            try
             {
-                eyeScaleSlider.value = currentUser.EyeScale;
-            }
+                // Update eye scale slider without triggering change event
+                if (eyeScaleSlider != null)
+                {
+                    eyeScaleSlider.SetValueWithoutNotify(currentUser.EyeScale);
+                }
 
-            // Update outfit display
-            UpdateOutfitDisplay();
-            UpdateAccessoryDisplay();
+                // Update outfit and accessory displays
+                RefreshOutfitDisplay();
+                RefreshAccessoryDisplay();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error updating customization: {ex.Message}");
+            }
         }
 
-        private void OnCharacterHappinessChanged(float happiness)
+        /// <summary>
+        /// Handles character happiness changes with smooth slider update.
+        /// </summary>
+        private void HandleCharacterHappinessChanged(float happiness)
         {
             if (happinessSlider != null)
+            {
+                // Smooth transition could be added here
                 happinessSlider.value = happiness;
+            }
 
             if (happinessText != null)
-                happinessText.text = $"Happiness: {happiness:F0}%";
+            {
+                // Add emoji based on happiness level
+                string emoji = happiness >= 80f ? "😄" : happiness >= 60f ? "😊" : happiness >= 40f ? "😐" : happiness >= 20f ? "😟" : "😢";
+                happinessText.text = $"{emoji} {happiness:F0}%";
+            }
         }
 
-        private void OnEyeScaleChanged(float scale)
+        // ===== CUSTOMIZATION HANDLERS =====
+
+        /// <summary>
+        /// Handles eye scale changes with visual feedback.
+        /// </summary>
+        private void HandleEyeScaleChanged(float scale)
         {
-            characterController?.SetEyeScale(scale);
+            try
+            {
+                characterController?.SetEyeScale(scale);
+                ShowFeedbackText($"Eye size: {scale:F1}x", Color.cyan, 1f);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error changing eye scale: {ex.Message}");
+            }
         }
 
-        private void OnPrevOutfitClicked()
+        /// <summary>
+        /// Cycles to previous outfit with visual feedback.
+        /// </summary>
+        private void HandlePreviousOutfit()
         {
-            currentOutfitIndex = (currentOutfitIndex - 1 + maxOutfits) % maxOutfits;
-            characterController?.SetOutfit(currentOutfitIndex);
-            UpdateOutfitDisplay();
+            if (isProcessingAction) return;
+
+            try
+            {
+                currentOutfitIndex = (currentOutfitIndex - 1 + maxOutfits) % maxOutfits;
+                characterController?.SetOutfit(currentOutfitIndex);
+                RefreshOutfitDisplay();
+                ShowFeedbackText("Outfit changed", Color.cyan, 1f);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error changing outfit: {ex.Message}");
+            }
         }
 
-        private void OnNextOutfitClicked()
+        /// <summary>
+        /// Cycles to next outfit with visual feedback.
+        /// </summary>
+        private void HandleNextOutfit()
         {
-            currentOutfitIndex = (currentOutfitIndex + 1) % maxOutfits;
-            characterController?.SetOutfit(currentOutfitIndex);
-            UpdateOutfitDisplay();
+            if (isProcessingAction) return;
+
+            try
+            {
+                currentOutfitIndex = (currentOutfitIndex + 1) % maxOutfits;
+                characterController?.SetOutfit(currentOutfitIndex);
+                RefreshOutfitDisplay();
+                ShowFeedbackText("Outfit changed", Color.cyan, 1f);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error changing outfit: {ex.Message}");
+            }
         }
 
-        private void OnPrevAccessoryClicked()
+        /// <summary>
+        /// Cycles to previous accessory.
+        /// </summary>
+        private void HandlePreviousAccessory()
         {
-            currentAccessoryIndex = (currentAccessoryIndex - 1 + maxAccessories) % maxAccessories;
-            characterController?.SetAccessory(currentAccessoryIndex);
-            UpdateAccessoryDisplay();
+            if (isProcessingAction) return;
+
+            try
+            {
+                currentAccessoryIndex = (currentAccessoryIndex - 1 + maxAccessories) % maxAccessories;
+                characterController?.SetAccessory(currentAccessoryIndex);
+                RefreshAccessoryDisplay();
+                ShowFeedbackText("Accessory changed", Color.cyan, 1f);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error changing accessory: {ex.Message}");
+            }
         }
 
-        private void OnNextAccessoryClicked()
+        /// <summary>
+        /// Cycles to next accessory.
+        /// </summary>
+        private void HandleNextAccessory()
         {
-            currentAccessoryIndex = (currentAccessoryIndex + 1) % maxAccessories;
-            characterController?.SetAccessory(currentAccessoryIndex);
-            UpdateAccessoryDisplay();
+            if (isProcessingAction) return;
+
+            try
+            {
+                currentAccessoryIndex = (currentAccessoryIndex + 1) % maxAccessories;
+                characterController?.SetAccessory(currentAccessoryIndex);
+                RefreshAccessoryDisplay();
+                ShowFeedbackText("Accessory changed", Color.cyan, 1f);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error changing accessory: {ex.Message}");
+            }
         }
 
-        private void UpdateOutfitDisplay()
+        /// <summary>
+        /// Updates outfit display text.
+        /// </summary>
+        private void RefreshOutfitDisplay()
         {
             if (outfitText != null)
             {
-                string outfitName = currentOutfitIndex == 0 ? "Default" : $"Outfit {currentOutfitIndex}";
+                string outfitName = currentOutfitIndex == 0 ? "Default Outfit" : $"Outfit #{currentOutfitIndex}";
                 outfitText.text = outfitName;
             }
         }
 
-        private void UpdateAccessoryDisplay()
+        /// <summary>
+        /// Updates accessory display text.
+        /// </summary>
+        private void RefreshAccessoryDisplay()
         {
             if (accessoryText != null)
             {
-                string accessoryName = currentAccessoryIndex == 0 ? "None" : $"Accessory {currentAccessoryIndex}";
+                string accessoryName = currentAccessoryIndex == 0 ? "No Accessory" : $"Accessory #{currentAccessoryIndex}";
                 accessoryText.text = accessoryName;
             }
         }
 
-        private void OnCompleteHomeworkClicked()
+        // ===== HOMEWORK & REWARDS =====
+
+        /// <summary>
+        /// Handles homework completion with optimistic UI updates and celebration.
+        /// </summary>
+        private void HandleCompleteHomework()
         {
-            if (currentUser != null && Core.UserManager.Instance != null)
+            if (isProcessingAction || currentUser == null) return;
+
+            try
             {
+                isProcessingAction = true;
+
+                // Optimistic update - immediate feedback
                 currentUser.CompleteHomework();
                 characterController?.IncreaseHappiness(10f);
 
-                // Show reward animation or effect
+                // Trigger celebration animation
                 if (characterController != null && !characterController.IsAnimating)
                 {
                     characterController.PlayDance();
                 }
 
-                UpdateUserInfoDisplay();
-                Core.UserManager.Instance.MarkDirty();
+                // Update UI immediately
+                RefreshAllUIElements();
+                Core.UserManager.Instance?.MarkDirty();
 
-                Debug.Log("Homework completed! Character is happy!");
+                // Show rewarding feedback
+                ShowFeedbackText("📚 Great job! Homework completed! +10 Happiness", Color.green);
+                
+                // Show reward notification
+                StartCoroutine(ShowRewardNotificationCoroutine());
+
+                Debug.Log("[GameUI] Homework completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error completing homework: {ex.Message}");
+                ShowFeedbackText("Error completing homework", Color.red);
+            }
+            finally
+            {
+                isProcessingAction = false;
             }
         }
 
-        private void OnHomeworkRewardClicked()
+        /// <summary>
+        /// Handles claiming homework rewards with visual feedback.
+        /// </summary>
+        private void HandleClaimHomeworkReward()
         {
-            // Give bonus reward for completing homework
-            if (currentUser != null && Core.UserManager.Instance != null)
+            if (isProcessingAction || currentUser == null) return;
+
+            try
             {
+                isProcessingAction = true;
+
+                // Grant rewards
                 currentUser.AddCoins(10);
                 currentUser.AddExperience(5);
                 characterController?.IncreaseHappiness(5f);
 
-                UpdateUserInfoDisplay();
-                Core.UserManager.Instance.MarkDirty();
+                // Update UI
+                RefreshAllUIElements();
+                Core.UserManager.Instance?.MarkDirty();
 
-                Debug.Log("Homework reward claimed!");
+                // Show feedback
+                ShowFeedbackText("🎁 Reward claimed! +10 coins, +5 XP, +5 happiness", Color.yellow);
+
+                Debug.Log("[GameUI] Homework reward claimed.");
             }
-        }
-
-        private void OnLogoutClicked()
-        {
-            if (Core.UserManager.Instance != null)
+            catch (Exception ex)
             {
-                Core.UserManager.Instance.LogoutUser();
+                Debug.LogError($"[GameUI] Error claiming reward: {ex.Message}");
+                ShowFeedbackText("Error claiming reward", Color.red);
             }
-        }
-
-        private void OnSaveProgressClicked()
-        {
-            if (Core.UserManager.Instance != null)
+            finally
             {
-                Core.UserManager.Instance.SaveCurrentUser(); // Explicit save keeps immediate save
-
-                // Show save confirmation (you could add a popup here)
-                Debug.Log("Progress saved!");
+                isProcessingAction = false;
             }
         }
 
+        /// <summary>
+        /// Shows reward notification with animation.
+        /// </summary>
+        private IEnumerator ShowRewardNotificationCoroutine()
+        {
+            if (rewardNotification == null) yield break;
+
+            rewardNotification.SetActive(true);
+            yield return new WaitForSeconds(2f);
+            rewardNotification.SetActive(false);
+        }
+
+        // ===== CHARACTER INTERACTIONS =====
+
+        /// <summary>
+        /// Triggers a character action with proper state checking.
+        /// </summary>
+        private void TriggerCharacterAction(Action action, string feedbackMessage)
+        {
+            if (characterController == null)
+            {
+                ShowFeedbackText("Character not available", Color.red, 1.5f);
+                return;
+            }
+
+            if (characterController.IsAnimating)
+            {
+                ShowFeedbackText("Character is busy...", Color.yellow, 1f);
+                return;
+            }
+
+            try
+            {
+                action?.Invoke();
+                ShowFeedbackText(feedbackMessage, Color.cyan, 1.5f);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error triggering character action: {ex.Message}");
+                ShowFeedbackText("Action failed", Color.red, 1.5f);
+            }
+        }
+
+        // ===== ACCOUNT MANAGEMENT =====
+
+        /// <summary>
+        /// Handles user logout with confirmation feedback.
+        /// </summary>
+        private void HandleLogout()
+        {
+            if (isProcessingAction) return;
+
+            try
+            {
+                isProcessingAction = true;
+                
+                ShowFeedbackText("Logging out...", Color.white, 1f);
+                
+                // Small delay for feedback visibility
+                StartCoroutine(LogoutWithDelay());
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error during logout: {ex.Message}");
+                isProcessingAction = false;
+            }
+        }
+
+        /// <summary>
+        /// Logout with a small delay for better UX.
+        /// </summary>
+        private IEnumerator LogoutWithDelay()
+        {
+            yield return new WaitForSeconds(0.5f);
+            
+            Core.UserManager.Instance?.LogoutUser();
+            isProcessingAction = false;
+        }
+
+        /// <summary>
+        /// Handles manual save with visual confirmation.
+        /// </summary>
+        private void HandleManualSave()
+        {
+            if (isProcessingAction) return;
+
+            try
+            {
+                isProcessingAction = true;
+                SetLoadingState(true);
+
+                Core.UserManager.Instance?.SaveCurrentUser();
+                
+                ShowFeedbackText("✓ Progress saved successfully!", Color.green);
+                Debug.Log("[GameUI] Manual save completed.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error during manual save: {ex.Message}");
+                ShowFeedbackText("Save failed", Color.red);
+            }
+            finally
+            {
+                SetLoadingState(false);
+                isProcessingAction = false;
+            }
+        }
+
+        // ===== VISUAL FEEDBACK & ANIMATIONS =====
+
+        /// <summary>
+        /// Shows temporary feedback text to the user.
+        /// </summary>
+        private void ShowFeedbackText(string message, Color color, float duration = 0f)
+        {
+            if (feedbackText == null) return;
+
+            // Stop existing feedback coroutine
+            if (feedbackCoroutine != null)
+                StopCoroutine(feedbackCoroutine);
+
+            feedbackText.text = message;
+            feedbackText.color = color;
+            feedbackText.gameObject.SetActive(true);
+
+            // Auto-hide after duration
+            float displayTime = duration > 0 ? duration : feedbackDisplayDuration;
+            feedbackCoroutine = StartCoroutine(HideFeedbackAfterDelay(displayTime));
+        }
+
+        /// <summary>
+        /// Hides feedback text after delay.
+        /// </summary>
+        private IEnumerator HideFeedbackAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            HideFeedbackText();
+        }
+
+        /// <summary>
+        /// Hides the feedback text immediately.
+        /// </summary>
+        private void HideFeedbackText()
+        {
+            if (feedbackText != null)
+                feedbackText.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Sets the loading indicator state.
+        /// </summary>
+        private void SetLoadingState(bool isLoading)
+        {
+            if (loadingIndicator != null)
+                loadingIndicator.SetActive(isLoading);
+        }
+
+        /// <summary>
+        /// Starts fade-in animation for smooth UI appearance.
+        /// </summary>
+        private void StartFadeIn()
+        {
+            if (mainCanvasGroup == null) return;
+
+            if (fadeCoroutine != null)
+                StopCoroutine(fadeCoroutine);
+
+            fadeCoroutine = StartCoroutine(FadeCanvasGroup(mainCanvasGroup, 0f, 1f, uiFadeInDuration));
+        }
+
+        /// <summary>
+        /// Fades out UI and hides it.
+        /// </summary>
+        private IEnumerator FadeOutAndHide()
+        {
+            if (mainCanvasGroup != null)
+            {
+                yield return FadeCanvasGroup(mainCanvasGroup, 1f, 0f, uiFadeInDuration);
+            }
+            else
+            {
+                yield return new WaitForSeconds(0.3f);
+            }
+
+            gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Smoothly fades a canvas group between alpha values.
+        /// </summary>
+        private IEnumerator FadeCanvasGroup(CanvasGroup group, float startAlpha, float endAlpha, float duration)
+        {
+            if (group == null) yield break;
+
+            float elapsed = 0f;
+            group.alpha = startAlpha;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                group.alpha = Mathf.Lerp(startAlpha, endAlpha, elapsed / duration);
+                yield return null;
+            }
+
+            group.alpha = endAlpha;
+        }
+
+        // ===== CLEANUP =====
+
+        /// <summary>
+        /// Cleanup when UI is destroyed to prevent memory leaks.
+        /// </summary>
         private void OnDestroy()
         {
-            // Unsubscribe from events
-            if (Core.UserManager.Instance != null)
+            try
             {
-                Core.UserManager.Instance.OnUserLoggedIn -= OnUserLoggedIn;
-                Core.UserManager.Instance.OnUserLoggedOut -= OnUserLoggedOut;
+                // Unsubscribe from UserManager events
+                if (Core.UserManager.Instance != null)
+                {
+                    Core.UserManager.Instance.OnUserLoggedIn -= HandleUserLoggedIn;
+                    Core.UserManager.Instance.OnUserLoggedOut -= HandleUserLoggedOut;
+                }
+
+                // Unsubscribe from current user events
+                UnsubscribeFromCurrentUserEvents();
+
+                // Unsubscribe from character controller
+                if (characterController != null)
+                {
+                    characterController.OnHappinessChanged -= HandleCharacterHappinessChanged;
+                }
+
+                Debug.Log("[GameUI] Cleanup completed successfully.");
             }
-
-            UnsubscribeFromUserEvents();
-
-            if (characterController != null)
+            catch (Exception ex)
             {
-                characterController.OnHappinessChanged -= OnCharacterHappinessChanged;
+                Debug.LogError($"[GameUI] Error during cleanup: {ex.Message}");
             }
         }
     }
