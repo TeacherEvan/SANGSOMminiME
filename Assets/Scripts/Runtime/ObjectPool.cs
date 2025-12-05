@@ -200,7 +200,11 @@ namespace SangsomMiniMe.Core
     /// <summary>
     /// Manages multiple object pools with centralized access.
     /// Implements singleton pattern for global pool management.
-    /// TODO: [OPTIMIZATION] Consider implementing pool warming based on scene analytics
+    /// TODO: [OPTIMIZATION] Implement pool pre-warming based on scene load analytics:
+    ///       - Track object instantiation patterns per scene
+    ///       - Pre-warm pools on scene load based on historical usage (e.g., 80th percentile of peak usage)
+    ///       - Add configuration for per-scene pool capacities in ScriptableObject
+    ///       - Trigger warming during loading screens to hide initialization cost
     /// </summary>
     public class ObjectPoolManager : MonoBehaviour
     {

@@ -586,8 +586,6 @@ class CharacterController:
         except Exception as e:
             logger.error(f"Error playing animation: {e}")
             return False
-    
-    def _find_animation_action(self, anim_name: str) -> Optional[bpy.types.Action]:
         """
         Find animation action with fallback search.
         

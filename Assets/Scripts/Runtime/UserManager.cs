@@ -602,7 +602,7 @@ namespace SangsomMiniMe.Core
             catch (Exception ex)
             {
                 Debug.LogError($"[UserManager] Async save failed: {ex.Message}\n{ex.StackTrace}");
-                // TODO: [OPTIMIZATION] Queue save retry on failure with exponential backoff
+                // TODO: [OPTIMIZATION] Implement exponential backoff retry (max 3 retries, 1s/2s/4s intervals) for transient I/O failures
             }
             finally
             {
