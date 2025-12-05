@@ -47,6 +47,7 @@ namespace SangsomMiniMe.UI
 
         [Header("Visual Feedback")]
         [SerializeField] private GameObject loadingIndicator;
+        [SerializeField] private UILoadingState loadingState;
         [SerializeField] private TextMeshProUGUI feedbackText;
         [SerializeField] private float feedbackDisplayDuration = 2f;
         [SerializeField] private CanvasGroup mainCanvasGroup;
@@ -54,6 +55,7 @@ namespace SangsomMiniMe.UI
         [Header("Animation Settings")]
         [SerializeField] private float uiFadeInDuration = 0.3f;
         [SerializeField] private float buttonPressScale = 0.95f;
+        [SerializeField] private float buttonPressDuration = 0.1f;
 
         // Cached references
         private Character.CharacterController characterController;
@@ -192,32 +194,41 @@ namespace SangsomMiniMe.UI
         }
 
         /// <summary>
-        /// Animates a button press for better visual feedback.
+        /// Animates a button press with smooth scale animation for tactile feedback.
+        /// Implements modern UI microinteraction patterns.
         /// </summary>
         private IEnumerator AnimateButtonPress(Transform buttonTransform)
         {
+            if (buttonTransform == null) yield break;
+
             Vector3 originalScale = buttonTransform.localScale;
             Vector3 pressedScale = originalScale * buttonPressScale;
 
-            // Scale down
+            // Scale down (press)
             float elapsed = 0f;
-            float duration = 0.1f;
-            while (elapsed < duration)
+            while (elapsed < buttonPressDuration)
             {
-                buttonTransform.localScale = Vector3.Lerp(originalScale, pressedScale, elapsed / duration);
                 elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / buttonPressDuration);
+                // Apply ease-out curve for smooth animation
+                t = 1f - (1f - t) * (1f - t);
+                buttonTransform.localScale = Vector3.Lerp(originalScale, pressedScale, t);
                 yield return null;
             }
 
-            // Scale back up
+            // Scale back up (release)
             elapsed = 0f;
-            while (elapsed < duration)
+            while (elapsed < buttonPressDuration)
             {
-                buttonTransform.localScale = Vector3.Lerp(pressedScale, originalScale, elapsed / duration);
                 elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / buttonPressDuration);
+                // Apply ease-out curve
+                t = 1f - (1f - t) * (1f - t);
+                buttonTransform.localScale = Vector3.Lerp(pressedScale, originalScale, t);
                 yield return null;
             }
 
+            // Ensure we return to exact original scale
             buttonTransform.localScale = originalScale;
         }
 
