@@ -24,7 +24,7 @@ Version: 2.0.0
 
 import bpy
 from typing import Optional, List, Dict, Callable, Union, Any
-from enum import Enum, auto
+from enum import Enum
 from dataclasses import dataclass
 import logging
 
@@ -71,11 +71,11 @@ class CharacterAnimation(Enum):
 
 class MoodState(Enum):
     """Mood states for character happiness display with modern enum patterns."""
-    VERY_HAPPY = auto()    # 80-100 happiness
-    HAPPY = auto()         # 60-80 happiness
-    NEUTRAL = auto()       # 40-60 happiness
-    SAD = auto()           # 20-40 happiness
-    VERY_SAD = auto()      # 0-20 happiness
+    VERY_HAPPY = "very_happy"    # 80-100 happiness
+    HAPPY = "happy"               # 60-80 happiness
+    NEUTRAL = "neutral"           # 40-60 happiness
+    SAD = "sad"                   # 20-40 happiness
+    VERY_SAD = "very_sad"         # 0-20 happiness
     
     def __str__(self) -> str:
         """String representation of mood."""
