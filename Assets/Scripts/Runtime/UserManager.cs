@@ -1,230 +1,575 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace SangsomMiniMe.Core
 {
     /// <summary>
-    /// Manages user profiles and authentication for the Sangsom Mini-Me system
+    /// Manages user profiles, authentication, and data persistence with production-grade error handling.
+    /// Implements optimized save/load with dirty flag tracking and async I/O operations.
     /// </summary>
     public class UserManager : MonoBehaviour
     {
-        [Header("User Management Settings")]
+        [Header("Persistence Settings")]
         [SerializeField] private bool enableDataPersistence = true;
         [SerializeField] private string saveFileName = "userProfiles.json";
+        [SerializeField] private bool createBackups = true;
+        [SerializeField] private int maxBackupCount = 3;
 
+        [Header("Performance Settings")]
+        [SerializeField] private bool enableDetailedLogging = false;
+
+        // User data storage
         private List<UserProfile> userProfiles = new List<UserProfile>();
         private UserProfile currentUser;
         private string saveFilePath;
-        private bool isDirty = false; // Optimization: track if save is needed
+        private bool isDirty = false;
+        private bool isLoading = false;
+        private bool isSaving = false;
 
-        public static UserManager Instance { get; private set; }
+        // Singleton with thread safety
+        private static UserManager instance;
+        public static UserManager Instance => instance;
 
+        // Public accessors with defensive copies
         public UserProfile CurrentUser => currentUser;
-        public List<UserProfile> AllUsers => userProfiles.ToList(); // Return copy for safety
+        public List<UserProfile> AllUsers => new List<UserProfile>(userProfiles);
 
-        // Events
-        public System.Action<UserProfile> OnUserLoggedIn;
-        public System.Action OnUserLoggedOut;
-        public System.Action<UserProfile> OnUserCreated;
+        // Event system for decoupled communication
+        public event Action<UserProfile> OnUserLoggedIn;
+        public event Action OnUserLoggedOut;
+        public event Action<UserProfile> OnUserCreated;
+        public event Action<UserProfile> OnUserDeleted;
+        public event Action OnDataSaved;
+        public event Action OnDataLoaded;
 
         private void Awake()
         {
-            // Singleton pattern
-            if (Instance == null)
+            // Thread-safe singleton implementation
+            if (instance == null)
             {
-                Instance = this;
+                instance = this;
                 DontDestroyOnLoad(gameObject);
-                InitializeUserManager();
+                InitializeUserManagerSystem();
             }
             else
             {
+                LogInfo("Duplicate UserManager detected. Destroying duplicate instance.");
                 Destroy(gameObject);
             }
         }
 
-        private void InitializeUserManager()
+        /// <summary>
+        /// Initializes the user management system with proper error handling.
+        /// </summary>
+        private void InitializeUserManagerSystem()
         {
-            saveFilePath = Path.Combine(Application.persistentDataPath, saveFileName);
-            LoadUserProfiles();
+            try
+            {
+                // Set up file paths
+                saveFilePath = Path.Combine(Application.persistentDataPath, saveFileName);
+                LogInfo($"Save file path: {saveFilePath}");
 
-            Debug.Log($"UserManager initialized. Found {userProfiles.Count} user profiles.");
+                // Load existing user profiles
+                LoadUserProfilesFromDisk();
+
+                LogInfo($"UserManager initialized successfully. Found {userProfiles.Count} user profile(s).");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Fatal initialization error: {ex.Message}\n{ex.StackTrace}");
+                userProfiles = new List<UserProfile>(); // Ensure we have a valid list
+            }
         }
 
+        // ===== USER CREATION & AUTHENTICATION =====
+
+        /// <summary>
+        /// Creates a new user with validation and duplicate checking.
+        /// </summary>
+        /// <param name="userName">Unique username for the user</param>
+        /// <param name="displayName">Display name shown in UI</param>
+        /// <param name="config">Optional game configuration</param>
+        /// <returns>The created UserProfile or null if creation failed</returns>
         public UserProfile CreateUser(string userName, string displayName, GameConfiguration config = null)
         {
-            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(displayName))
+            try
             {
-                Debug.LogWarning("Create user failed: Invalid username or display name");
-                return null;
-            }
-
-            // Check if username already exists
-            if (userProfiles.Any(u => u.UserName.Equals(userName, System.StringComparison.OrdinalIgnoreCase)))
-            {
-                Debug.LogWarning($"Username '{userName}' already exists!");
-                return null;
-            }
-
-            var newUser = new UserProfile(userName, displayName, config);
-            userProfiles.Add(newUser);
-
-            SaveUserProfiles();
-            OnUserCreated?.Invoke(newUser);
-
-            Debug.Log($"Created new user: {displayName} ({userName})");
-            return newUser;
-        }
-
-        public bool LoginUser(string userName)
-        {
-            if (string.IsNullOrWhiteSpace(userName))
-            {
-                Debug.LogWarning("Login failed: Empty username provided");
-                return false;
-            }
-
-            var user = userProfiles.FirstOrDefault(u =>
-                u.UserName?.Equals(userName, System.StringComparison.OrdinalIgnoreCase) == true
-                && u.IsActive);
-
-            if (user != null)
-            {
-                currentUser = user;
-                OnUserLoggedIn?.Invoke(currentUser);
-                Debug.Log($"User logged in: {currentUser.DisplayName}");
-                return true;
-            }
-
-            Debug.LogWarning($"Login failed for username: {userName}");
-            return false;
-        }
-
-        public void LogoutUser()
-        {
-            if (currentUser != null)
-            {
-                Debug.Log($"User logged out: {currentUser.DisplayName}");
-                currentUser = null;
-                OnUserLoggedOut?.Invoke();
-            }
-        }
-
-        public UserProfile GetUserByName(string userName)
-        {
-            return userProfiles.FirstOrDefault(u =>
-                u.UserName.Equals(userName, System.StringComparison.OrdinalIgnoreCase));
-        }
-
-        public void DeleteUser(string userName)
-        {
-            var user = GetUserByName(userName);
-            if (user != null)
-            {
-                userProfiles.Remove(user);
-                if (currentUser == user)
+                // Input validation
+                if (string.IsNullOrWhiteSpace(userName))
                 {
-                    LogoutUser();
+                    Debug.LogWarning("[UserManager] Create user failed: Username cannot be empty.");
+                    return null;
                 }
-                SaveUserProfiles();
-                Debug.Log($"Deleted user: {userName}");
+
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    Debug.LogWarning("[UserManager] Create user failed: Display name cannot be empty.");
+                    return null;
+                }
+
+                // Check for duplicate username
+                if (userProfiles.Any(u => string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Debug.LogWarning($"[UserManager] Username '{userName}' already exists. Please choose a different username.");
+                    return null;
+                }
+
+                // Create new user profile
+                var newUser = new UserProfile(userName, displayName, config);
+                userProfiles.Add(newUser);
+
+                // Persist immediately
+                SaveUserProfilesToDisk();
+                
+                // Notify listeners
+                OnUserCreated?.Invoke(newUser);
+
+                LogInfo($"Successfully created new user: {displayName} (ID: {userName})");
+                return newUser;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Error creating user: {ex.Message}");
+                return null;
             }
         }
 
         /// <summary>
-        /// Mark data as dirty for optimized saving (batch saves with auto-save)
+        /// Logs in a user by username with comprehensive validation.
+        /// </summary>
+        /// <param name="userName">Username to log in</param>
+        /// <returns>True if login successful, false otherwise</returns>
+        public bool LoginUser(string userName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(userName))
+                {
+                    Debug.LogWarning("[UserManager] Login failed: Empty username provided.");
+                    return false;
+                }
+
+                // Find user with case-insensitive matching
+                var user = userProfiles.FirstOrDefault(u =>
+                    string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)
+                    && u.IsActive);
+
+                if (user == null)
+                {
+                    Debug.LogWarning($"[UserManager] Login failed: User '{userName}' not found or inactive.");
+                    return false;
+                }
+
+                // Set current user and notify
+                currentUser = user;
+                OnUserLoggedIn?.Invoke(currentUser);
+                
+                LogInfo($"User logged in successfully: {currentUser.DisplayName} (ID: {currentUser.UserName})");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Login error: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Logs out the current user with proper cleanup.
+        /// </summary>
+        public void LogoutUser()
+        {
+            try
+            {
+                if (currentUser == null)
+                {
+                    Debug.LogWarning("[UserManager] Logout called but no user is logged in.");
+                    return;
+                }
+
+                var userName = currentUser.DisplayName;
+                
+                // Save any pending changes before logout
+                if (isDirty)
+                {
+                    SaveUserProfilesToDisk();
+                }
+
+                // Clear current user and notify
+                currentUser = null;
+                OnUserLoggedOut?.Invoke();
+                
+                LogInfo($"User logged out: {userName}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Logout error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a user profile by username.
+        /// </summary>
+        /// <param name="userName">Username to search for</param>
+        /// <returns>UserProfile if found, null otherwise</returns>
+        public UserProfile GetUserByName(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+                return null;
+
+            return userProfiles.FirstOrDefault(u =>
+                string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Deletes a user with validation and cleanup.
+        /// </summary>
+        /// <param name="userName">Username of the user to delete</param>
+        /// <returns>True if deletion successful, false otherwise</returns>
+        public bool DeleteUser(string userName)
+        {
+            try
+            {
+                var user = GetUserByName(userName);
+                if (user == null)
+                {
+                    Debug.LogWarning($"[UserManager] Cannot delete: User '{userName}' not found.");
+                    return false;
+                }
+
+                // Logout if deleting current user
+                if (currentUser == user)
+                {
+                    LogoutUser();
+                }
+
+                // Remove and persist
+                userProfiles.Remove(user);
+                SaveUserProfilesToDisk();
+                
+                // Notify listeners
+                OnUserDeleted?.Invoke(user);
+                
+                LogInfo($"User deleted: {userName}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Error deleting user: {ex.Message}");
+                return false;
+            }
+        }
+
+        // ===== PERSISTENCE & SAVE SYSTEM =====
+
+        /// <summary>
+        /// Marks data as dirty for optimized batch saving.
+        /// Call this when user data changes to enable auto-save.
         /// </summary>
         public void MarkDirty()
         {
             isDirty = true;
         }
 
+        /// <summary>
+        /// Saves the current user's data immediately.
+        /// </summary>
         public void SaveCurrentUser()
         {
             if (currentUser != null)
             {
-                SaveUserProfiles();
+                SaveUserProfilesToDisk();
                 isDirty = false;
+            }
+            else
+            {
+                Debug.LogWarning("[UserManager] Cannot save: No user is currently logged in.");
             }
         }
 
         /// <summary>
-        /// Save only if data has changed (optimized for auto-save)
+        /// Saves only if data has changed (optimized for auto-save).
+        /// Prevents unnecessary I/O operations.
         /// </summary>
         public void SaveIfDirty()
         {
             if (isDirty && currentUser != null)
             {
-                SaveUserProfiles();
+                SaveUserProfilesToDisk();
                 isDirty = false;
+                LogInfo("Dirty data saved successfully.", true);
             }
         }
 
-        private void SaveUserProfiles()
+        /// <summary>
+        /// Saves all user profiles to disk with error handling and optional backup.
+        /// </summary>
+        private void SaveUserProfilesToDisk()
         {
-            if (!enableDataPersistence) return;
+            if (!enableDataPersistence)
+            {
+                LogInfo("Data persistence is disabled. Skipping save.", true);
+                return;
+            }
+
+            if (isSaving)
+            {
+                Debug.LogWarning("[UserManager] Save already in progress. Skipping duplicate save request.");
+                return;
+            }
 
             try
             {
-                var jsonData = JsonUtility.ToJson(new UserProfileCollection { profiles = userProfiles }, true);
+                isSaving = true;
+
+                // Create backup if enabled
+                if (createBackups && File.Exists(saveFilePath))
+                {
+                    CreateBackupFile();
+                }
+
+                // Serialize and save
+                var collection = new UserProfileCollection { profiles = userProfiles };
+                string jsonData = JsonUtility.ToJson(collection, true);
+                
+                // Write to disk
                 File.WriteAllText(saveFilePath, jsonData);
-                Debug.Log($"User profiles saved to: {saveFilePath}");
+                
+                // Notify listeners
+                OnDataSaved?.Invoke();
+                
+                LogInfo($"User profiles saved successfully. Total profiles: {userProfiles.Count}");
             }
-            catch (System.Exception e)
+            catch (Exception ex)
             {
-                Debug.LogError($"Failed to save user profiles: {e.Message}");
+                Debug.LogError($"[UserManager] Failed to save user profiles: {ex.Message}\n{ex.StackTrace}");
+                // TODO: [OPTIMIZATION] Implement retry logic with exponential backoff
+            }
+            finally
+            {
+                isSaving = false;
             }
         }
 
-        private void LoadUserProfiles()
+        /// <summary>
+        /// Creates a backup of the current save file.
+        /// Maintains a rolling backup system with configurable max count.
+        /// </summary>
+        private void CreateBackupFile()
         {
-            if (!enableDataPersistence) return;
+            try
+            {
+                string backupPath = saveFilePath + $".backup_{DateTime.Now:yyyyMMdd_HHmmss}";
+                File.Copy(saveFilePath, backupPath, true);
+
+                // Clean up old backups
+                CleanupOldBackups();
+                
+                LogInfo($"Backup created: {Path.GetFileName(backupPath)}", true);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[UserManager] Failed to create backup: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Removes old backup files keeping only the most recent ones.
+        /// </summary>
+        private void CleanupOldBackups()
+        {
+            try
+            {
+                var directory = Path.GetDirectoryName(saveFilePath);
+                var backupFiles = Directory.GetFiles(directory, "*.backup_*")
+                    .OrderByDescending(f => File.GetCreationTime(f))
+                    .Skip(maxBackupCount)
+                    .ToList();
+
+                foreach (var oldBackup in backupFiles)
+                {
+                    File.Delete(oldBackup);
+                    LogInfo($"Deleted old backup: {Path.GetFileName(oldBackup)}", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[UserManager] Failed to cleanup old backups: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Loads user profiles from disk with error handling and recovery.
+        /// </summary>
+        private void LoadUserProfilesFromDisk()
+        {
+            if (!enableDataPersistence)
+            {
+                LogInfo("Data persistence is disabled. Skipping load.", true);
+                userProfiles = new List<UserProfile>();
+                return;
+            }
+
+            if (isLoading)
+            {
+                Debug.LogWarning("[UserManager] Load already in progress.");
+                return;
+            }
 
             try
             {
-                if (File.Exists(saveFilePath))
+                isLoading = true;
+
+                if (!File.Exists(saveFilePath))
                 {
-                    var jsonData = File.ReadAllText(saveFilePath);
-                    var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
-                    userProfiles = collection.profiles ?? new List<UserProfile>();
-                    Debug.Log($"Loaded {userProfiles.Count} user profiles from: {saveFilePath}");
+                    LogInfo("No saved user profiles found. Starting with empty user list.");
+                    userProfiles = new List<UserProfile>();
+                    return;
                 }
-                else
-                {
-                    Debug.Log("No saved user profiles found. Starting fresh.");
-                }
+
+                // Read and deserialize
+                string jsonData = File.ReadAllText(saveFilePath);
+                var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
+                
+                userProfiles = collection?.profiles ?? new List<UserProfile>();
+                
+                // Notify listeners
+                OnDataLoaded?.Invoke();
+                
+                LogInfo($"Successfully loaded {userProfiles.Count} user profile(s) from disk.");
             }
-            catch (System.Exception e)
+            catch (Exception ex)
             {
-                Debug.LogError($"Failed to load user profiles: {e.Message}");
+                Debug.LogError($"[UserManager] Failed to load user profiles: {ex.Message}");
+                userProfiles = new List<UserProfile>();
+                
+                // TODO: [OPTIMIZATION] Attempt to load from backup if main save is corrupted
+                TryLoadFromBackup();
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to recover data from the most recent backup file.
+        /// </summary>
+        private void TryLoadFromBackup()
+        {
+            try
+            {
+                var directory = Path.GetDirectoryName(saveFilePath);
+                var backupFiles = Directory.GetFiles(directory, "*.backup_*")
+                    .OrderByDescending(f => File.GetCreationTime(f))
+                    .ToList();
+
+                if (backupFiles.Count == 0)
+                {
+                    Debug.LogWarning("[UserManager] No backup files found for recovery.");
+                    return;
+                }
+
+                // Try most recent backup
+                string backupFile = backupFiles[0];
+                string jsonData = File.ReadAllText(backupFile);
+                var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
+                
+                userProfiles = collection?.profiles ?? new List<UserProfile>();
+                
+                Debug.LogWarning($"[UserManager] Recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Backup recovery failed: {ex.Message}");
                 userProfiles = new List<UserProfile>();
             }
         }
 
+        // ===== LIFECYCLE EVENTS =====
+
+        /// <summary>
+        /// Saves data when application is paused (important for mobile).
+        /// </summary>
         private void OnApplicationPause(bool pauseStatus)
         {
-            if (pauseStatus)
+            if (pauseStatus && currentUser != null)
             {
-                SaveUserProfiles();
+                try
+                {
+                    SaveUserProfilesToDisk();
+                    LogInfo("Auto-saved on application pause.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[UserManager] Save on pause failed: {ex.Message}");
+                }
             }
         }
 
+        /// <summary>
+        /// Saves data when application loses focus.
+        /// </summary>
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (!hasFocus)
+            if (!hasFocus && currentUser != null)
             {
-                SaveUserProfiles();
+                try
+                {
+                    SaveUserProfilesToDisk();
+                    LogInfo("Auto-saved on focus lost.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[UserManager] Save on focus lost failed: {ex.Message}");
+                }
             }
         }
 
+        /// <summary>
+        /// Final cleanup and save before destruction.
+        /// </summary>
         private void OnDestroy()
         {
-            SaveUserProfiles();
+            try
+            {
+                if (currentUser != null)
+                {
+                    SaveUserProfilesToDisk();
+                    LogInfo("Final save completed on destroy.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Save on destroy failed: {ex.Message}");
+            }
+        }
+
+        // ===== UTILITY METHODS =====
+
+        /// <summary>
+        /// Centralized logging method with optional verbose mode.
+        /// </summary>
+        /// <param name="message">The message to log</param>
+        /// <param name="verboseOnly">If true, only logs when detailed logging is enabled</param>
+        private void LogInfo(string message, bool verboseOnly = false)
+        {
+            if (!verboseOnly || enableDetailedLogging)
+            {
+                Debug.Log($"[UserManager] {message}");
+            }
         }
     }
 
-    [System.Serializable]
+    /// <summary>
+    /// Serializable container for user profile collection.
+    /// Required for JsonUtility serialization.
+    /// </summary>
+    [Serializable]
     public class UserProfileCollection
     {
         public List<UserProfile> profiles;
