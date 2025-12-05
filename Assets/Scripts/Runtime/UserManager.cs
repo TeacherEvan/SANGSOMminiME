@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -347,7 +348,7 @@ namespace SangsomMiniMe.Core
             catch (Exception ex)
             {
                 Debug.LogError($"[UserManager] Failed to save user profiles: {ex.Message}\n{ex.StackTrace}");
-                // TODO: [OPTIMIZATION] Implement retry logic with exponential backoff
+                // TODO: [OPTIMIZATION] Implement retry logic with exponential backoff for network storage
             }
             finally
             {
@@ -547,6 +548,166 @@ namespace SangsomMiniMe.Core
             {
                 Debug.LogError($"[UserManager] Save on destroy failed: {ex.Message}");
             }
+        }
+
+        // ===== ASYNC SAVE/LOAD FOR PERFORMANCE =====
+
+        /// <summary>
+        /// Asynchronously saves user profiles to disk using modern async/await patterns.
+        /// Prevents blocking the main thread during I/O operations.
+        /// Uses CancellationToken for proper async operation cancellation.
+        /// </summary>
+        /// <param name="cancellationToken">Token to cancel the async operation</param>
+        /// <returns>Task representing the async operation</returns>
+        public async Task SaveUserProfilesAsync(CancellationToken cancellationToken = default)
+        {
+            if (!enableDataPersistence)
+            {
+                LogInfo("Data persistence is disabled. Skipping async save.", true);
+                return;
+            }
+
+            if (isSaving)
+            {
+                Debug.LogWarning("[UserManager] Save already in progress. Skipping duplicate async save request.");
+                return;
+            }
+
+            try
+            {
+                isSaving = true;
+
+                // Create backup if enabled
+                if (createBackups && File.Exists(saveFilePath))
+                {
+                    await Task.Run(() => CreateBackupFile(), cancellationToken);
+                }
+
+                // Serialize on background thread
+                var collection = new UserProfileCollection { profiles = userProfiles };
+                string jsonData = await Task.Run(() => JsonUtility.ToJson(collection, true), cancellationToken);
+
+                // Write to disk asynchronously
+                await File.WriteAllTextAsync(saveFilePath, jsonData, cancellationToken);
+
+                // Notify listeners on main thread
+                OnDataSaved?.Invoke();
+
+                LogInfo($"User profiles saved asynchronously. Total profiles: {userProfiles.Count}");
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning("[UserManager] Async save operation was cancelled.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Async save failed: {ex.Message}\n{ex.StackTrace}");
+                // TODO: [OPTIMIZATION] Queue save retry on failure with exponential backoff
+            }
+            finally
+            {
+                isSaving = false;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously loads user profiles from disk without blocking main thread.
+        /// Uses modern async/await patterns for better performance.
+        /// </summary>
+        /// <param name="cancellationToken">Token to cancel the async operation</param>
+        /// <returns>Task representing the async operation</returns>
+        public async Task LoadUserProfilesAsync(CancellationToken cancellationToken = default)
+        {
+            if (!enableDataPersistence)
+            {
+                LogInfo("Data persistence is disabled. Skipping async load.", true);
+                userProfiles = new List<UserProfile>();
+                return;
+            }
+
+            if (isLoading)
+            {
+                Debug.LogWarning("[UserManager] Load already in progress.");
+                return;
+            }
+
+            try
+            {
+                isLoading = true;
+
+                if (!File.Exists(saveFilePath))
+                {
+                    LogInfo("No saved user profiles found. Starting with empty user list.");
+                    userProfiles = new List<UserProfile>();
+                    return;
+                }
+
+                // Read from disk asynchronously
+                string jsonData = await File.ReadAllTextAsync(saveFilePath, cancellationToken);
+
+                // Deserialize on background thread
+                var collection = await Task.Run(() => JsonUtility.FromJson<UserProfileCollection>(jsonData), cancellationToken);
+
+                userProfiles = collection?.profiles ?? new List<UserProfile>();
+
+                // Notify listeners on main thread
+                OnDataLoaded?.Invoke();
+
+                LogInfo($"Asynchronously loaded {userProfiles.Count} user profile(s) from disk.");
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning("[UserManager] Async load operation was cancelled.");
+                userProfiles = new List<UserProfile>();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Async load failed: {ex.Message}");
+                userProfiles = new List<UserProfile>();
+
+                // TODO: [OPTIMIZATION] Attempt async backup recovery
+                await TryLoadFromBackupAsync(cancellationToken);
+            }
+            finally
+            {
+                isLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously attempts to recover data from backup.
+        /// </summary>
+        private async Task TryLoadFromBackupAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var directory = Path.GetDirectoryName(saveFilePath);
+                var backupFiles = await Task.Run(() =>
+                    Directory.GetFiles(directory, "*.backup_*")
+                        .OrderByDescending(f => File.GetCreationTime(f))
+                        .ToList(), cancellationToken);
+
+                if (backupFiles.Count == 0)
+                {
+                    Debug.LogWarning("[UserManager] No backup files found for async recovery.");
+                    return;
+                }
+
+                // Try most recent backup
+                string backupFile = backupFiles[0];
+                string jsonData = await File.ReadAllTextAsync(backupFile, cancellationToken);
+                var collection = await Task.Run(() => JsonUtility.FromJson<UserProfileCollection>(jsonData), cancellationToken);
+
+                userProfiles = collection?.profiles ?? new List<UserProfile>();
+
+                Debug.LogWarning($"[UserManager] Async recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Async backup recovery failed: {ex.Message}");
+                userProfiles = new List<UserProfile>();
+            }
+        }
         }
 
         // ===== UTILITY METHODS =====
