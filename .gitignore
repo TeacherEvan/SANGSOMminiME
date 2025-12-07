@@ -65,35 +65,8 @@ crashlytics-build.properties
 [Aa]ssets/[Ss]treamingAssets/aa/* 
 
 # ============================================================================
-# Blender specific (added for Blender 5.0.0 migration)
+# Python cache (for any Python tools)
 # ============================================================================
-
-# Blender backup and autosave files
-*.blend1
-*.blend2
-*.blend3
-*.blend4
-*.blend5
-*.blend6
-*.blend7
-*.blend8
-*.blend9
-
-# Blender lock files
-*.blend.lock
-
-# Blender crash logs
-*.crash.txt
-blender_crash.txt
-
-# Blender rendered output
-/renders/
-/exports/
-
-# Blender packed external files
-packed_externals/
-
-# Python cache
 __pycache__/
 *.py[cod]
 *$py.class

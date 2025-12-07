@@ -1,256 +1,194 @@
-<!-- 
-# 🎮 Sangsom Mini-Me: Educational Tamagotchi Universe -->
+# 🎮 Sangsom Mini-Me: Educational Tamagotchi Universe
 
 > **An AI-powered educational gaming ecosystem where students nurture personalized 3D Mini-Me characters through academic achievement**
 
-[![Unity](https://img.shields.io/badge/Unity-2022.3.12f1-black)](https://unity.com/)
-[![Blender](https://img.shields.io/badge/Blender-5.0.0-blue)](https://www.blender.org/)
+[![Unity](https://img.shields.io/badge/Unity-2022.3.12f1_LTS-black)](https://unity.com/)
 [![C#](https://img.shields.io/badge/C%23-.NET-purple)](https://docs.microsoft.com/en-us/dotnet/csharp/)
-[![Python](https://img.shields.io/badge/Python-3.11+-green)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-Educational-orange)](LICENSE)
 
 ## 🌟 **Project Overview**
 
-Sangsom Mini-Me combines modern AI-assisted development with educational game design to create personalized 3D tamagotchi-style characters for students. Built with **Unity 2022.3.12f1 LTS** and **Blender 5.0.0**, we generate anime-style characters from student photos and integrate homework completion directly into character care mechanics.
+Sangsom Mini-Me combines modern AI-assisted development with educational game design to create personalized 3D tamagotchi-style characters for students. Built entirely with **Unity 2022.3.12f1 LTS**, we create anime-style characters that integrate homework completion directly into character care mechanics.
 
 ### 🎯 **Core Features**
 
-- **🤖 AI Character Generation**: Create anime-style 3D models from 2-3 reference photos
+- **🤖 AI Character Generation**: Create anime-style 3D models from reference photos
 - **📚 Educational Integration**: Homework completion drives character wellbeing and unlocks resources
 - **🎨 Extensive Customization**: Scalable eye sizes, outfits, accessories, and jewelry
 - **🏫 Multi-User System**: School-wide deployment with administrative controls
 - **🎮 Minime Universe**: Educational side games that contribute resources to main character
 - **🔐 Administrative Tools**: Password-protected teacher controls and progress monitoring
 
-## 🚀 **Modern Development Stack**
-
-This project leverages cutting-edge AI-assisted development for maximum productivity:
+## 🚀 **Development Stack**
 
 - **Unity 2022.3.12f1 LTS**: Industry-standard game engine for interactive gameplay
-- **Blender 5.0.0**: 3D modeling and animation with Python scripting
 - **C# .NET**: Unity scripting with strong type safety and modern language features
-- **VSCode**: AI-powered code generation and debugging assistance  
-- **Python 3.11+**: Blender automation and asset pipeline scripting
-- **Data-driven Architecture**: JSON/YAML configuration for scalability
-- **Multi-Structural Folders**: Optimized project organization for performance
+- **VSCode**: AI-powered code generation and debugging assistance
+- **Data-driven Architecture**: JSON configuration via JsonUtility for scalability
+- **NUnit Testing**: PlayMode tests for quality assurance
 
 ## 📁 **Project Structure**
 
 ```
 SANGSOMminiME/
-├── .vscode/
-│   └── rules/                  # AI behavior rules for development
-│       ├── core-rules/         # Project-wide AI guidelines
-│       ├── blender-rules/      # Blender-specific coding standards
-│       ├── educational-rules/  # Educational game design principles
-│       └── character-rules/    # Character generation and customization
 ├── Assets/                      # Unity project assets
-│   ├── Characters/
-│   │   └── Leandi/            # Test character (your wife as test model)
-│   │       ├── Photos/        # Reference images for AI generation
-│   │       ├── Models/        # Generated 3D models (exported from Blender)
-│   │       └── Animations/    # Custom character animations
-│   ├── Minime-Universe/
-│   │   ├── Core-Game/         # Main tamagotchi systems
-│   │   └── Side-Games/        # Educational mini-games
-│   ├── Resources/
-│   │   ├── Outfits/           # Purchasable clothing items
-│   │   └── Accessories/       # Hats, jewelry, special items
-│   ├── Scenes/                # Unity scene files (MainScene.unity)
-│   └── Scripts/
-│       ├── Runtime/           # Unity C# game logic
-│       │   ├── Core/          # GameManager, UserManager
-│       │   ├── Character/     # CharacterController
-│       │   ├── UI/            # GameUI, LoginUI (TextMeshPro)
-│       │   └── Educational/   # EducationalAnalytics
-│       └── Tests/             # NUnit PlayMode tests
-├── Blender/                     # Blender asset creation scripts
-│   ├── startup_script.py      # Project initialization
-│   ├── character_controller.py # Character system (mirrors Unity)
-│   └── export_character.py    # Export to Unity formats
-├── ProjectSettings/             # Unity project configuration
-│   └── ProjectVersion.txt     # Unity 2022.3.12f1
-└── SangsomMini-Me.mdc         # Updated project specification
+│   ├── 3rdParty/               # External Unity packages
+│   ├── Art/                    # Art assets organized by type
+│   │   ├── Animation/          # Animation clips
+│   │   ├── Audio/              # Sound effects & music
+│   │   ├── Materials/          # Unity materials
+│   │   ├── Models/             # 3D models (FBX)
+│   │   ├── Textures/           # Texture files
+│   │   └── ...
+│   ├── Characters/             # Per-character folders
+│   │   └── Leandi/             # Test character
+│   │       └── Photos/         # Reference images
+│   ├── Data/                   # ScriptableObject data
+│   ├── Minime-Universe/        # Educational mini-games
+│   │   ├── Core-Game/          # Main tamagotchi systems
+│   │   └── Side-Games/         # Educational mini-games
+│   ├── Prefabs/                # Unity prefabs
+│   ├── Resources/              # Runtime loadable assets
+│   │   ├── Outfits/            # Purchasable clothing
+│   │   └── Accessories/        # Hats, jewelry, items
+│   ├── Scenes/                 # Unity scenes
+│   │   └── MainScene.unity     # Primary game scene
+│   ├── Scripts/                # C# Unity scripts
+│   │   ├── Runtime/            # Game logic
+│   │   │   ├── GameManager.cs
+│   │   │   ├── UserManager.cs
+│   │   │   ├── CharacterController.cs
+│   │   │   ├── GameUI.cs
+│   │   │   └── ...
+│   │   ├── Editor/             # Unity editor tools
+│   │   └── Tests/              # NUnit PlayMode tests
+│   └── Settings/               # Unity project settings
+├── Docs/                       # Documentation
+├── ProjectSettings/            # Unity project configuration
+├── Packages/                   # Unity Package Manager
+└── .vscode/                    # VSCode configuration
 ```
 
-## ⚡ **Quick Start with Unity & Blender**
+## ⚡ **Quick Start**
 
-### 1. **Setup Development Environment**
+### 1. **Prerequisites**
+
+- [Unity Hub](https://unity.com/download) with Unity 2022.3.12f1 LTS
+- [VSCode](https://code.visualstudio.com/) (recommended for C# development)
+- Git for version control
+
+### 2. **Setup**
 
 ```bash
-# Install Unity Hub and Unity 2022.3.12f1 LTS
-# Download from: https://unity.com/download
-
-# Install Blender 5.0.0
-# Download from: https://www.blender.org/download/
-
-# Install VSCode Editor (recommended for C# and Python)
-# Download from: https://code.visualstudio.com/
-
-# Clone this repository
-git clone https://github.com/yourusername/SANGSOMminiME.git
+# Clone the repository
+git clone https://github.com/TeacherEvan/SANGSOMminiME.git
 cd SANGSOMminiME
-```
 
-### 2. **Open Unity Project**
-
-```bash
 # Open Unity Hub
 # Click "Add" and select the SANGSOMminiME folder
 # Unity will open with version 2022.3.12f1
-# Open MainScene.unity from Assets/Scenes/
+# Open Assets/Scenes/MainScene.unity
 ```
 
-### 3. **Configure Blender for Asset Export**
+### 3. **Run the Project**
 
-```bash
-# Open Blender 5.0.0
-# Set VSCode as your external script editor (Edit > Preferences > File Paths)
-# Run Blender/startup_script.py to initialize project settings
+1. Open Unity Hub and add the project
+2. Open `Assets/Scenes/MainScene.unity`
+3. Press **Play** to test the login screen and character system
+4. Use Unity Test Runner (`Window > General > Test Runner`) to run tests
 
-# Install Blender Python API stubs for better code completion in VSCode
-pip install blender-stubs
-```
+## 🧠 **Architecture Overview**
 
-### 3. **AI-Assisted Development Setup**
+### **Core Systems**
 
-The project includes pre-configured **VSCode rules** and **Unity C# scripts** that will automatically:
+| Component                 | Description                                                  |
+| ------------------------- | ------------------------------------------------------------ |
+| `GameManager.cs`          | Singleton orchestrating game state, login flow, and autosave |
+| `UserManager.cs`          | User profile persistence via JsonUtility                     |
+| `CharacterController.cs`  | Character animations and customization                       |
+| `GameUI.cs`               | TMP/UGUI interface bridge                                    |
+| `EducationalAnalytics.cs` | Homework tracking and rewards                                |
 
-- ✅ Generate Unity C# code following SangsomMiniMe namespace conventions
-- ✅ Generate Blender Python code for asset creation following project standards
-- ✅ Apply educational game design principles
-- ✅ Create character customization systems
-- ✅ Implement multi-user account management with Unity's JsonUtility
-- ✅ Build nurturing game mechanics without stress/timers
+### **Namespace Structure**
 
-## 🧠 **AI-Powered Development Features**
-
-### **Intelligent Code Generation**
-
-Ask VSCode to:
-
-```
-"Create a Unity C# character customization system with scalable eye sizes following SangsomMiniMe namespace conventions"
-
-"Generate a Blender Python script to export character animations to Unity FBX format"
-
-"Build a Unity homework integration system that increases character happiness when academic tasks complete"
-
-"Create Unity animation controller for Thai cultural gestures: wai, curtsy, bow with smooth transitions"
-```
-
-### **Educational Game Design**
-
-The AI understands research-backed principles for educational gaming:
-
-- **No stress mechanics**: No timers or failure states
-- **Authentic nurturing**: Characters develop meaningful relationships with students
-- **Academic integration**: Homework completion directly improves character wellbeing
-- **Cultural sensitivity**: Proper implementation of Thai gestures (wai) and customs
-
-## 👩‍🏫 **Phase 1: Leandi Test Model**
-
-The first development phase creates a working prototype using **Leandi** (your wife) as the test subject:
-
-### **Implementation Steps**
-
-1. **📸 Photo Setup**: Upload 2-3 reference photos to `Assets/Characters/Leandi/Photos/`
-2. **🤖 AI Generation**: Use Blender and AI to generate anime-style 3D model from photos
-3. **🎨 Customization**: Implement eye size scaling and basic outfit system in Unity C#
-4. **🎭 Animation**: Create dance, wave, wai, curtsy, and bow animations in Blender, export to Unity
-5. **📚 Educational**: Connect character care to mock homework completion system in Unity
-
-### **AI Prompts for Phase 1**
-
-```
-"Generate an anime-style 3D character model in Blender based on the photos in Assets/Characters/Leandi/Photos/ with customizable eye scaling and attachment points for accessories. Export as FBX for Unity."
-
-"Create a Unity C# CharacterController script with methods for eye scaling, outfit changes, and playing animations (dance, wave, wai, curtsy, bow) using Unity's Animator component."
-
-"Build a Unity homework completion system in C# that increases the Leandi character's happiness and unlocks new customization options. Use Unity's JsonUtility for save/load."
+```csharp
+SangsomMiniMe.Core        // GameManager, state management
+SangsomMiniMe.Character   // CharacterController, animations
+SangsomMiniMe.UI          // GameUI, LoginUI (TextMeshPro)
+SangsomMiniMe.Educational // Analytics, homework integration
 ```
 
 ## 🎮 **Game Design Philosophy**
 
-### **AI Code Generation Examples**
-
-```
-"Create a Unity C# character customization system with scalable eye sizes"
-"Generate a Unity educational homework integration system that rewards character care"
-"Build a Unity multi-user account system with password-protected admin controls using JsonUtility"
-"Create a Unity animation controller with Blender-exported anime-style character animations and cultural gestures"
-```
-
 ### **Educational Nurturing Principles**
 
+- **No Stress Mechanics**: No timers or failure states
 - **Cozy Gameplay**: Slow, meditative pace encouraging thoughtful interaction
-- **Meaningful Progression**: Characters develop personality based on care patterns
-- **Cross-Game Currency**: Resources from Minime Universe side games benefit main character
-- **Administrative Oversight**: Teachers monitor engagement without invading student privacy
+- **Meaningful Progression**: Characters develop based on care patterns
+- **Academic Integration**: Homework completion improves character wellbeing
+- **Cross-Game Currency**: Resources from side games benefit main character
 
 ### **Technical Architecture**
 
-- **Modular Design**: Unity C# systems work independently and together seamlessly
-- **Event-Driven**: Loose coupling using Unity's event system and C# delegates
-- **Data-Driven**: JSON serialization via Unity's JsonUtility for all user data
-- **Performance-First**: Mobile-optimized with 60fps target, object pooling for efficiency
-- **Blender Pipeline**: Asset creation in Blender, export to Unity via FBX/GLB formats
+- **Modular Design**: Systems work independently and together
+- **Event-Driven**: Loose coupling using C# delegates and Unity events
+- **Data-Driven**: JSON serialization via JsonUtility
+- **Performance-First**: Mobile-optimized with 60fps target, object pooling
 
 ## 🛠️ **Development Roadmap**
 
-### **Phase 1 - Leandi Test Model** *(Current)*
+### **Phase 1 - Core Systems** _(Current)_
 
-- [x] Project structure and VSCode rules setup
 - [x] Unity 2022.3.12f1 project initialization
-- [x] Unity C# core systems (GameManager, UserManager, CharacterController)
-- [ ] Generate Leandi character from photos using AI in Blender
-- [ ] Export character to Unity (FBX format)
-- [ ] Implement basic customization in Unity (eye scaling, outfits)
-- [ ] Create essential animations in Blender (dance, wave, wai, curtsy, bow)
-- [ ] Import animations into Unity Animator
-- [ ] Build homework integration prototype in Unity C#
+- [x] C# core systems (GameManager, UserManager, CharacterController)
+- [x] Basic UI framework with TextMeshPro
+- [ ] Character customization (eye scaling, outfits)
+- [ ] Animation system (dance, wave, wai, curtsy, bow)
+- [ ] Homework integration prototype
 
-### **Phase 2 - Core Systems**
+### **Phase 2 - Multi-User System**
 
-- [ ] Multi-user account framework in Unity C# with password protection
-- [ ] Room environments in Unity scenes with interaction systems
-- [ ] Administrative dashboard UI for teachers using Unity TextMeshPro
-- [ ] Performance optimization using Unity Profiler and object pooling
-- [ ] Mobile deployment builds (Android/iOS) via Unity Build Pipeline
+- [ ] Multi-user account framework with password protection
+- [ ] Room environments with interaction systems
+- [ ] Administrative dashboard for teachers
+- [ ] Performance optimization with Unity Profiler
 
 ### **Phase 3 - Educational Integration**
 
-- [ ] School homework platform API integration in Unity C#
-- [ ] First Minime Universe side game development in Unity
-- [ ] Cross-game resource system implementation using Unity ScriptableObjects
-- [ ] Parent/teacher progress reporting with Unity Analytics
+- [ ] School homework platform API integration
+- [ ] Minime Universe side games
+- [ ] Cross-game resource system with ScriptableObjects
+- [ ] Parent/teacher progress reporting
 
-### **Phase 4 - Universe Expansion**
+### **Phase 4 - Expansion**
 
-- [ ] Additional educational games for Minime Universe in Unity
-- [ ] Advanced customization features (jewelry, seasonal items) with Unity addressables
-- [ ] Cultural content expansion (international outfits, gestures)
-- [ ] Scalability improvements for large school deployments using Unity multiplayer services
+- [ ] Additional educational games
+- [ ] Advanced customization (jewelry, seasonal items)
+- [ ] Cultural content expansion
+- [ ] Mobile deployment (Android/iOS)
 
-## 🎯 **Success Metrics**
+## 🧪 **Testing**
 
-- **📈 Student Engagement**: Increased homework completion rates
-- **⏱️ Platform Usage**: Daily active time with Mini-Me characters
-- **🎓 Academic Performance**: Correlation between character care and grades
-- **🏫 School Adoption**: Number of schools implementing the system
+```bash
+# Run tests via Unity Test Runner
+# Window > General > Test Runner > Run All
+
+# Or via command line
+Unity.exe -runTests -testResults results.xml -projectPath .
+```
+
+### **Test Coverage**
+
+- `UserProfileTests.cs` - Profile persistence validation
+- `GameUtilitiesTests.cs` - Utility function testing
 
 ## 🤝 **Contributing**
 
-This project uses **AI-assisted development** with Unity and VSCode. When contributing:
-
-1. Use Unity 2022.3.12f1 LTS for all Unity work
-2. Use the provided VSCode rules for consistent C# and Python code generation
-3. Follow the established project structure and SangsomMiniMe namespace conventions
-4. Test all changes in Unity PlayMode with the Leandi test character first
-5. Use Unity Test Runner (NUnit) to run automated tests
-6. Ensure mobile optimization for all new features (test with Unity Profiler)
-7. Document AI prompts used for significant code generation in History2.md
-8. Export Blender assets to Unity-compatible formats (FBX for models/animations)
+1. Use Unity 2022.3.12f1 LTS for all work
+2. Follow SangsomMiniMe namespace conventions
+3. Test changes with the Leandi test character
+4. Run Unity Test Runner before committing
+5. Document AI prompts in History2.md
 
 ## 📄 **License**
 
@@ -258,14 +196,13 @@ Educational Use License - See [LICENSE](LICENSE) for details.
 
 ## 🙏 **Acknowledgments**
 
-- **Educational Game Design Research**: Based on nurturing game design principles from Polaris Game Design
-- **Unity Development**: Following Unity 2022.3 LTS best practices for educational games
-- **Blender Development**: Following modern Blender 5.0 best practices for character creation
-- **AI-Assisted Development**: Powered by VSCode and GitHub Copilot for rapid prototyping and iteration
+- **Educational Game Design Research**: Nurturing game design principles from Polaris Game Design
+- **Unity Development**: Unity 2022.3 LTS best practices
+- **AI-Assisted Development**: Powered by VSCode and GitHub Copilot
 - **Cultural Sensitivity**: Respectful implementation of Thai cultural elements
 
 ---
 
-**🚀 Ready to build the future of educational gaming with AI assistance!**
+**🚀 Ready to build the future of educational gaming!**
 
-*For questions, issues, or contributions, please open a GitHub issue or contact the development team.*
+_For questions, issues, or contributions, please open a GitHub issue._

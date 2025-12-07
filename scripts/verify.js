@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 // Colors for terminal output
 const colors = {
@@ -22,10 +21,8 @@ function loadNonCriticalErrors() {
     return {
         lastUpdated: new Date().toISOString(),
         markdownLintErrors: [],
-        pythonWarnings: [],
         summary: {
-            totalMarkdownIssues: 0,
-            totalPythonWarnings: 0
+            totalMarkdownIssues: 0
         }
     };
 }
@@ -34,41 +31,6 @@ function loadNonCriticalErrors() {
 function saveNonCriticalErrors(errors) {
     errors.lastUpdated = new Date().toISOString();
     fs.writeFileSync(NON_CRITICAL_ERRORS_FILE, JSON.stringify(errors, null, 2));
-}
-
-// Check Python syntax
-function checkPythonSyntax() {
-    console.log(`\n${colors.blue}🐍 Checking Python syntax...${colors.reset}`);
-
-    const pythonFiles = [
-        'Blender/startup_script.py',
-        'Blender/character_controller.py',
-        'Blender/user_manager.py',
-        'Blender/minime_addon.py',
-        'Blender/game_manager.py'
-    ];
-
-    let errors = 0;
-    const warnings = [];
-
-    pythonFiles.forEach(file => {
-        const filePath = path.join(__dirname, '..', file);
-        if (fs.existsSync(filePath)) {
-            try {
-                execSync(`python -m py_compile "${filePath}"`, { stdio: 'pipe' });
-                console.log(`${colors.green}✓${colors.reset} ${file}`);
-            } catch (error) {
-                errors++;
-                console.log(`${colors.red}✗${colors.reset} ${file}`);
-                warnings.push({
-                    file: file,
-                    error: error.message.split('\n')[0]
-                });
-            }
-        }
-    });
-
-    return { errors, warnings };
 }
 
 // Check Unity C# files existence
@@ -81,6 +43,14 @@ function checkUnityFiles() {
         'Assets/Scripts/Runtime/CharacterController.cs',
         'Assets/Scripts/Runtime/GameUI.cs',
         'Assets/Scripts/Runtime/UserProfile.cs',
+        'Assets/Scripts/Runtime/GameConstants.cs',
+        'Assets/Scripts/Runtime/GameEnums.cs',
+        'Assets/Scripts/Runtime/GameUtilities.cs',
+        'Assets/Scripts/Runtime/GameConfiguration.cs',
+        'Assets/Scripts/Runtime/EducationalAnalytics.cs',
+        'Assets/Scripts/Tests/UserProfileTests.cs',
+        'Assets/Scripts/Tests/GameUtilitiesTests.cs',
+        'Assets/Scripts/Editor/SangsomMiniMeEditorTools.cs',
         'ProjectSettings/ProjectVersion.txt'
     ];
 
@@ -120,7 +90,7 @@ function checkMarkdownFiles() {
     let criticalErrors = 0;
 
     try {
-        // Run markdownlint but capture errors
+        const { execSync } = require('child_process');
         execSync('npx markdownlint **/*.md --ignore node_modules --ignore .venv --json', {
             stdio: 'pipe',
             encoding: 'utf8'
@@ -129,7 +99,6 @@ function checkMarkdownFiles() {
     } catch (error) {
         const output = error.stdout || error.stderr || '';
 
-        // Try to parse JSON output
         try {
             const results = JSON.parse(output);
 
@@ -158,7 +127,6 @@ function checkMarkdownFiles() {
                 console.log(`${colors.yellow}⚠${colors.reset}  ${nonCriticalErrors.length} non-critical markdown issues (saved to non-critical-errors.json)`);
             }
         } catch (parseError) {
-            // If can't parse, treat as critical
             console.log(`${colors.yellow}⚠${colors.reset}  Markdown linting had issues (see above)`);
         }
     }
@@ -174,9 +142,11 @@ function checkProjectStructure() {
         'Assets/Scripts/Runtime',
         'Assets/Scripts/Tests',
         'Assets/Scripts/Editor',
-        'Blender',
+        'Assets/Scenes',
+        'Assets/Prefabs',
+        'Assets/Resources',
         'Docs',
-        '.vscode/rules'
+        '.vscode'
     ];
 
     let errors = 0;
@@ -197,7 +167,7 @@ function checkProjectStructure() {
 // Main verification function
 async function main() {
     console.log(`${colors.magenta}╔════════════════════════════════════════════════════╗${colors.reset}`);
-    console.log(`${colors.magenta}║   Sangsom Mini-Me Project Verification            ║${colors.reset}`);
+    console.log(`${colors.magenta}║   Sangsom Mini-Me Project Verification (Unity)    ║${colors.reset}`);
     console.log(`${colors.magenta}╚════════════════════════════════════════════════════╝${colors.reset}`);
 
     let totalErrors = 0;
@@ -211,11 +181,6 @@ async function main() {
     const unityErrors = checkUnityFiles();
     totalErrors += unityErrors;
 
-    // Check Python syntax
-    const pythonResult = checkPythonSyntax();
-    totalErrors += pythonResult.errors;
-    nonCriticalData.pythonWarnings = pythonResult.warnings;
-
     // Check markdown files
     const markdownResult = checkMarkdownFiles();
     totalErrors += markdownResult.criticalErrors;
@@ -224,7 +189,6 @@ async function main() {
     // Update summary
     nonCriticalData.summary = {
         totalMarkdownIssues: markdownResult.nonCriticalErrors.length,
-        totalPythonWarnings: pythonResult.warnings.length,
         lastVerified: new Date().toISOString()
     };
 
@@ -236,12 +200,12 @@ async function main() {
 
     if (totalErrors === 0) {
         console.log(`${colors.green}✓ All critical checks passed!${colors.reset}`);
-        console.log(`${colors.yellow}ℹ Non-critical issues: ${nonCriticalData.summary.totalMarkdownIssues + nonCriticalData.summary.totalPythonWarnings}${colors.reset}`);
+        console.log(`${colors.yellow}ℹ Non-critical issues: ${nonCriticalData.summary.totalMarkdownIssues}${colors.reset}`);
         console.log(`${colors.blue}→ See non-critical-errors.json for details${colors.reset}`);
         process.exit(0);
     } else {
         console.log(`${colors.red}✗ ${totalErrors} critical error(s) found${colors.reset}`);
-        console.log(`${colors.yellow}ℹ Non-critical issues: ${nonCriticalData.summary.totalMarkdownIssues + nonCriticalData.summary.totalPythonWarnings}${colors.reset}`);
+        console.log(`${colors.yellow}ℹ Non-critical issues: ${nonCriticalData.summary.totalMarkdownIssues}${colors.reset}`);
         process.exit(1);
     }
 }

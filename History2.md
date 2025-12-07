@@ -1,5 +1,45 @@
 # Sangsom Mini-Me Development History
 
+---
+
+## Session Log: December 7, 2025 - Unity-Only Project Conversion
+
+### 🔄 **Major Refactor: Removed All Blender Dependencies**
+
+#### **Changes Made**
+
+- **Deleted Blender/ directory** - All Python scripts removed (character_controller.py, export_character.py, minime_addon.py, etc.)
+- **Deleted scripts/blender-automation.js** - Node.js file watcher for Blender
+- **Deleted Docs/BLENDER_VSCODE_INTEGRATION.md** - Blender-specific documentation
+- **Deleted requirements.txt** - Only contained fake-bpy-module-latest
+
+#### **Files Updated**
+
+- **package.json** - Removed all blender:\* scripts, updated version to 2.0.0
+- **.vscode/tasks.json** - Removed 6 Blender tasks, kept npm:verify
+- **.vscode/settings.json** - Removed blender.executables and Blender paths
+- **.github/copilot-instructions.md** - Rewritten for Unity-only workflow
+- **README.md** - Complete rewrite focused on Unity 2022.3.12f1 LTS
+- **SangsomMini-Me.mdc** - Updated to version 3.0.0, Unity-only project rules
+- **Docs/SETUP_NOTES.md** - Rewritten for Unity-only setup
+- **.gitignore** - Removed Blender-specific patterns
+
+#### **Rationale**
+
+- Simplify project to focus on Unity game development
+- Remove unused asset creation pipeline
+- Reduce maintenance overhead
+- Streamline developer onboarding
+
+#### **Project Status**
+
+- ✅ Unity 2022.3.12f1 LTS project structure intact
+- ✅ All C# scripts in Assets/Scripts/ unchanged
+- ✅ NUnit tests in Assets/Scripts/Tests/ working
+- ✅ MainScene.unity ready for development
+
+---
+
 ## Session Log: June 29, 2025 - AI-Powered Development Environment Setup
 
 ### 🚀 **Major Accomplishments**
@@ -325,6 +365,7 @@ Created comprehensive AI behavior rules system:
 #### **3. Type-Safe Constants and Enumerations**
 
 - **Created GameConstants** (`game_constants.py`) - Centralized constants for:
+
   - Default values
   - Scaling limits
   - Reward values

@@ -2,93 +2,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Blender: Run Startup Script",
+            "label": "Unity: Run Tests",
             "type": "shell",
-            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
+            "command": "echo",
             "args": [
-                "--background",
-                "--python",
-                "${workspaceFolder}/Blender/startup_script.py"
-            ],
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "panel": "new"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
-            "label": "Blender: Export Leandi Character",
-            "type": "shell",
-            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
-            "args": [
-                "--background",
-                "${workspaceFolder}/Blender/characters/leandi.blend",
-                "--python",
-                "${workspaceFolder}/Blender/export_character.py"
-            ],
-            "problemMatcher": [],
-            "group": "build"
-        },
-        {
-            "label": "Blender: Open in GUI",
-            "type": "shell",
-            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
-            "args": [
-                "${workspaceFolder}/Blender/characters/leandi.blend"
-            ],
-            "isBackground": true,
-            "problemMatcher": []
-        },
-        {
-            "label": "Blender: Install Addon",
-            "type": "shell",
-            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
-            "args": [
-                "--background",
-                "--python",
-                "${workspaceFolder}/Blender/install_addon.py"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "Blender: Validate All Scripts",
-            "type": "shell",
-            "command": "python",
-            "args": [
-                "-m",
-                "compileall",
-                "."
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/Blender"
-            },
-            "problemMatcher": {
-                "owner": "python",
-                "fileLocation": [
-                    "relative",
-                    "${workspaceFolder}"
-                ],
-                "pattern": {
-                    "regexp": "^  File \"(.*)\", line (\\d+)",
-                    "file": 1,
-                    "line": 2
-                }
-            },
-            "group": "test"
-        },
-        {
-            "label": "Blender: Run Unit Tests",
-            "type": "shell",
-            "command": "C:\\Program Files\\Blender Foundation\\Blender 5.0\\blender.exe",
-            "args": [
-                "--background",
-                "--python",
-                "${workspaceFolder}/Blender/run_tests.py"
+                "Run Unity tests via Unity Test Runner (Edit > Test Runner > Run All)"
             ],
             "problemMatcher": [],
             "group": "test"

@@ -1,38 +1,34 @@
 ---
-description: 
-globs: 
-alwaysApply: true
----
----
----
-description: Educational 3D Tamagotchi-style care simulation game with Blender development guidelines and optimized project structure
-globs: ["**/*.py", "**/*.blend", "**/*.fbx", "Assets/**/*", "Scripts/**/*", "**/*.md"]
-version: "2.0.0"
+description: Educational 3D Tamagotchi-style care simulation game with Unity development guidelines
+globs: ["**/*.cs", "**/*.unity", "**/*.prefab", "Assets/**/*", "**/*.md"]
+version: "3.0.0"
 priority: 1
-tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
+tags: ["unity", "education", "3d-modeling", "tamagotchi", "gamification", "csharp"]
+alwaysApply: true
 ---
 
 # Sangsom Mini-Me Project Rules
 
 @context {
-  "type": "blender-project",
+  "type": "unity-project",
   "genre": "educational-simulation",
   "target_platform": "multi-platform",
   "development_stage": "prototype",
-  "ai_integration": "VScode-assisted",
-  "universe": "minime-expandable-ecosystem"
+  "ai_integration": "VSCode-assisted",
+  "universe": "minime-expandable-ecosystem",
+  "unity_version": "2022.3.12f1 LTS"
 }
 
 @project_structure {
   "root_organization": {
-    "docs_external": "Keep all documentation outside Blender folder",
-    "blender_isolated": "Clean Blender project structure with no external dependencies",
-    "builds_ignored": "All build outputs in separate git-ignored directory"
+    "docs_external": "Keep all documentation in Docs/ folder",
+    "unity_standard": "Follow Unity 2022.3 LTS project conventions",
+    "builds_ignored": "All build outputs in git-ignored Builds/ directory"
   },
-  "blender_architecture": {
-    "assets_by_type": "Group art assets by type, not by character",
-    "scripts_separated": "Runtime/Editor/Tests in separate modules",
-    "third_party_isolated": "All external packages in dedicated folder"
+  "unity_architecture": {
+    "assets_by_type": "Group art assets by type under Assets/Art/",
+    "scripts_separated": "Runtime/Editor/Tests in Assets/Scripts/ with asmdefs",
+    "third_party_isolated": "All external packages in Assets/3rdParty/"
   }
 }
 
@@ -58,10 +54,10 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   }
 }
 
-## Optimized File Architecture (2025)
+## Unity File Architecture
 
 @file_structure {
-  "philosophy": "Separate concerns, isolate dependencies, optimize workflow",
+  "philosophy": "Separate concerns, optimize Unity workflow",
   "structure": {
     "project_root": {
       "README.md": "Project overview and setup",
@@ -70,54 +66,49 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
     },
     "docs_folder": {
       "path": "Docs/",
-      "purpose": "External documentation, UI mockups, architecture diagrams",
-      "isolation": "Completely outside Blender to prevent unnecessary imports"
+      "purpose": "External documentation, UI mockups, architecture diagrams"
     },
-    "blender_folder": {
-      "path": "Blender/",
+    "assets_folder": {
+      "path": "Assets/",
       "structure": {
-        "Assets/": {
-          "3rdParty/": "External packages after import",
-          "Art/": ["Animation/", "Audio/", "Fonts/", "Materials/", "Models/", "Shaders/", "Sprites/", "Textures/"],
-          "Characters/": "Per-character folders with Photos/, Models/, Animations/",
-          "Prefabs/": "Reusable objects",
-          "Resources/": "Runtime loadable assets",
-          "Scenes/": "Blender scenes",
-          "Scripts/": {
-            "Editor/": "Custom editor tools and addons",
-            "Runtime/": "Game logic and systems",
-            "Tests/": "Unit and integration tests"
-          },
-          "Data/": "Data containers",
-          "Settings/": "Project configuration"
+        "3rdParty/": "External Unity packages",
+        "Art/": ["Animation/", "Audio/", "Fonts/", "Materials/", "Models/", "Shaders/", "Sprites/", "Textures/"],
+        "Characters/": "Per-character folders with Photos/",
+        "Data/": "ScriptableObject data assets",
+        "Minime-Universe/": ["Core-Game/", "Side-Games/"],
+        "Prefabs/": "Reusable prefabs",
+        "Resources/": ["Outfits/", "Accessories/"],
+        "Scenes/": "Unity scenes (MainScene.unity)",
+        "Scripts/": {
+          "Editor/": "Custom editor tools (Editor.asmdef)",
+          "Runtime/": "Game logic (Runtime.asmdef)",
+          "Tests/": "NUnit tests (Tests.asmdef)"
         },
-        "Packages/": "Package manager dependencies",
-        "ProjectSettings/": "Blender project configuration"
+        "Settings/": "Unity project settings"
       }
     },
-    "builds_folder": {
-      "path": "Builds/",
-      "purpose": "CI generated builds and exports",
-      "git_status": "ignored"
+    "project_settings": {
+      "path": "ProjectSettings/",
+      "purpose": "Unity project configuration"
     }
   }
 }
 
 @architecture_guidelines [
   {
-    "rule": "docs_isolation",
-    "description": "Keep Docs/ outside Blender folder to prevent engine imports",
+    "rule": "namespace_convention",
+    "description": "Use SangsomMiniMe.Core, .Character, .UI, .Educational namespaces",
+    "severity": "error"
+  },
+  {
+    "rule": "asmdef_enforcement",
+    "description": "Each Scripts subfolder must have assembly definition",
     "severity": "error"
   },
   {
     "rule": "third_party_separation",
-    "description": "Place 3rdParty/ packages in dedicated folder for clean upgrades",
+    "description": "Place external packages in Assets/3rdParty/ for clean upgrades",
     "severity": "error"
-  },
-  {
-    "rule": "script_modules",
-    "description": "Split Scripts/ into Runtime, Editor, Tests modules with proper Python structure",
-    "severity": "warning"
   },
   {
     "rule": "character_organization",
@@ -131,47 +122,43 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   }
 ]
 
-## Development Stack & Implementation
+## Development Stack
 
 @technical_stack {
   "game_engine": "Unity 2022.3.12f1 LTS",
-  "scripting_language": "C# .NET for Unity runtime logic",
-  "3d_engine": "Blender 5.0.0 for asset creation",
-  "ai_assistant": "VSCode for C# and Python code generation",
-  "modeling": "AI-generated models in Blender with Unity integration",
-  "animation": "Blender Animation System, exported to Unity Animator via FBX",
-  "database": "Unity JsonUtility for user account management and progress tracking",
-  "security": "Password-protected administrative access"
+  "scripting_language": "C# .NET",
+  "ide": "VSCode with C# extensions",
+  "testing": "NUnit via Unity Test Runner",
+  "serialization": "Unity JsonUtility",
+  "ui_framework": "TextMeshPro + UGUI",
+  "animation": "Unity Animator Controller"
 }
 
 @key_systems [
   {
-    "system": "student_registration",
-    "description": "Link real students to mini-me avatars (Unity C# UserManager)"
+    "system": "GameManager",
+    "file": "GameManager.cs",
+    "description": "Singleton orchestrating game state, login flow, autosave"
   },
   {
-    "system": "homework_integration", 
-    "description": "Direct connection to school assignment platform via Unity REST API"
+    "system": "UserManager",
+    "file": "UserManager.cs", 
+    "description": "User profile persistence via JsonUtility"
   },
   {
-    "system": "progress_tracking",
-    "description": "Visual indicators of care status and academic performance (Unity UI)"
+    "system": "CharacterController",
+    "file": "CharacterController.cs",
+    "description": "Character animations and customization"
   },
   {
-    "system": "customization_engine",
-    "description": "Scalable eye sizes, outfits, accessories, room items (Unity C# + Blender assets)"
+    "system": "GameUI",
+    "file": "GameUI.cs",
+    "description": "TMP/UGUI interface bridge"
   },
   {
-    "system": "reward_system",
-    "description": "Achievement-based progression through homework and side games (Unity C#)"
-  },
-  {
-    "system": "multi_user_accounts",
-    "description": "Multiple student profiles and character management (Unity JsonUtility)"
-  },
-  {
-    "system": "minime_universe_bridge",
-    "description": "Cross-game resource sharing and progress tracking (Unity ScriptableObjects)"
+    "system": "EducationalAnalytics",
+    "file": "EducationalAnalytics.cs",
+    "description": "Homework tracking and rewards"
   }
 ]
 
@@ -190,196 +177,76 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   "environment": ["furniture", "room_themes", "interactive_objects", "room_expansions"]
 }
 
-## AI-Optimized Development Phases
-
-@agent_collaboration_workflow {
-  "methodology": "Unity-Blender Hybrid Development Cycles",
-  "testing_approach": "Unity PlayMode Testing > Blender Viewport Preview > Automated NUnit Tests",
-  "ai_integration": "Unity C# Code Generation + Blender Asset Pipeline Automation",
-  "developer_role": "Unity Editor Operator + Blender Asset Creator & Experience Validator"
-}
+## Development Workflow
 
 @development_roadmap [
   {
     "phase": 1,
-    "title": "Unity & Blender Project Foundation",
-    "duration": "1 sprint",
-    "approach": "unity_blender_setup_workflow",
-    "collaboration_pattern": "developer_guided_ai_assistance",
+    "title": "Core Systems",
+    "status": "current",
     "tasks": [
-      {
-        "task": "Unity Project Setup",
-        "method": "unity_project_validation",
-        "acceptance": "Developer opens Unity 2022.3.12f1 project and confirms MainScene loads",
-        "ai_role": "Provide Unity project structure guidance and C# namespace conventions",
-        "human_role": "Open Unity project and validate scene structure"
-      },
-      {
-        "task": "Blender Project Creation",
-        "method": "blender_new_project",
-        "acceptance": "Developer creates new Blender project with proper folder structure",
-        "ai_role": "Provide Blender project setup guidance and folder structure recommendations",
-        "human_role": "Execute Blender project creation and validate structure"
-      },
-      {
-        "task": "Implement Optimized File Architecture",
-        "method": "unity_blender_folder_organization",
-        "acceptance": "Developer confirms Assets/ folder follows Unity/Blender hybrid @project_structure guidelines",
-        "ai_role": "Generate folder creation scripts and Unity C# namespace structure",
-        "human_role": "Execute folder creation and verify Unity recognizes structure"
-      },
-      {
-        "task": "Leandi Character Asset Import",
-        "method": "blender_asset_import_pipeline",
-        "acceptance": "Developer successfully imports Leandi photos into Characters/Leandi/Photos/",
-        "ai_role": "Create import settings and texture optimization for Blender",
-        "human_role": "Import photos and validate import settings in Blender"
-      },
-      {
-        "task": "Unity Scene Setup",
-        "method": "unity_scene_creation",
-        "acceptance": "Developer has MainScene.unity with basic lighting and camera setup",
-        "ai_role": "Generate Unity C# scene setup scripts and lighting configurations",
-        "human_role": "Create scene in Unity and test in PlayMode"
-      }
-    ],
-    "test_limit": "Unity PlayMode validation + Blender viewport validation - minimal automated tests"
+      "Unity 2022.3.12f1 project setup",
+      "C# core systems (GameManager, UserManager, CharacterController)",
+      "Basic UI framework with TextMeshPro",
+      "Character customization (eye scaling, outfits)",
+      "Animation system (dance, wave, wai, curtsy, bow)",
+      "Homework integration prototype"
+    ]
   },
   {
     "phase": 2,
-    "title": "Rapid Prototype Validation",
-    "duration": "2-3 sprints",
-    "approach": "agentic_development",
-    "collaboration_pattern": "agent_executes_human_validates",
+    "title": "Multi-User System",
     "tasks": [
-      {
-        "task": "Basic Care Loop",
-        "method": "unity_playmode_test",
-        "acceptance": "Developer plays through 5-minute care session in Unity",
-        "ai_role": "Build complete Unity C# system",
-        "human_role": "Playtest in Unity & iterate",
-        "test_limit": "Unity PlayMode testing - human gameplay validation only"
-      },
-      {
-        "task": "Eye-Size Scaling Demo",
-        "method": "unity_realtime_ui_test",
-        "acceptance": "Developer adjusts sliders in Unity and sees immediate results",
-        "ai_role": "Unity UI + C# logic implementation", 
-        "human_role": "Interactive testing in Unity & UX feedback"
-      },
-      {
-        "task": "Blender to Unity Export",
-        "method": "fbx_export_test",
-        "acceptance": "Developer exports character from Blender, imports into Unity successfully",
-        "ai_role": "Create Blender Python export script for Unity FBX format",
-        "human_role": "Test export/import pipeline and verify in Unity"
-      }
+      "Multi-user account framework with password protection",
+      "Room environments with interaction systems",
+      "Administrative dashboard for teachers",
+      "Performance optimization with Unity Profiler"
     ]
   },
   {
     "phase": 3,
-    "title": "Core Systems Integration",
-    "duration": "3-4 sprints", 
-    "approach": "hybrid_human_ai",
-    "collaboration_pattern": "collaborative_building",
+    "title": "Educational Integration",
     "tasks": [
-      {
-        "task": "Multi-User Framework",
-        "method": "unity_account_switching",
-        "acceptance": "Developer creates and switches between 3 accounts in Unity",
-        "ai_role": "Unity C# backend implementation with JsonUtility",
-        "human_role": "Manual account testing in Unity & security validation"
-      },
-      {
-        "task": "Save/Load System", 
-        "method": "unity_session_persistence_test",
-        "acceptance": "Developer saves, closes Unity, reopens - state preserved",
-        "ai_role": "Unity C# serialization logic with JsonUtility",
-        "human_role": "Cross-session testing in Unity"
-      }
-    ],
-    "optimization": "Focus on developer Unity experience over test coverage"
+      "School homework platform API integration",
+      "Minime Universe side games",
+      "Cross-game resource system with ScriptableObjects",
+      "Parent/teacher progress reporting"
+    ]
   },
   {
     "phase": 4,
-    "title": "Educational Workflow Validation",
-    "duration": "2-3 sprints",
-    "approach": "collaborative_integration",
-    "collaboration_pattern": "real_workflow_simulation", 
+    "title": "Expansion",
     "tasks": [
-      {
-        "task": "Homework Integration",
-        "method": "unity_mock_assignment_completion",
-        "acceptance": "Developer completes fake homework in Unity → Mini-Me responds",
-        "ai_role": "Unity C# API integration + reward logic",
-        "human_role": "End-to-end workflow testing in Unity PlayMode"
-      },
-      {
-        "task": "Progress Visualization",
-        "method": "unity_live_progress_tracking",
-        "acceptance": "Developer sees visual progress changes in Unity real-time",
-        "ai_role": "Unity UI components + data binding",
-        "human_role": "Visual validation in Unity & UX iteration"
-      }
-    ],
-    "test_philosophy": "Real Unity educational scenarios > unit tests"
-  },
-  {
-    "phase": 5,
-    "title": "Polish & Performance",
-    "duration": "1-2 sprints",
-    "approach": "optimization_focused",
-    "collaboration_pattern": "human_guided_optimization",
-    "tasks": [
-      {
-        "task": "Performance Optimization",
-        "method": "unity_profiler_stress_testing",
-        "acceptance": "Developer confirms smooth 60fps gameplay in Unity Profiler",
-        "ai_role": "Unity C# code optimization + Unity Profiler analysis",
-        "human_role": "Performance validation on target devices via Unity builds"
-      },
-      {
-        "task": "UX Polish Pass",
-        "method": "unity_heuristic_evaluation",
-        "acceptance": "Developer approves overall feel and responsiveness in Unity", 
-        "ai_role": "Unity Animation + transition improvements",
-        "human_role": "Subjective quality assessment in Unity PlayMode"
-      }
+      "Additional educational games",
+      "Advanced customization (jewelry, seasonal items)",
+      "Cultural content expansion",
+      "Mobile deployment (Android/iOS)"
     ]
   }
 ]
 
-@testing_optimization {
-  "principle": "Interactive > Automated",
-  "rationale": "Educational games require human validation of engagement and fun",
-  "guidelines": [
-    "Limit automated test runs to 2 per feature maximum",
-    "Prioritize developer live-testing in Unity PlayMode over scripted validation", 
-    "Use AI for rapid Unity C# iteration based on human feedback",
-    "Focus on end-user experience validation in Unity",
-    "Implement 'playground testing' in Unity where developer explores freely",
-    "Use Unity Test Runner for critical systems only (save/load, user management)"
-  ]
+@testing_guidelines {
+  "framework": "NUnit via Unity Test Runner",
+  "location": "Assets/Scripts/Tests/",
+  "coverage": [
+    "UserProfileTests.cs - Profile persistence validation",
+    "GameUtilitiesTests.cs - Utility function testing"
+  ],
+  "execution": "Window > General > Test Runner > Run All"
 }
 
 @collaboration_protocols {
-  "vibe_coding_sessions": {
+  "ai_coding_sessions": {
     "purpose": "Rapid prototyping with immediate feedback",
-    "duration": "30-60 minutes focused sessions",
-    "method": "Developer describes vision → AI implements Unity C# → Live testing in Unity PlayMode"
-  },
-  "agentic_development": {
-    "purpose": "Complex system implementation", 
-    "autonomy_level": "High AI autonomy with human checkpoints",
-    "method": "AI plans → implements Unity C# → tests in Unity → reports to human"
+    "method": "Developer describes vision → AI implements C# → Test in Unity PlayMode"
   },
   "interactive_debugging": {
     "purpose": "Real-time issue resolution",
-    "method": "Human observes issue in Unity → AI diagnoses → implements fix → human validates in Unity"
+    "method": "Human observes issue in Unity → AI diagnoses → implements fix → human validates"
   }
 }
 
-## Success Metrics & Vision
+## Success Metrics
 
 @success_metrics [
   "student_engagement_homework_completion",
@@ -396,38 +263,9 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   "administrative_control": "Teacher and administrator monitoring tools"
 }
 
-## Migration Tasks
-
-@migration_checklist [
-  {
-    "task": "create_blender_folder",
-    "description": "Set up clean Blender/ directory with optimized structure",
-    "priority": "high"
-  },
-  {
-    "task": "move_leandi_photos",
-    "description": "Move Leandi/ images to Blender/Assets/Characters/Leandi/Photos/",
-    "priority": "high"
-  },
-  {
-    "task": "create_docs_folder", 
-    "description": "Set up external Docs/ directory for documentation",
-    "priority": "medium"
-  },
-  {
-    "task": "setup_python_modules",
-    "description": "Create Python module files for Scripts/ organization",
-    "priority": "medium"
-  },
-  {
-    "task": "configure_gitignore",
-    "description": "Update .gitignore for Builds/ folder and Blender artifacts",
-    "priority": "high"
-  }
-]
-
-@version "2.0.0"
-@last_updated "2025-01-30"
+@version "3.0.0"
+@last_updated "2025-12-07"
+@refactor_note "Converted to Unity-only project, removed all Blender dependencies"
 
 
 

@@ -4,44 +4,31 @@
 
 ### Prerequisites
 
-- [Unity 2022.3.12f1 LTS](https://unity.com/download) - Primary game engine
-- [Blender 5.0.0](https://www.blender.org/download/) or later - Asset creation
-- [VSCode](https://code.visualstudio.com/) (recommended for C# and Python development)
-- Python 3.11+ (bundled with Blender)
+- [Unity Hub](https://unity.com/download) with **Unity 2022.3.12f1 LTS**
+- [VSCode](https://code.visualstudio.com/) (recommended for C# development)
+- Git for version control
 
 ### First-Time Setup
 
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/SANGSOMminiME.git
+   git clone https://github.com/TeacherEvan/SANGSOMminiME.git
    cd SANGSOMminiME
    ```
 
 2. **Open Unity Project**
+
    - Open Unity Hub
    - Click "Add" → Select SANGSOMminiME folder
    - Unity Hub will detect version 2022.3.12f1
    - Click to open the project
    - Navigate to Assets/Scenes/ and open **MainScene.unity**
 
-3. **Setup Blender for Asset Creation**
-   - Open Blender 5.0.0
-   - Go to `Scripting` workspace (top menu)
-   - Click `Open` and select `Blender/startup_script.py`
-   - Click `Run Script` (▶ button)
-
-4. **Install Mini-Me Blender Addon** (Optional but Recommended)
-   - Go to `Edit > Preferences > Add-ons`
-   - Click `Install...`
-   - Select `Blender/minime_addon.py`
-   - Enable "Sangsom Mini-Me Tools"
-   - Save Preferences
-
-5. **Verify Setup**
-   - **Unity**: Press Play button in Unity Editor - should see login screen
-   - **Blender**: Look for "Mini-Me" tab in the 3D View sidebar (press `N` to toggle)
-   - Check that project collections are created (Characters, Environment, etc.)
+3. **Verify Setup**
+   - Press Play button in Unity Editor - should see login screen
+   - Check that no console errors appear
+   - Verify UI elements are visible and interactive
 
 ---
 
@@ -52,44 +39,42 @@ SANGSOMminiME/
 ├── Assets/                     # Unity project assets
 │   ├── 3rdParty/              # External Unity packages
 │   ├── Art/                   # Art assets by type
-│   │   ├── Animation/         # Animation clips (Unity Animator)
+│   │   ├── Animation/         # Animation clips
 │   │   ├── Audio/            # Sound effects & music
 │   │   ├── Materials/        # Unity materials
-│   │   ├── Models/           # 3D models (FBX from Blender)
+│   │   ├── Models/           # 3D models (FBX)
 │   │   ├── Textures/         # Texture files
 │   │   └── ...
 │   ├── Characters/            # Per-character folders
 │   │   └── Leandi/           # Test character
-│   │       ├── Photos/       # Reference images for Blender
-│   │       └── Models/       # Exported FBX files from Blender
+│   │       └── Photos/       # Reference images
 │   ├── Data/                 # ScriptableObject data
 │   ├── Minime-Universe/      # Educational mini-games
+│   │   ├── Core-Game/        # Main tamagotchi systems
+│   │   └── Side-Games/       # Educational mini-games
 │   ├── Prefabs/              # Unity prefabs
 │   ├── Resources/            # Runtime loadable assets
-│   ├── Scenes/               # Unity scenes (MainScene.unity)
+│   │   ├── Outfits/          # Purchasable clothing
+│   │   └── Accessories/      # Hats, jewelry, items
+│   ├── Scenes/               # Unity scenes
+│   │   └── MainScene.unity   # Primary game scene
 │   ├── Scripts/              # C# Unity scripts
-│   │   ├── Runtime/          # Game logic (C#)
-│   │   │   ├── Core/         # GameManager, UserManager
-│   │   │   ├── Character/    # CharacterController
-│   │   │   ├── UI/           # GameUI, LoginUI
-│   │   │   └── Educational/  # EducationalAnalytics
+│   │   ├── Runtime/          # Game logic
+│   │   │   ├── GameManager.cs
+│   │   │   ├── UserManager.cs
+│   │   │   ├── CharacterController.cs
+│   │   │   ├── GameUI.cs
+│   │   │   └── ...
 │   │   ├── Editor/           # Unity editor tools
-│   │   └── Tests/            # NUnit tests (Unity Test Runner)
+│   │   └── Tests/            # NUnit PlayMode tests
 │   └── Settings/             # Unity project settings
-├── Blender/                   # Blender-specific Python scripts
-│   ├── startup_script.py     # Project initialization
-│   ├── character_controller.py # Character system
-│   ├── user_manager.py       # User profiles (mirrors Unity)
-│   ├── export_character.py   # Export to Unity (FBX/GLB)
-│   └── minime_addon.py       # Blender addon
 ├── Docs/                      # Documentation
 │   ├── SETUP_NOTES.md        # This file
 │   └── EXTENSIONS_AND_TOOLS.md
 ├── ProjectSettings/           # Unity project configuration
 │   └── ProjectVersion.txt    # Unity 2022.3.12f1
 ├── Packages/                  # Unity Package Manager
-├── .vscode/                   # VSCode rules
-│   └── rules/                # AI development guidelines
+├── .vscode/                   # VSCode configuration
 ├── README.md                  # Project overview
 ├── IMPLEMENTATION.md          # Implementation details
 ├── JOBCARD.md                # Development progress
@@ -100,52 +85,6 @@ SANGSOMminiME/
 
 ## Development Workflows
 
-### Creating a New Character
-
-1. **Prepare Reference Photos**
-   - Place 2-3 photos in `Assets/Characters/[Name]/Photos/`
-   - Include: front view, side view, and expression reference
-
-2. **Generate Character Base**
-
-   ```
-   Option A: Use Mini-Me addon
-   - Open Mini-Me panel (3D View > Sidebar > Mini-Me)
-   - Set character name
-   - Click "Create Character Template"
-   
-   Option B: Use external tools
-   - Generate base mesh with MB-Lab or similar
-   - Import into Blender
-   ```
-
-3. **Stylize for Anime Look**
-   - Apply toon shader material
-   - Adjust proportions (larger eyes, etc.)
-   - Add hair and accessories
-
-4. **Rig the Character**
-   - Use Rigify or Auto-Rig Pro
-   - Ensure all required bones are present
-   - Test basic movements
-
-5. **Create Animations**
-   - Required: idle, dance, wave, wai, curtsy, bow
-   - Use Mini-Me addon to create placeholders
-   - Import from Mixamo or create manually
-
-6. **Export to Unity**
-   - In Blender, select character and animations
-   - Run `export_character.py` or use Mini-Me addon export button
-   - Choose FBX format for Unity compatibility
-   - Export to `Assets/Characters/[Name]/Models/`
-
-7. **Import into Unity**
-   - Unity will auto-import FBX files
-   - Configure import settings (rig type: Humanoid)
-   - Create Unity Animator Controller
-   - Set up animation states and transitions
-
 ### Scripting with VSCode
 
 1. **Open Project in VSCode**
@@ -154,133 +93,149 @@ SANGSOMminiME/
    code /path/to/SANGSOMminiME
    ```
 
-2. **AI Rules are Auto-Loaded**
+2. **Install Recommended Extensions**
+
+   - C# (ms-dotnettools.csharp)
+   - Unity Code Snippets
+   - EditorConfig for VS Code
+
+3. **AI Rules are Auto-Loaded**
+
    - Rules in `.vscode/rules/` configure AI behavior
-   - Separate rules for Unity C# and Blender Python
    - Follow established SangsomMiniMe namespace conventions
 
-3. **Example Prompts**
+4. **Example Prompts**
 
    ```
    "Create a Unity C# happiness decay system that reduces character happiness by 1% per hour of inactivity"
-   
-   "Generate a Blender Python script to batch import all photos from a folder as reference images"
-   
+
    "Write a Unity C# function to save user profile data using JsonUtility"
-   
-   "Create a Blender Python function to export character with all animations in FBX format for Unity"
+
+   "Create an animation state machine for character gestures"
    ```
 
 ### Testing Your Work
 
-1. **In Unity**
+1. **PlayMode Testing**
+
    - Press Play button in Unity Editor to test gameplay
-   - Use Unity Test Runner (Window > General > Test Runner)
-   - Run NUnit tests in Assets/Scripts/Tests/
-   - Use Unity Profiler to check performance (Window > Analysis > Profiler)
+   - Interact with UI elements to verify functionality
+   - Check Console window for any errors
 
-2. **In Blender**
-   - Use the Mini-Me panel to test animations
-   - Check Python console for errors (Window > Toggle System Console)
-   - Render preview to verify appearance
+2. **Unit Tests**
 
-2. **Unit Tests** (if applicable)
-   - Unity: Use Test Runner (Window > General > Test Runner)
-   - Blender Python: `python -m pytest Assets/Scripts/Tests/` (if pytest configured)
+   - Open Test Runner: Window > General > Test Runner
+   - Click "Run All" to execute all NUnit tests
+   - Tests are located in Assets/Scripts/Tests/
+
+3. **Performance Testing**
+   - Open Profiler: Window > Analysis > Profiler
+   - Check for frame rate drops and memory issues
+   - Target 60fps on mobile devices
+
+---
+
+## Core Systems Overview
+
+### GameManager.cs
+
+- Singleton pattern for global game state
+- Orchestrates login flow and UI transitions
+- Manages autosave functionality
+
+### UserManager.cs
+
+- User profile persistence via JsonUtility
+- Saves to Application.persistentDataPath
+- Handles multiple user accounts
+
+### CharacterController.cs
+
+- Character animations and customization
+- Eye scaling and outfit changes
+- Animation triggers: PlayDance, Wai, Curtsy, Bow
+
+### GameUI.cs
+
+- TextMeshPro-based UI system
+- Homework flow and reward buttons
+- Customization sliders
+
+### EducationalAnalytics.cs
+
+- Homework completion tracking
+- Achievement and reward system
+- Progress analytics
 
 ---
 
 ## Common Tasks
 
-### Import Character Reference Photos
+### Creating a New Character
 
-```python
-# Run in Blender Scripting workspace
-import bpy
-import os
+1. **Prepare Reference Photos**
 
-photo_dir = "//Assets/Characters/Leandi/Photos/"
-abs_path = bpy.path.abspath(photo_dir)
+   - Place 2-3 photos in `Assets/Characters/[Name]/Photos/`
+   - Include: front view, side view, and expression reference
 
-for filename in os.listdir(abs_path):
-    if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-        bpy.ops.import_image.to_plane(
-            files=[{"name": filename}],
-            directory=abs_path
-        )
-print("Photos imported!")
-```
+2. **Import 3D Model**
 
-### Export Character for Unity
+   - Import FBX model into `Assets/Characters/[Name]/Models/`
+   - Configure import settings: Rig Type = Humanoid
+   - Apply import settings
 
-```python
-# In Blender, select character and run:
-import bpy
-from export_character import export_character_logic
+3. **Create Animator Controller**
 
-# Export to Unity-compatible FBX
-export_character_logic(
-    character_name="Leandi",
-    output_path="//Assets/Characters/Leandi/Models/",
-    format='FBX'
-)
-```
+   - Right-click in Project: Create > Animator Controller
+   - Set up animation states for idle, dance, wave, wai, curtsy, bow
+   - Configure transitions between states
 
-Then in Unity:
-1. Unity will auto-detect the FBX file
-2. Select the imported model in Project window
-3. In Inspector, set Rig > Animation Type to "Humanoid"
-4. Click "Apply"
-5. Create Animator Controller (Create > Animator Controller)
-6. Drag animations into Animator window
+4. **Create Character Prefab**
+   - Drag model into scene
+   - Add CharacterController component
+   - Configure customization options
+   - Save as prefab in Assets/Prefabs/
 
-### Create Animation Action
+### Adding New Customization Options
 
-```python
-# Create a new animation action
-import bpy
+1. **Outfits**
 
-action_name = "wave"
-action = bpy.data.actions.new(action_name)
-action.use_fake_user = True  # Prevent deletion
+   - Add outfit models to `Assets/Resources/Outfits/`
+   - Register in customization system
+   - Update purchasable items list
 
-# Assign to armature
-armature = bpy.context.active_object
-if armature and armature.type == 'ARMATURE':
-    if armature.animation_data is None:
-        armature.animation_data_create()
-    armature.animation_data.action = action
-```
+2. **Accessories**
+   - Add accessory models to `Assets/Resources/Accessories/`
+   - Define attachment points on character rig
+   - Update accessory catalog
 
 ---
 
 ## Troubleshooting
 
-### "Module not found" errors
+### Unity project won't open
 
-```python
-# Add project paths to Python
-import sys
-sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
-```
+- Ensure Unity 2022.3.12f1 is installed via Unity Hub
+- Delete Library folder and reimport project
+- Check Unity Hub for any error messages
 
-### Addon not appearing
+### Scripts not compiling
 
-- Ensure Blender version is 4.0+
-- Check Add-ons preferences for errors
-- Try running `minime_addon.py` directly in Scripting workspace
+- Check Console for compilation errors
+- Verify namespace matches file location
+- Ensure assembly definitions are properly configured
+
+### UI not displaying correctly
+
+- Check Canvas Scaler settings
+- Verify TextMeshPro essentials are imported
+- Check RectTransform anchors
 
 ### Performance issues
 
-- Simplify viewport shading
-- Lower subdivision levels
-- Disable unnecessary overlays
-
-### Export problems
-
-- Apply all transforms (Ctrl+A > All Transforms)
-- Check for loose vertices/edges
-- Ensure proper UV mapping
+- Use Unity Profiler to identify bottlenecks
+- Implement object pooling for frequently instantiated objects
+- Optimize texture sizes and mesh complexity
 
 ---
 
@@ -288,8 +243,7 @@ sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
 
 - [Unity Manual (2022.3 LTS)](https://docs.unity3d.com/2022.3/Documentation/Manual/)
 - [Unity Scripting Reference](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/)
-- [Blender Manual](https://docs.blender.org/manual)
-- [Blender Python API](https://docs.blender.org/api)
+- [TextMeshPro Documentation](https://docs.unity3d.com/Packages/com.unity.textmeshpro@3.0/manual/index.html)
 - [Project README](../README.md)
 - [Extension Guide](EXTENSIONS_AND_TOOLS.md)
 
@@ -299,9 +253,9 @@ sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
 
 1. Check existing documentation
 2. Search project issues on GitHub
-3. Ask Cursor AI for code assistance
+3. Ask AI assistant for code assistance
 4. Create an issue with reproduction steps
 
 ---
 
-*Happy developing! 🎮✨*
+_Happy developing! 🎮✨_
