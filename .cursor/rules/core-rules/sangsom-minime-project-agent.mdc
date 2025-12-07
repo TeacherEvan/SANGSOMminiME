@@ -4,7 +4,7 @@ globs:
 alwaysApply: false
 ---
 ---
-description: Master rule for Sangsom Mini-Me educational tamagotchi project. Apply when working on any aspect of this Blender Python project including character creation, educational game mechanics, AI-generated models, multi-user systems, administrative controls, or Minime Universe ecosystem development. This rule ensures consistency across the entire project and guides proper implementation of educational gaming principles, Japanese anime-style character systems, and modern Blender development practices.
+description: Master rule for Sangsom Mini-Me educational tamagotchi project. Apply when working on any aspect of this Unity + Blender project including character creation, educational game mechanics, AI-generated models, multi-user systems, administrative controls, or Minime Universe ecosystem development. This rule ensures consistency across the entire project and guides proper implementation of educational gaming principles, Japanese anime-style character systems, Unity C# runtime code, and Blender asset creation workflows.
 globs: 
 alwaysApply: false
 ---
@@ -14,7 +14,8 @@ alwaysApply: false
 ## Project Overview
 - **Educational 3D Tamagotchi**: Students care for personalized Mini-Me characters through homework completion
 - **Minime Universe**: Expandable ecosystem with educational side games feeding resources to main character
-- **Blender + VSCode**: Modern AI-assisted development with automated code generation
+- **Unity 2022.3.12f1 + Blender 5.0**: Unity for game runtime (C#), Blender for asset creation (Python)
+- **AI-assisted development**: VSCode with automated code generation for both Unity C# and Blender Python
 - **Target**: Schools/educators with multi-user account management
 
 ## Core Development Principles
@@ -32,9 +33,11 @@ alwaysApply: false
 - **Cross-game currency** from Minime Universe side games
 
 ### Technical Architecture
+- **Unity 2022.3.12f1 LTS** as primary game engine with C# scripting
+- **Blender 5.0** for 3D asset creation and FBX export to Unity
 - **Multi-structural folders** for performance optimization
-- **Administrative access** with password protection for teachers
-- **Multi-user account system** supporting entire schools
+- **Administrative access** with password protection for teachers (Unity C#)
+- **Multi-user account system** supporting entire schools (Unity JsonUtility)
 - **Modular design** allowing post-launch content expansion
 
 ## File Organization Standards
@@ -43,56 +46,93 @@ alwaysApply: false
 ```
 Assets/
 ├── Characters/{StudentName}/
-│   ├── Photos/          # Reference images for AI model generation
-│   ├── Models/          # Generated 3D models and textures
-│   └── Animations/      # Custom animation controllers
+│   ├── Photos/          # Reference images for Blender AI model generation
+│   ├── Models/          # FBX files exported from Blender to Unity
+│   └── Animations/      # Animation clips for Unity Animator
 ├── Minime-Universe/
-│   ├── Core-Game/       # Main tamagotchi systems
-│   └── Side-Games/      # Educational mini-games
+│   ├── Core-Game/       # Main tamagotchi systems (Unity scenes)
+│   └── Side-Games/      # Educational mini-games (Unity)
 ├── Resources/
-│   ├── Outfits/         # Purchasable clothing items
-│   └── Accessories/     # Hats, jewelry, special items
+│   ├── Outfits/         # Purchasable clothing items (Unity materials)
+│   └── Accessories/     # Hats, jewelry, special items (Unity prefabs)
+├── Scenes/              # Unity scene files (MainScene.unity)
 └── Scripts/
-    ├── Core/            # Game management, save systems
-    ├── Character/       # Character behavior and customization
-    ├── UI/              # Interface and menu systems
-    └── Educational/     # Homework integration and progress tracking
+    ├── Runtime/         # Unity C# game logic
+    │   ├── Core/        # GameManager.cs, UserManager.cs
+    │   ├── Character/   # CharacterController.cs
+    │   ├── UI/          # GameUI.cs, LoginUI.cs (TextMeshPro)
+    │   └── Educational/ # EducationalAnalytics.cs
+    └── Tests/           # NUnit tests for Unity Test Runner
+
+Blender/
+├── startup_script.py           # Blender project initialization
+├── character_controller.py     # Mirrors Unity CharacterController
+├── export_character.py         # Export to Unity FBX format
+└── minime_addon.py            # Blender UI addon for Unity export
 ```
 
 ### Script Naming Conventions
+**Unity C# Scripts:**
+- **Managers**: `{System}Manager.cs` (e.g., `CharacterManager.cs`, `UserManager.cs`)
+- **Controllers**: `{Feature}Controller.cs` (e.g., `CharacterController.cs`)
+- **Data**: `{Type}Profile.cs` or `{Type}Data.cs` (e.g., `UserProfile.cs`)
+- **UI**: `{Component}UI.cs` (e.g., `GameUI.cs`, `LoginUI.cs`)
+- **Namespace**: `SangsomMiniMe.{Category}` (e.g., `SangsomMiniMe.Core`, `SangsomMiniMe.Character`)
+
+**Blender Python Scripts:**
 - **Managers**: `{system}_manager.py` (e.g., `character_manager.py`)
 - **Controllers**: `{feature}_controller.py` (e.g., `customization_controller.py`) 
 - **Data**: `{type}_data.py` (e.g., `student_data.py`, `outfit_data.py`)
-- **UI**: `{component}_ui.py` (e.g., `character_customization_ui.py`)
+- **Export**: `export_{type}.py` (e.g., `export_character.py`)
 
 ## AI-Assisted Development Rules
 
 ### Code Generation Guidelines
+**For Unity C# Code:**
+- **Use C# best practices** with strong typing and LINQ where appropriate
+- **Follow Unity conventions** for MonoBehaviour, Coroutines, and event systems
+- **Use Unity's JsonUtility** for serialization (not Newtonsoft.Json)
+- **Implement SangsomMiniMe namespace hierarchy** consistently
+- **Add [SerializeField] attributes** for Inspector-editable fields
+
+**For Blender Python Code:**
 - **Always use typed Python** with explicit types and null safety
+- **Mirror Unity C# structure** for consistency (e.g., CharacterController exists in both)
+- **Use JSON/YAML configuration** for data that matches Unity formats
+- **Follow PEP 8 style guide** for Python code
+
+**General:**
 - **Implement comprehensive error handling** for all user interactions
 - **Create modular, reusable components** for character customization
-- **Use JSON/YAML configuration** for data management
 - **Follow SOLID principles** especially Single Responsibility
 
 ### Character AI Integration
-- **Generate models from photos** using descriptive prompts about anime style
-- **Create animation controllers** with smooth transitions between states
-- **Implement reactive character behaviors** based on care status
-- **Design emotional feedback systems** showing character responses
+- **Generate models in Blender from photos** using descriptive prompts about anime style
+- **Export to Unity via FBX** with proper rig settings (Humanoid)
+- **Create Unity animation controllers** with smooth transitions between states
+- **Implement reactive character behaviors in Unity C#** based on care status
+- **Design emotional feedback systems** showing character responses (Unity UI)
 
 ### Educational System Requirements
-- **Homework assignment API integration** for school systems
-- **Progress tracking with visual indicators** for student engagement  
-- **Achievement system** encouraging consistent care and academic performance
-- **Parental/teacher dashboard** for monitoring student progress
+- **Homework assignment API integration in Unity C#** for school systems
+- **Progress tracking with Unity UI visual indicators** for student engagement  
+- **Achievement system in Unity** encouraging consistent care and academic performance
+- **Parental/teacher dashboard using Unity UI** for monitoring student progress
 
-## Modern Blender Best Practices
+## Unity & Blender Best Practices
 
-### Performance Optimization
-- **Object pooling** for UI elements and particle effects
+### Unity Performance Optimization
+- **Object pooling** for frequently instantiated objects (bullets, UI elements, particles)
+- **Addressable assets** for lazy loading of character outfits and accessories
+- **Unity Profiler** for identifying performance bottlenecks
+- **Target 60fps** on mobile devices (iOS/Android)
+- **Memory management** with proper disposal and avoiding GC allocations in Update()
+
+### Blender Asset Creation
 - **Efficient asset loading** using Blender's asset management
-- **Desktop-first optimization** ensuring smooth performance across devices
+- **FBX export settings** compatible with Unity (scale, axis, animations)
 - **Memory management** with proper disposal of temporary objects
+- **Texture optimization** for mobile platforms (compress, resize)
 
 ### User Experience Design
 - **Consistent visual hierarchy** with clear navigation
