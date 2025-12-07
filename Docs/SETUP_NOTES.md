@@ -284,6 +284,53 @@ sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
 
 ---
 
+## Animation Workflows
+
+The project supports **two animation pipelines** for flexibility:
+
+### Unity-Native Animation Pipeline (NEW)
+
+**For rapid animation iteration and agent-friendly workflows:**
+
+- **Tools**: UMotion Pro, Animancer, Final IK (Unity Asset Store)
+- **Workflow**: Create/edit animations directly in Unity Editor
+- **Best For**: Animation editing, retargeting, quick prototyping
+- **Documentation**: 
+  - Full Guide: [Docs/UNITY_NATIVE_ANIMATION_GUIDE.md](UNITY_NATIVE_ANIMATION_GUIDE.md)
+  - Agent Quickstart: [Docs/ANIMATION_QUICKSTART_AGENTS.md](ANIMATION_QUICKSTART_AGENTS.md)
+
+**Quick Start:**
+```
+1. Install UMotion Pro from Unity Asset Store ($90)
+2. Window > UMotion Editor > Clip Editor
+3. Create animation project, assign character
+4. Animate with real-time preview
+5. Export as Unity .anim file
+6. Use with Animator or Animancer
+```
+
+### Blender Animation Pipeline (Original)
+
+**For custom character modeling and complex rigging:**
+
+- **Tools**: Blender 5.0.0 + Python scripting
+- **Workflow**: Model → Rig → Animate → Export FBX → Import to Unity
+- **Best For**: Character creation from photos, custom rigging, facial animation
+- **Documentation**: See main README.md and Blender/ folder
+
+**Quick Start:**
+```
+1. Open Blender 5.0.0
+2. Run Blender/startup_script.py
+3. Create character and animations
+4. Run Blender/export_character.py
+5. Import FBX into Unity
+```
+
+**Recommendation**: Use Blender for character modeling, Unity-native for animation work.
+
+---
+
 ## Resources
 
 - [Unity Manual (2022.3 LTS)](https://docs.unity3d.com/2022.3/Documentation/Manual/)
@@ -291,6 +338,8 @@ sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
 - [Blender Manual](https://docs.blender.org/manual)
 - [Blender Python API](https://docs.blender.org/api)
 - [Project README](../README.md)
+- [Unity-Native Animation Guide](UNITY_NATIVE_ANIMATION_GUIDE.md)
+- [Animation Quickstart for Agents](ANIMATION_QUICKSTART_AGENTS.md)
 - [Extension Guide](EXTENSIONS_AND_TOOLS.md)
 
 ---

@@ -194,7 +194,10 @@ The first development phase creates a working prototype using **Leandi** (your w
 - **Event-Driven**: Loose coupling using Unity's event system and C# delegates
 - **Data-Driven**: JSON serialization via Unity's JsonUtility for all user data
 - **Performance-First**: Mobile-optimized with 60fps target, object pooling for efficiency
-- **Blender Pipeline**: Asset creation in Blender, export to Unity via FBX/GLB formats
+- **Dual Animation Pipeline**: 
+  - **Blender Workflow**: Custom character modeling and rigging, export to Unity via FBX/GLB
+  - **Unity-Native Workflow**: Animation editing and control with UMotion Pro, Animancer, Final IK
+  - See [Unity-Native Animation Guide](Docs/UNITY_NATIVE_ANIMATION_GUIDE.md) and [Agent Quickstart](Docs/ANIMATION_QUICKSTART_AGENTS.md)
 
 ## 🛠️ **Development Roadmap**
 
@@ -203,11 +206,14 @@ The first development phase creates a working prototype using **Leandi** (your w
 - [x] Project structure and VSCode rules setup
 - [x] Unity 2022.3.12f1 project initialization
 - [x] Unity C# core systems (GameManager, UserManager, CharacterController)
+- [x] Unity-native animation pipeline documentation (UMotion Pro, Animancer, Final IK)
 - [ ] Generate Leandi character from photos using AI in Blender
 - [ ] Export character to Unity (FBX format)
 - [ ] Implement basic customization in Unity (eye scaling, outfits)
-- [ ] Create essential animations in Blender (dance, wave, wai, curtsy, bow)
-- [ ] Import animations into Unity Animator
+- [ ] Create essential animations (dance, wave, wai, curtsy, bow)
+  - Option A: Blender workflow (traditional)
+  - Option B: Unity-native tools (faster iteration)
+- [ ] Import animations into Unity Animator or Animancer
 - [ ] Build homework integration prototype in Unity C#
 
 ### **Phase 2 - Core Systems**
