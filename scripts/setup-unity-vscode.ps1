@@ -59,7 +59,7 @@ function Update-VSCodeRecommendations ([string]$root) {
     $desired = @(
         'ms-dotnettools.csharp',
         'ms-dotnettools.csdevkit',
-        'unity.unity-debug',
+        'VisualStudioToolsForUnity.vstuc',
         'kreativ-software.unity-snippets',
         'editorconfig.editorconfig'
     )
