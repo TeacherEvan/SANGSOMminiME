@@ -68,6 +68,16 @@ This document summarizes the production-grade improvements made to the Sangsom M
 - Smooth UI transitions
 - User feedback during async operations
 
+### 7. Save Flow Optimizations (Dirty-Flag First)
+
+**Files:** `Assets/Scripts/Runtime/UserProfile.cs`, `UserManager.cs`, `CharacterController.cs`
+
+**Changes:**
+
+- Propagate dirty flags directly from profile mutations (coins/XP/happiness/customization) to avoid missed saves.
+- Swap eye-scale slider persistence to use dirty marking instead of immediate disk writes.
+- Skip manual saves when no data changed and clear dirty flag only after successful writes.
+
 ---
 
 ## Code Quality Metrics

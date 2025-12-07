@@ -125,7 +125,7 @@ namespace SangsomMiniMe.Core
 
                 // Persist immediately
                 SaveUserProfilesToDisk();
-                
+
                 // Notify listeners
                 OnUserCreated?.Invoke(newUser);
 
@@ -168,7 +168,7 @@ namespace SangsomMiniMe.Core
                 // Set current user and notify
                 currentUser = user;
                 OnUserLoggedIn?.Invoke(currentUser);
-                
+
                 LogInfo($"User logged in successfully: {currentUser.DisplayName} (ID: {currentUser.UserName})");
                 return true;
             }
@@ -193,7 +193,7 @@ namespace SangsomMiniMe.Core
                 }
 
                 var userName = currentUser.DisplayName;
-                
+
                 // Save any pending changes before logout
                 if (isDirty)
                 {
@@ -203,7 +203,7 @@ namespace SangsomMiniMe.Core
                 // Clear current user and notify
                 currentUser = null;
                 OnUserLoggedOut?.Invoke();
-                
+
                 LogInfo($"User logged out: {userName}");
             }
             catch (Exception ex)
@@ -251,10 +251,10 @@ namespace SangsomMiniMe.Core
                 // Remove and persist
                 userProfiles.Remove(user);
                 SaveUserProfilesToDisk();
-                
+
                 // Notify listeners
                 OnUserDeleted?.Invoke(user);
-                
+
                 LogInfo($"User deleted: {userName}");
                 return true;
             }
@@ -301,28 +301,32 @@ namespace SangsomMiniMe.Core
             if (isDirty && currentUser != null)
             {
                 SaveUserProfilesToDisk();
-                isDirty = false;
-                LogInfo("Dirty data saved successfully.", true);
-            }
-        }
+                if (!isDirty || currentUser == null)
+                    return;
 
-        /// <summary>
+                SaveUserProfilesToDisk();
+                LogInfo("Dirty data saved successfully.", true);
         /// Saves all user profiles to disk with error handling and optional backup.
         /// </summary>
         private void SaveUserProfilesToDisk()
         {
             if (!enableDataPersistence)
-            {
+                public void SaveCurrentUser(bool force = false)
                 LogInfo("Data persistence is disabled. Skipping save.", true);
-                return;
-            }
-
-            if (isSaving)
+            if (currentUser == null)
             {
-                Debug.LogWarning("[UserManager] Save already in progress. Skipping duplicate save request.");
+                Debug.LogWarning("[UserManager] Cannot save: No user is currently logged in.");
                 return;
             }
 
+            if (!force && !isDirty)
+            {
+                LogInfo("Save skipped: No pending changes detected.", true);
+                return;
+            }
+
+            SaveUserProfilesToDisk();
+            isDirty = false;
             try
             {
                 isSaving = true;
@@ -336,13 +340,13 @@ namespace SangsomMiniMe.Core
                 // Serialize and save
                 var collection = new UserProfileCollection { profiles = userProfiles };
                 string jsonData = JsonUtility.ToJson(collection, true);
-                
+
                 // Write to disk
                 File.WriteAllText(saveFilePath, jsonData);
-                
+
                 // Notify listeners
                 OnDataSaved?.Invoke();
-                
+
                 LogInfo($"User profiles saved successfully. Total profiles: {userProfiles.Count}");
             }
             catch (Exception ex)
@@ -358,6 +362,9 @@ namespace SangsomMiniMe.Core
 
         /// <summary>
         /// Creates a backup of the current save file.
+
+        // Clear dirty flag after successful write
+        isDirty = false;
         /// Maintains a rolling backup system with configurable max count.
         /// </summary>
         private void CreateBackupFile()
@@ -369,7 +376,7 @@ namespace SangsomMiniMe.Core
 
                 // Clean up old backups
                 CleanupOldBackups();
-                
+
                 LogInfo($"Backup created: {Path.GetFileName(backupPath)}", true);
             }
             catch (Exception ex)
@@ -435,19 +442,19 @@ namespace SangsomMiniMe.Core
                 // Read and deserialize
                 string jsonData = File.ReadAllText(saveFilePath);
                 var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
-                
+
                 userProfiles = collection?.profiles ?? new List<UserProfile>();
-                
+
                 // Notify listeners
                 OnDataLoaded?.Invoke();
-                
+
                 LogInfo($"Successfully loaded {userProfiles.Count} user profile(s) from disk.");
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[UserManager] Failed to load user profiles: {ex.Message}");
                 userProfiles = new List<UserProfile>();
-                
+
                 // TODO: [OPTIMIZATION] Attempt to load from backup if main save is corrupted
                 TryLoadFromBackup();
             }
@@ -479,9 +486,9 @@ namespace SangsomMiniMe.Core
                 string backupFile = backupFiles[0];
                 string jsonData = File.ReadAllText(backupFile);
                 var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
-                
+
                 userProfiles = collection?.profiles ?? new List<UserProfile>();
-                
+
                 Debug.LogWarning($"[UserManager] Recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
             }
             catch (Exception ex)
@@ -731,8 +738,8 @@ namespace SangsomMiniMe.Core
     /// Required for JsonUtility serialization.
     /// </summary>
     [Serializable]
-    public class UserProfileCollection
-    {
-        public List<UserProfile> profiles;
-    }
+public class UserProfileCollection
+{
+    public List<UserProfile> profiles;
+}
 }

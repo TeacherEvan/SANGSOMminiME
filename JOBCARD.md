@@ -6,6 +6,13 @@
 **Phase**: Unity-Only Refactor
 **Status**: ✅ COMPLETED
 
+### Follow-up: Save System Optimizations (December 7, 2025)
+
+- Hardened dirty-flag propagation inside `UserProfile` so currency/XP/happiness/customization changes always mark data dirty.
+- Removed per-frame disk writes from eye-scale slider; now defers to auto-save/manual saves.
+- Added guardrails to `UserManager.SaveCurrentUser` to skip no-op writes and clear dirty flag only after successful persistence.
+- Updated documentation and notes to reflect the leaner save flow.
+
 ---
 
 ## Session: December 7, 2025 - Unity-Only Conversion

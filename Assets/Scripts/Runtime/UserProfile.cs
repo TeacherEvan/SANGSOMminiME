@@ -27,6 +27,12 @@ namespace SangsomMiniMe.Core
         [SerializeField] private int daysActive;
         [SerializeField] private float characterHappiness = 50f;
 
+        // Dirty flag propagation helper to avoid missed saves and unnecessary disk writes
+        private void MarkDirty()
+        {
+            UserManager.Instance?.MarkDirty();
+        }
+
         // Events
         public event System.Action<int> OnCoinsChanged;
         public event System.Action<int> OnExperienceChanged;
@@ -78,12 +84,14 @@ namespace SangsomMiniMe.Core
         {
             experiencePoints += amount;
             OnExperienceChanged?.Invoke(experiencePoints);
+            MarkDirty();
         }
 
         public void AddCoins(int amount)
         {
             coins += amount;
             OnCoinsChanged?.Invoke(coins);
+            MarkDirty();
         }
 
         public bool SpendCoins(int amount)
@@ -92,6 +100,7 @@ namespace SangsomMiniMe.Core
             {
                 coins -= amount;
                 OnCoinsChanged?.Invoke(coins);
+                MarkDirty();
                 return true;
             }
             return false;
@@ -113,18 +122,22 @@ namespace SangsomMiniMe.Core
                 AddCoins(GameConstants.HomeworkCoinReward);
                 IncreaseHappiness(GameConstants.HomeworkHappinessReward);
             }
+
+            MarkDirty();
         }
 
         public void IncreaseHappiness(float amount)
         {
             characterHappiness = Mathf.Clamp(characterHappiness + amount, 0f, 100f);
             OnHappinessChanged?.Invoke(characterHappiness);
+            MarkDirty();
         }
 
         public void DecreaseHappiness(float amount)
         {
             characterHappiness = Mathf.Clamp(characterHappiness - amount, 0f, 100f);
             OnHappinessChanged?.Invoke(characterHappiness);
+            MarkDirty();
         }
 
         public void SetEyeScale(float scale, GameConfiguration config = null)
@@ -132,16 +145,19 @@ namespace SangsomMiniMe.Core
             float minScale = config != null ? config.MinEyeScale : GameConstants.MinEyeScale;
             float maxScale = config != null ? config.MaxEyeScale : GameConstants.MaxEyeScale;
             eyeScale = Mathf.Clamp(scale, minScale, maxScale);
+            MarkDirty();
         }
 
         public void SetOutfit(string outfit)
         {
             currentOutfit = outfit;
+            MarkDirty();
         }
 
         public void SetAccessory(string accessory)
         {
             currentAccessory = accessory;
+            MarkDirty();
         }
     }
 }

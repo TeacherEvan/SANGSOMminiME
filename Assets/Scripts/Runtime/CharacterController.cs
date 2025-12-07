@@ -115,7 +115,7 @@ namespace SangsomMiniMe.Character
             if (Core.UserManager.Instance?.CurrentUser != null)
             {
                 Core.UserManager.Instance.CurrentUser.SetEyeScale(scale, gameConfig);
-                Core.UserManager.Instance.SaveCurrentUser();
+                Core.UserManager.Instance.MarkDirty();
             }
         }
 

@@ -2,6 +2,11 @@
     "recommendations": [
         "ms-python.python",
         "JacquesLucke.blender-development",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "unity.unity-debug",
+        "kreativ-software.unity-snippets",
+        "editorconfig.editorconfig"
     ]
 }
