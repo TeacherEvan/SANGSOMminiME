@@ -134,42 +134,44 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
 ## Development Stack & Implementation
 
 @technical_stack {
-  "3d_engine": "Blender 5.0.0",
-  "ai_assistant": "VSCode for code generation and asset creation",
-  "modeling": "AI-generated models with Blender integration",
-  "animation": "Blender Animation System with custom controllers",
-  "database": "User account management and progress tracking",
+  "game_engine": "Unity 2022.3.12f1 LTS",
+  "scripting_language": "C# .NET for Unity runtime logic",
+  "3d_engine": "Blender 5.0.0 for asset creation",
+  "ai_assistant": "VSCode for C# and Python code generation",
+  "modeling": "AI-generated models in Blender with Unity integration",
+  "animation": "Blender Animation System, exported to Unity Animator via FBX",
+  "database": "Unity JsonUtility for user account management and progress tracking",
   "security": "Password-protected administrative access"
 }
 
 @key_systems [
   {
     "system": "student_registration",
-    "description": "Link real students to mini-me avatars"
+    "description": "Link real students to mini-me avatars (Unity C# UserManager)"
   },
   {
     "system": "homework_integration", 
-    "description": "Direct connection to school assignment platform"
+    "description": "Direct connection to school assignment platform via Unity REST API"
   },
   {
     "system": "progress_tracking",
-    "description": "Visual indicators of care status and academic performance"
+    "description": "Visual indicators of care status and academic performance (Unity UI)"
   },
   {
     "system": "customization_engine",
-    "description": "Scalable eye sizes, outfits, accessories, room items"
+    "description": "Scalable eye sizes, outfits, accessories, room items (Unity C# + Blender assets)"
   },
   {
     "system": "reward_system",
-    "description": "Achievement-based progression through homework and side games"
+    "description": "Achievement-based progression through homework and side games (Unity C#)"
   },
   {
     "system": "multi_user_accounts",
-    "description": "Multiple student profiles and character management"
+    "description": "Multiple student profiles and character management (Unity JsonUtility)"
   },
   {
     "system": "minime_universe_bridge",
-    "description": "Cross-game resource sharing and progress tracking"
+    "description": "Cross-game resource sharing and progress tracking (Unity ScriptableObjects)"
   }
 ]
 
@@ -191,20 +193,27 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
 ## AI-Optimized Development Phases
 
 @agent_collaboration_workflow {
-  "methodology": "Blender-Focused Human-AI Development Cycles",
-  "testing_approach": "Blender Viewport Preview > Automated Test Scripts",
-  "ai_integration": "Blender Code Generation + Asset Pipeline Automation",
-  "developer_role": "Blender Editor Operator & Experience Validator"
+  "methodology": "Unity-Blender Hybrid Development Cycles",
+  "testing_approach": "Unity PlayMode Testing > Blender Viewport Preview > Automated NUnit Tests",
+  "ai_integration": "Unity C# Code Generation + Blender Asset Pipeline Automation",
+  "developer_role": "Unity Editor Operator + Blender Asset Creator & Experience Validator"
 }
 
 @development_roadmap [
   {
     "phase": 1,
-    "title": "Blender Project Foundation",
+    "title": "Unity & Blender Project Foundation",
     "duration": "1 sprint",
-    "approach": "blender_setup_workflow",
+    "approach": "unity_blender_setup_workflow",
     "collaboration_pattern": "developer_guided_ai_assistance",
     "tasks": [
+      {
+        "task": "Unity Project Setup",
+        "method": "unity_project_validation",
+        "acceptance": "Developer opens Unity 2022.3.12f1 project and confirms MainScene loads",
+        "ai_role": "Provide Unity project structure guidance and C# namespace conventions",
+        "human_role": "Open Unity project and validate scene structure"
+      },
       {
         "task": "Blender Project Creation",
         "method": "blender_new_project",
@@ -214,27 +223,27 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
       },
       {
         "task": "Implement Optimized File Architecture",
-        "method": "blender_folder_organization",
-        "acceptance": "Developer confirms Assets/ folder follows @project_structure guidelines",
-        "ai_role": "Generate folder creation scripts and Python modules",
-        "human_role": "Execute folder creation and verify Blender recognizes structure"
+        "method": "unity_blender_folder_organization",
+        "acceptance": "Developer confirms Assets/ folder follows Unity/Blender hybrid @project_structure guidelines",
+        "ai_role": "Generate folder creation scripts and Unity C# namespace structure",
+        "human_role": "Execute folder creation and verify Unity recognizes structure"
       },
       {
         "task": "Leandi Character Asset Import",
         "method": "blender_asset_import_pipeline",
         "acceptance": "Developer successfully imports Leandi photos into Characters/Leandi/Photos/",
-        "ai_role": "Create import settings and texture optimization",
+        "ai_role": "Create import settings and texture optimization for Blender",
         "human_role": "Import photos and validate import settings in Blender"
       },
       {
-        "task": "Basic Scene Setup",
-        "method": "blender_scene_creation",
-        "acceptance": "Developer has main scene with basic lighting and camera setup",
-        "ai_role": "Generate scene setup scripts and lighting configurations",
-        "human_role": "Create scene in Blender and test viewport rendering"
+        "task": "Unity Scene Setup",
+        "method": "unity_scene_creation",
+        "acceptance": "Developer has MainScene.unity with basic lighting and camera setup",
+        "ai_role": "Generate Unity C# scene setup scripts and lighting configurations",
+        "human_role": "Create scene in Unity and test in PlayMode"
       }
     ],
-    "test_limit": "Blender viewport validation only - no external test runners needed"
+    "test_limit": "Unity PlayMode validation + Blender viewport validation - minimal automated tests"
   },
   {
     "phase": 2,
@@ -245,18 +254,25 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
     "tasks": [
       {
         "task": "Basic Care Loop",
-        "method": "live_gameplay_test",
-        "acceptance": "Developer plays through 5-minute care session",
-        "ai_role": "Build complete system",
-        "human_role": "Playtest & iterate",
-        "test_limit": "No automated tests - human gameplay validation only"
+        "method": "unity_playmode_test",
+        "acceptance": "Developer plays through 5-minute care session in Unity",
+        "ai_role": "Build complete Unity C# system",
+        "human_role": "Playtest in Unity & iterate",
+        "test_limit": "Unity PlayMode testing - human gameplay validation only"
       },
       {
         "task": "Eye-Size Scaling Demo",
-        "method": "realtime_ui_test",
-        "acceptance": "Developer adjusts sliders and sees immediate results",
-        "ai_role": "UI + logic implementation", 
-        "human_role": "Interactive testing & UX feedback"
+        "method": "unity_realtime_ui_test",
+        "acceptance": "Developer adjusts sliders in Unity and sees immediate results",
+        "ai_role": "Unity UI + C# logic implementation", 
+        "human_role": "Interactive testing in Unity & UX feedback"
+      },
+      {
+        "task": "Blender to Unity Export",
+        "method": "fbx_export_test",
+        "acceptance": "Developer exports character from Blender, imports into Unity successfully",
+        "ai_role": "Create Blender Python export script for Unity FBX format",
+        "human_role": "Test export/import pipeline and verify in Unity"
       }
     ]
   },
@@ -269,20 +285,20 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
     "tasks": [
       {
         "task": "Multi-User Framework",
-        "method": "live_account_switching",
-        "acceptance": "Developer creates and switches between 3 accounts",
-        "ai_role": "Backend implementation",
-        "human_role": "Manual account testing & security validation"
+        "method": "unity_account_switching",
+        "acceptance": "Developer creates and switches between 3 accounts in Unity",
+        "ai_role": "Unity C# backend implementation with JsonUtility",
+        "human_role": "Manual account testing in Unity & security validation"
       },
       {
         "task": "Save/Load System", 
-        "method": "session_persistence_test",
-        "acceptance": "Developer saves, closes, reopens - state preserved",
-        "ai_role": "Serialization logic",
-        "human_role": "Cross-session testing"
+        "method": "unity_session_persistence_test",
+        "acceptance": "Developer saves, closes Unity, reopens - state preserved",
+        "ai_role": "Unity C# serialization logic with JsonUtility",
+        "human_role": "Cross-session testing in Unity"
       }
     ],
-    "optimization": "Focus on developer experience over test coverage"
+    "optimization": "Focus on developer Unity experience over test coverage"
   },
   {
     "phase": 4,
@@ -293,20 +309,20 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
     "tasks": [
       {
         "task": "Homework Integration",
-        "method": "mock_assignment_completion",
-        "acceptance": "Developer completes fake homework → Mini-Me responds",
-        "ai_role": "API integration + reward logic",
-        "human_role": "End-to-end workflow testing"
+        "method": "unity_mock_assignment_completion",
+        "acceptance": "Developer completes fake homework in Unity → Mini-Me responds",
+        "ai_role": "Unity C# API integration + reward logic",
+        "human_role": "End-to-end workflow testing in Unity PlayMode"
       },
       {
         "task": "Progress Visualization",
-        "method": "live_progress_tracking",
-        "acceptance": "Developer sees visual progress changes in real-time",
-        "ai_role": "UI components + data binding",
-        "human_role": "Visual validation & UX iteration"
+        "method": "unity_live_progress_tracking",
+        "acceptance": "Developer sees visual progress changes in Unity real-time",
+        "ai_role": "Unity UI components + data binding",
+        "human_role": "Visual validation in Unity & UX iteration"
       }
     ],
-    "test_philosophy": "Real educational scenarios > unit tests"
+    "test_philosophy": "Real Unity educational scenarios > unit tests"
   },
   {
     "phase": 5,
@@ -317,17 +333,17 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
     "tasks": [
       {
         "task": "Performance Optimization",
-        "method": "developer_stress_testing",
-        "acceptance": "Developer confirms smooth 60fps gameplay",
-        "ai_role": "Code optimization + profiling",
-        "human_role": "Performance validation on target devices"
+        "method": "unity_profiler_stress_testing",
+        "acceptance": "Developer confirms smooth 60fps gameplay in Unity Profiler",
+        "ai_role": "Unity C# code optimization + Unity Profiler analysis",
+        "human_role": "Performance validation on target devices via Unity builds"
       },
       {
         "task": "UX Polish Pass",
-        "method": "heuristic_evaluation",
-        "acceptance": "Developer approves overall feel and responsiveness", 
-        "ai_role": "Animation + transition improvements",
-        "human_role": "Subjective quality assessment"
+        "method": "unity_heuristic_evaluation",
+        "acceptance": "Developer approves overall feel and responsiveness in Unity", 
+        "ai_role": "Unity Animation + transition improvements",
+        "human_role": "Subjective quality assessment in Unity PlayMode"
       }
     ]
   }
@@ -338,10 +354,11 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   "rationale": "Educational games require human validation of engagement and fun",
   "guidelines": [
     "Limit automated test runs to 2 per feature maximum",
-    "Prioritize developer live-testing over scripted validation", 
-    "Use AI for rapid iteration based on human feedback",
-    "Focus on end-user experience validation",
-    "Implement 'playground testing' where developer explores freely"
+    "Prioritize developer live-testing in Unity PlayMode over scripted validation", 
+    "Use AI for rapid Unity C# iteration based on human feedback",
+    "Focus on end-user experience validation in Unity",
+    "Implement 'playground testing' in Unity where developer explores freely",
+    "Use Unity Test Runner for critical systems only (save/load, user management)"
   ]
 }
 
@@ -349,16 +366,16 @@ tags: ["blender", "education", "3d-modeling", "tamagotchi", "gamification"]
   "vibe_coding_sessions": {
     "purpose": "Rapid prototyping with immediate feedback",
     "duration": "30-60 minutes focused sessions",
-    "method": "Developer describes vision → AI implements → Live testing"
+    "method": "Developer describes vision → AI implements Unity C# → Live testing in Unity PlayMode"
   },
   "agentic_development": {
     "purpose": "Complex system implementation", 
     "autonomy_level": "High AI autonomy with human checkpoints",
-    "method": "AI plans → implements → tests → reports to human"
+    "method": "AI plans → implements Unity C# → tests in Unity → reports to human"
   },
   "interactive_debugging": {
     "purpose": "Real-time issue resolution",
-    "method": "Human observes issue → AI diagnoses → implements fix → human validates"
+    "method": "Human observes issue in Unity → AI diagnoses → implements fix → human validates in Unity"
   }
 }
 
