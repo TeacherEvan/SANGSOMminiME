@@ -4,8 +4,9 @@
 
 ### Prerequisites
 
-- [Blender 5.0.0](https://www.blender.org/download/) or later
-- [VSCode](https://code.visualstudio.com/) (recommended for development)
+- [Unity 2022.3.12f1 LTS](https://unity.com/download) - Primary game engine
+- [Blender 5.0.0](https://www.blender.org/download/) or later - Asset creation
+- [VSCode](https://code.visualstudio.com/) (recommended for C# and Python development)
 - Python 3.11+ (bundled with Blender)
 
 ### First-Time Setup
@@ -17,21 +18,29 @@
    cd SANGSOMminiME
    ```
 
-2. **Open Blender and Load Startup Script**
+2. **Open Unity Project**
+   - Open Unity Hub
+   - Click "Add" → Select SANGSOMminiME folder
+   - Unity Hub will detect version 2022.3.12f1
+   - Click to open the project
+   - Navigate to Assets/Scenes/ and open **MainScene.unity**
+
+3. **Setup Blender for Asset Creation**
    - Open Blender 5.0.0
    - Go to `Scripting` workspace (top menu)
    - Click `Open` and select `Blender/startup_script.py`
    - Click `Run Script` (▶ button)
 
-3. **Install Mini-Me Addon** (Optional but Recommended)
+4. **Install Mini-Me Blender Addon** (Optional but Recommended)
    - Go to `Edit > Preferences > Add-ons`
    - Click `Install...`
    - Select `Blender/minime_addon.py`
    - Enable "Sangsom Mini-Me Tools"
    - Save Preferences
 
-4. **Verify Setup**
-   - Look for "Mini-Me" tab in the 3D View sidebar (press `N` to toggle)
+5. **Verify Setup**
+   - **Unity**: Press Play button in Unity Editor - should see login screen
+   - **Blender**: Look for "Mini-Me" tab in the 3D View sidebar (press `N` to toggle)
    - Check that project collections are created (Characters, Environment, etc.)
 
 ---
@@ -40,36 +49,45 @@
 
 ```
 SANGSOMminiME/
-├── Assets/                     # All project assets
-│   ├── 3rdParty/              # External dependencies
+├── Assets/                     # Unity project assets
+│   ├── 3rdParty/              # External Unity packages
 │   ├── Art/                   # Art assets by type
-│   │   ├── Animation/         # Animation clips
+│   │   ├── Animation/         # Animation clips (Unity Animator)
 │   │   ├── Audio/            # Sound effects & music
-│   │   ├── Materials/        # Material definitions
-│   │   ├── Models/           # 3D models
+│   │   ├── Materials/        # Unity materials
+│   │   ├── Models/           # 3D models (FBX from Blender)
 │   │   ├── Textures/         # Texture files
 │   │   └── ...
 │   ├── Characters/            # Per-character folders
 │   │   └── Leandi/           # Test character
-│   │       └── Photos/       # Reference images
-│   ├── Data/                 # Data configurations
+│   │       ├── Photos/       # Reference images for Blender
+│   │       └── Models/       # Exported FBX files from Blender
+│   ├── Data/                 # ScriptableObject data
 │   ├── Minime-Universe/      # Educational mini-games
-│   ├── Prefabs/              # Reusable objects
+│   ├── Prefabs/              # Unity prefabs
 │   ├── Resources/            # Runtime loadable assets
-│   ├── Scenes/               # Blender scenes
-│   ├── Scripts/              # C#/Python code
-│   │   ├── Editor/           # Editor tools
-│   │   ├── Runtime/          # Game logic
-│   │   └── Tests/            # Unit tests
-│   └── Settings/             # Configuration files
-├── Blender/                   # Blender-specific files
+│   ├── Scenes/               # Unity scenes (MainScene.unity)
+│   ├── Scripts/              # C# Unity scripts
+│   │   ├── Runtime/          # Game logic (C#)
+│   │   │   ├── Core/         # GameManager, UserManager
+│   │   │   ├── Character/    # CharacterController
+│   │   │   ├── UI/           # GameUI, LoginUI
+│   │   │   └── Educational/  # EducationalAnalytics
+│   │   ├── Editor/           # Unity editor tools
+│   │   └── Tests/            # NUnit tests (Unity Test Runner)
+│   └── Settings/             # Unity project settings
+├── Blender/                   # Blender-specific Python scripts
 │   ├── startup_script.py     # Project initialization
 │   ├── character_controller.py # Character system
-│   ├── user_manager.py       # User profiles
+│   ├── user_manager.py       # User profiles (mirrors Unity)
+│   ├── export_character.py   # Export to Unity (FBX/GLB)
 │   └── minime_addon.py       # Blender addon
 ├── Docs/                      # Documentation
 │   ├── SETUP_NOTES.md        # This file
 │   └── EXTENSIONS_AND_TOOLS.md
+├── ProjectSettings/           # Unity project configuration
+│   └── ProjectVersion.txt    # Unity 2022.3.12f1
+├── Packages/                  # Unity Package Manager
 ├── .vscode/                   # VSCode rules
 │   └── rules/                # AI development guidelines
 ├── README.md                  # Project overview
@@ -116,6 +134,18 @@ SANGSOMminiME/
    - Use Mini-Me addon to create placeholders
    - Import from Mixamo or create manually
 
+6. **Export to Unity**
+   - In Blender, select character and animations
+   - Run `export_character.py` or use Mini-Me addon export button
+   - Choose FBX format for Unity compatibility
+   - Export to `Assets/Characters/[Name]/Models/`
+
+7. **Import into Unity**
+   - Unity will auto-import FBX files
+   - Configure import settings (rig type: Humanoid)
+   - Create Unity Animator Controller
+   - Set up animation states and transitions
+
 ### Scripting with VSCode
 
 1. **Open Project in VSCode**
@@ -126,28 +156,37 @@ SANGSOMminiME/
 
 2. **AI Rules are Auto-Loaded**
    - Rules in `.vscode/rules/` configure AI behavior
-   - Follow established patterns and conventions
+   - Separate rules for Unity C# and Blender Python
+   - Follow established SangsomMiniMe namespace conventions
 
 3. **Example Prompts**
 
    ```
-   "Create a happiness decay system that reduces character happiness by 1% per hour of inactivity"
+   "Create a Unity C# happiness decay system that reduces character happiness by 1% per hour of inactivity"
    
-   "Generate a Blender script to batch import all photos from a folder as reference images"
+   "Generate a Blender Python script to batch import all photos from a folder as reference images"
    
-   "Write a function to export character with all animations in GLB format"
+   "Write a Unity C# function to save user profile data using JsonUtility"
+   
+   "Create a Blender Python function to export character with all animations in FBX format for Unity"
    ```
 
 ### Testing Your Work
 
-1. **In Blender**
+1. **In Unity**
+   - Press Play button in Unity Editor to test gameplay
+   - Use Unity Test Runner (Window > General > Test Runner)
+   - Run NUnit tests in Assets/Scripts/Tests/
+   - Use Unity Profiler to check performance (Window > Analysis > Profiler)
+
+2. **In Blender**
    - Use the Mini-Me panel to test animations
    - Check Python console for errors (Window > Toggle System Console)
    - Render preview to verify appearance
 
 2. **Unit Tests** (if applicable)
-   - Run tests for core systems
-   - Python: `python -m pytest Assets/Scripts/Tests/`
+   - Unity: Use Test Runner (Window > General > Test Runner)
+   - Blender Python: `python -m pytest Assets/Scripts/Tests/` (if pytest configured)
 
 ---
 
@@ -172,20 +211,28 @@ for filename in os.listdir(abs_path):
 print("Photos imported!")
 ```
 
-### Export Character for Web
+### Export Character for Unity
 
 ```python
-# Export selected character as GLB
+# In Blender, select character and run:
 import bpy
+from export_character import export_character_logic
 
-bpy.ops.export_scene.gltf(
-    filepath="//exports/character.glb",
-    export_format='GLB',
-    export_animations=True,
-    export_materials='EXPORT',
-    use_selection=True
+# Export to Unity-compatible FBX
+export_character_logic(
+    character_name="Leandi",
+    output_path="//Assets/Characters/Leandi/Models/",
+    format='FBX'
 )
 ```
+
+Then in Unity:
+1. Unity will auto-detect the FBX file
+2. Select the imported model in Project window
+3. In Inspector, set Rig > Animation Type to "Humanoid"
+4. Click "Apply"
+5. Create Animator Controller (Create > Animator Controller)
+6. Drag animations into Animator window
 
 ### Create Animation Action
 
@@ -239,6 +286,8 @@ sys.path.insert(0, "/path/to/SANGSOMminiME/Blender")
 
 ## Resources
 
+- [Unity Manual (2022.3 LTS)](https://docs.unity3d.com/2022.3/Documentation/Manual/)
+- [Unity Scripting Reference](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/)
 - [Blender Manual](https://docs.blender.org/manual)
 - [Blender Python API](https://docs.blender.org/api)
 - [Project README](../README.md)
