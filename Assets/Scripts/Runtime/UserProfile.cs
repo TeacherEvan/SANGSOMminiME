@@ -82,28 +82,63 @@ namespace SangsomMiniMe.Core
 
         public void AddExperience(int amount)
         {
-            experiencePoints += amount;
+            // Validation for anti-cheat and overflow protection
+            if (!ValidationUtilities.ValidateCurrencyAmount(amount, "Experience", out string error))
+            {
+                ValidationUtilities.LogValidationError("AddExperience", error);
+                return;
+            }
+
+            // Prevent overflow
+            if (experiencePoints + amount > GameConstants.MaxExperience)
+            {
+                experiencePoints = GameConstants.MaxExperience;
+            }
+            else
+            {
+                experiencePoints += amount;
+            }
+
             OnExperienceChanged?.Invoke(experiencePoints);
             MarkDirty();
         }
 
         public void AddCoins(int amount)
         {
-            coins += amount;
+            // Validation for anti-cheat and overflow protection
+            if (!ValidationUtilities.ValidateCurrencyAmount(amount, "Coins", out string error))
+            {
+                ValidationUtilities.LogValidationError("AddCoins", error);
+                return;
+            }
+
+            // Prevent overflow
+            if (coins + amount > GameConstants.MaxCoins)
+            {
+                coins = GameConstants.MaxCoins;
+            }
+            else
+            {
+                coins += amount;
+            }
+
             OnCoinsChanged?.Invoke(coins);
             MarkDirty();
         }
 
         public bool SpendCoins(int amount)
         {
-            if (coins >= amount)
+            // Enhanced validation for spending
+            if (!ValidationUtilities.ValidateResourceSpending(coins, amount, "Coins", out string error))
             {
-                coins -= amount;
-                OnCoinsChanged?.Invoke(coins);
-                MarkDirty();
-                return true;
+                ValidationUtilities.LogValidationError("SpendCoins", error);
+                return false;
             }
-            return false;
+
+            coins -= amount;
+            OnCoinsChanged?.Invoke(coins);
+            MarkDirty();
+            return true;
         }
 
         public void CompleteHomework(GameConfiguration config = null)

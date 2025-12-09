@@ -99,24 +99,32 @@ namespace SangsomMiniMe.Core
         {
             try
             {
-                // Input validation
-                if (string.IsNullOrWhiteSpace(userName))
+                // Enhanced validation using ValidationUtilities
+                if (!ValidationUtilities.ValidateUsername(userName, out string usernameError))
                 {
-                    Debug.LogWarning("[UserManager] Create user failed: Username cannot be empty.");
+                    ValidationUtilities.LogValidationError("CreateUser", usernameError);
                     return null;
                 }
 
-                if (string.IsNullOrWhiteSpace(displayName))
+                if (!ValidationUtilities.ValidateDisplayName(displayName, out string displayNameError))
                 {
-                    Debug.LogWarning("[UserManager] Create user failed: Display name cannot be empty.");
+                    ValidationUtilities.LogValidationError("CreateUser", displayNameError);
                     return null;
                 }
 
-                // Check for duplicate username
-                if (userProfiles.Any(u => string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)))
+                // Check for duplicate username with null-conditional safety
+                if (userProfiles?.Any(u => string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)) == true)
                 {
                     Debug.LogWarning($"[UserManager] Username '{userName}' already exists. Please choose a different username.");
                     return null;
+                }
+
+                // Validate configuration if provided
+                if (config != null && !ValidationUtilities.ValidateGameConfiguration(config, out string[] configErrors))
+                {
+                    Debug.LogWarning($"[UserManager] Invalid configuration provided: {string.Join(", ", configErrors)}");
+                    // Continue with default configuration
+                    config = null;
                 }
 
                 // Create new user profile
