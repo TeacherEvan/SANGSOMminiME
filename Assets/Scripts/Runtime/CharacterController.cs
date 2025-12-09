@@ -121,6 +121,11 @@ namespace SangsomMiniMe.Character
 
         public void SetOutfit(int outfitIndex)
         {
+            // TODO: [OPTIMIZATION] Use ResourcePreloader.GetCachedResource() for outfit materials
+            // - Preload outfit materials during loading screen
+            // - Cache materials to avoid repeated Resources.Load() calls
+            // - Implement async material loading for large texture sets
+            
             if (outfitMaterials != null && outfitIndex >= 0 && outfitIndex < outfitMaterials.Length)
             {
                 currentOutfitIndex = outfitIndex;
@@ -214,6 +219,12 @@ namespace SangsomMiniMe.Character
             float happyThreshold = gameConfig != null ? gameConfig.HappyThreshold : GameConstants.HappyThreshold;
             float sadThreshold = gameConfig != null ? gameConfig.SadThreshold : GameConstants.SadThreshold;
 
+            // TODO: [OPTIMIZATION] Use ObjectPool for happiness particles
+            // - Pool particle systems instead of activating/deactivating
+            // - Pre-warm pool with 3-5 instances during initialization
+            // - Return to pool when happiness drops below threshold
+            // Example: happinessParticles = ObjectPoolManager.Instance.GetOrCreatePool(particlePrefab).Get();
+            
             // Update particle effects and indicators based on happiness
             if (happinessParticles != null)
             {
