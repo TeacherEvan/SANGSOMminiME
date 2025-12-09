@@ -315,25 +315,39 @@ private IEnumerator AutoSaveCoroutine()
 }
 ```
 
-#### 2. Object Pooling for UI
+#### 2. Object Pooling for UI (✅ Implemented)
 
 ```csharp
-// Recommended: Pool frequently created UI elements
-public class UIPool : MonoBehaviour
+// CoinAnimationController.cs - Production implementation
+public class CoinAnimationController : MonoBehaviour
 {
-    private Queue<GameObject> rewardPopups = new Queue<GameObject>();
+    private Core.ObjectPool<GameObject> coinPool;
 
-    public GameObject GetRewardPopup()
+    private void InitializeCoinPool()
     {
-        if (rewardPopups.Count > 0)
-            return rewardPopups.Dequeue();
-        return Instantiate(rewardPopupPrefab);
+        coinPool = new Core.ObjectPool<GameObject>(
+            createFunc: () => Instantiate(coinSpritePrefab, transform),
+            actionOnGet: (obj) => obj.SetActive(true),
+            actionOnRelease: (obj) => obj.SetActive(false),
+            actionOnDestroy: (obj) => Destroy(obj),
+            defaultCapacity: 10,
+            maxSize: 30
+        );
+
+        // Pre-warm pool to avoid first-frame lag
+        for (int i = 0; i < 5; i++)
+        {
+            var warmup = coinPool.Get();
+            coinPool.Release(warmup);
+        }
     }
 
-    public void ReturnRewardPopup(GameObject popup)
+    // Public API for coin animations
+    public void PlayCoinCollectAnimation(int amount, Vector3 spawnPosition,
+        System.Action onComplete = null)
     {
-        popup.SetActive(false);
-        rewardPopups.Enqueue(popup);
+        int coinsToAnimate = Mathf.Clamp(amount / 5, 1, 15);
+        StartCoroutine(SpawnCoinSequence(coinsToAnimate, spawnPosition, onComplete));
     }
 }
 ```
@@ -356,24 +370,76 @@ private async void SaveAsync()
 }
 ```
 
-#### 4. Throttled Meter Updates
+#### 4. Smooth Meter Animations (✅ Implemented)
 
 ```csharp
-// Avoid updating meters every frame
-private float meterUpdateInterval = 1f; // Once per second max
-private float lastMeterUpdate;
-
-void Update()
+// GameUI.cs - Premium meter fill animations
+private IEnumerator AnimateMeterFill(Slider slider, float targetValue,
+    UITransitionManager.EasingMode easingMode)
 {
-    if (Time.time - lastMeterUpdate >= meterUpdateInterval)
+    if (slider == null) yield break;
+
+    float startValue = slider.value;
+    float elapsed = 0f;
+
+    // Add subtle color pulse for visual feedback
+    Image fillImage = slider.fillRect?.GetComponent<Image>();
+    Color originalColor = fillImage != null ? fillImage.color : Color.white;
+
+    while (elapsed < meterAnimationDuration)
     {
-        UpdateMeters();
-        lastMeterUpdate = Time.time;
+        elapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(elapsed / meterAnimationDuration);
+
+        // Apply easing for smooth, organic feel
+        float easedT = UITransitionManager.GetEasedValue(t, easingMode);
+        slider.value = Mathf.Lerp(startValue, targetValue, easedT);
+
+        // Optional: Pulse color on increase (positive feedback)
+        if (fillImage != null && targetValue > startValue)
+        {
+            float pulseIntensity = Mathf.Sin(t * Mathf.PI) * 0.2f;
+            fillImage.color = Color.Lerp(originalColor, Color.white, pulseIntensity);
+        }
+
+        yield return null;
     }
+
+    slider.value = targetValue;
+    if (fillImage != null) fillImage.color = originalColor;
 }
 ```
 
-#### 5. Sprite Atlasing
+#### 5. Premium Easing System (✅ Implemented)
+
+```csharp
+// UITransitionManager.cs - 8 easing modes for micro-interactions
+public enum EasingMode
+{
+    Linear, EaseInOut, EaseIn, EaseOut,
+    Elastic,  // Bounce-back feel
+    Bounce,   // Physical bounce
+    Back,     // Overshoot then settle
+    Spring    // Springy overshoot
+}
+
+// Public API for external animations
+public static float GetEasedValue(float t, EasingMode mode)
+{
+    if (Instance != null) return Instance.ApplyEasing(t, mode);
+    return t;
+}
+
+// Example: Elastic easing for spring bounce-back
+private float ApplyElasticEasing(float t)
+{
+    if (t == 0f || t == 1f) return t;
+    float p = 0.3f;
+    return Mathf.Pow(2f, -10f * t) * Mathf.Sin((t - p / 4f) * (2f * Mathf.PI) / p) + 1f;
+}
+```
+
+#### 6. Sprite Atlasing
 
 ```
 Assets/
@@ -493,6 +559,17 @@ public void PracticeGesture(GestureType type)
 ### Phase 3: Character & Customization 🔄 _Current Priority_
 
 - [x] Eye scaling system
+- [x] **Coin collection animations** (CoinAnimationController.cs)
+  - Object pooling with pre-warming
+  - Flying coins with rotation and scale
+  - Elastic punch feedback on UI
+- [x] **Premium easing library** (UITransitionManager.cs)
+  - 8 modes: Linear, EaseIn/Out, Elastic, Bounce, Back, Spring
+  - Public API for external animations
+- [x] **Smooth meter fill animations** (GameUI.cs)
+  - Happiness, Hunger, Energy animate with EaseOut
+  - Color pulse on meter increase
+  - 0.4s duration for responsive feel
 - [ ] Outfit system implementation
   - Attachment points on character mesh
   - Runtime outfit swapping
