@@ -259,9 +259,15 @@ namespace SangsomMiniMe.UI
         /// </summary>
         private IEnumerator AnimateCoinFlightCoroutine(Vector3 start, Vector3 end, int count, System.Action onComplete)
         {
-            // TODO: [OPTIMIZATION] Implement actual coin sprite flight animation
-            // For now, just wait and call completion
-            // In production, would create temporary coin sprites, animate along bezier curve, pool them
+            // TODO: [OPTIMIZATION] Implement actual coin sprite flight animation (Estimated: 4-6 hours)
+            // Implementation steps:
+            // 1. Create/pool coin UI sprites (2D Image prefabs)
+            // 2. Calculate bezier curve control points (mid-point offset for arc)
+            // 3. Animate sprites along curve using Mathf.Lerp + curve evaluation
+            // 4. Stagger coin departures (0.05s delay between each)
+            // 5. Return sprites to pool on arrival
+            // 6. Add scale/rotation animation during flight for juice
+            // Reference: Use AnimationCurve for smooth easing, WorldToScreenPoint for positioning
             
             yield return new WaitForSeconds(coinAnimationDuration);
             

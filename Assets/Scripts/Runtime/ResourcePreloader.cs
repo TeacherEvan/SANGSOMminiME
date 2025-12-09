@@ -250,10 +250,14 @@ namespace SangsomMiniMe.Core
             int count = resourceCache.Count;
             resourceCache.Clear();
             
-            // TODO: [OPTIMIZATION] Consider selective cache clearing based on usage patterns
-            // - Track resource access frequency
-            // - Keep frequently accessed resources in cache
-            // - Clear only rarely used resources during memory pressure
+            // TODO: [OPTIMIZATION] Selective cache clearing based on usage patterns (Implement when cache >50 items)
+            // Performance thresholds:
+            // - Implement if: resourceCache.Count > 50 OR memory pressure detected (>80% heap usage)
+            // - Track access frequency: Dictionary<string, int> accessCount (increment on GetCachedResource)
+            // - Keep top 20 most accessed resources in cache
+            // - Clear resources not accessed in last 5 minutes
+            // - Profile memory savings: Expect 30-50% reduction for typical usage
+            // Implementation: ~2-3 hours, add LRU cache or access count tracking
             
             LogInfo($"Resource cache cleared. Freed {count} cached resources.");
         }
