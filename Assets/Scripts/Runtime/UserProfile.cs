@@ -52,6 +52,9 @@ namespace SangsomMiniMe.Core
         [SerializeField] private int currentStreak;
         [SerializeField] private int longestStreak;
 
+        // Shop inventory - items owned by this user
+        [SerializeField] private System.Collections.Generic.List<string> ownedItems = new System.Collections.Generic.List<string>();
+
         // Dirty flag propagation helper to avoid missed saves and unnecessary disk writes
         private void MarkDirty()
         {
@@ -87,6 +90,9 @@ namespace SangsomMiniMe.Core
         public string LastLoginDateString => lastLoginDateString;
         public int CurrentStreak => currentStreak;
         public int LongestStreak => longestStreak;
+
+        // Shop inventory (read-write for ShopManager)
+        public System.Collections.Generic.List<string> OwnedItems => ownedItems;
 
         /// <summary>
         /// Processes daily login and returns bonus information.

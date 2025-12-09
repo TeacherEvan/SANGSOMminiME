@@ -721,6 +721,87 @@ Docs/
 
 ---
 
+## Session Log: December 9, 2025 - Phase 2 & 3 Implementation Sprint
+
+### ✅ **Phase 2 - Engagement Loop: COMPLETE**
+
+#### **Daily Login Bonus System**
+
+- Created `DailyLoginSystem.cs` - Static orchestration with events
+- Added `LoginBonusResult` struct to `UserProfile.cs`
+- Streak tracking with positive-only design (no penalties for missed days)
+- Milestone bonuses at 3/7/14/30 days
+
+#### **Meter Decay System**
+
+- Created `MeterDecaySystem.cs` - Gentle decay with floors
+- Added `characterHunger`, `characterEnergy` to `UserProfile.cs`
+- Decay rates: Happiness 0.5/min, Hunger 1.0/min, Energy 0.75/min
+- Floor values: Never drops below 10-20% (no stress mechanics)
+
+#### **Character Care Actions**
+
+- Added Feed/Rest/Play buttons to `GameUI.cs`
+- Feed costs 5 coins, Rest costs 3 coins, Play is free
+- Care actions restore meters and trigger animations
+
+#### **Sound Effect Integration**
+
+- Created `AudioManager.cs` - Singleton with SFX/music sources
+- Added sound hooks: loginBonusChime, milestoneSparkle, coinSound, feedSound, restSound, playSound, gentleReminder
+- Volume persistence via PlayerPrefs
+
+### 🔄 **Phase 3 - Character & Customization: IN PROGRESS**
+
+#### **Comprehensive Shop System Created**
+
+New files in `Assets/Scripts/Runtime/Shop/`:
+
+| File              | Purpose                                                |
+| ----------------- | ------------------------------------------------------ |
+| `ShopEnums.cs`    | ShopCategory, ItemRarity, PurchaseResult, UnlockMethod |
+| `ShopItem.cs`     | ScriptableObject for item definitions                  |
+| `ShopCatalog.cs`  | Item database with O(1) lookups                        |
+| `ShopManager.cs`  | Purchase/inventory/unlock logic                        |
+| `ShopUI.cs`       | Full UI with pooled grid, tabs, detail panel           |
+| `ShopItemSlot.cs` | Individual slot with rarity borders                    |
+
+#### **Shop System Features**
+
+- **5 Rarity Tiers**: Common (gray) → Uncommon (green) → Rare (blue) → Epic (purple) → Legendary (gold)
+- **7 Categories**: All, Outfits, Accessories, Hats, Jewelry, Eyes, Food, Special
+- **6 Unlock Methods**: Purchase, LevelUnlock, HomeworkReward, StreakReward, Achievement, Default
+- **Events**: OnItemPurchased, OnItemUnlocked, OnItemEquipped, OnPurchaseAttempted
+- **Persistence**: UserProfile.OwnedItems list
+- **Performance**: Pooled UI slots (30 default)
+
+#### **Unity Setup Instructions**
+
+1. Create ShopCatalog: `Assets > Create > Sangsom Mini-Me > Shop Catalog`
+2. Create ShopItems: `Assets > Create > Sangsom Mini-Me > Shop Item`
+3. Add `ShopManager` to scene GameObject
+4. Wire `ShopUI` references in Inspector
+
+### 📊 **Progress Summary**
+
+| Phase                               | Status         | Completion |
+| ----------------------------------- | -------------- | ---------- |
+| Phase 1 - Core Systems              | ✅ Complete    | 100%       |
+| Phase 2 - Engagement Loop           | ✅ Complete    | 100%       |
+| Phase 3 - Character & Customization | 🔄 In Progress | ~50%       |
+| Phase 4 - Mini-Games & Universe     | 📋 Planned     | 0%         |
+| Phase 5 - Multi-User & Social       | 📋 Planned     | 0%         |
+| Phase 6 - Polish & Deployment       | 📋 Planned     | 0%         |
+
+### 🔜 **Next Steps for Phase 3**
+
+- [ ] Outfit attachment points on character mesh
+- [ ] Accessory system with runtime swapping
+- [ ] Sample ShopItem assets for testing
+- [ ] Thai gesture animations (Wai, Curtsy, Bow)
+
+---
+
 ## Session Log: December 10, 2025 - Documentation Cleanup & Unity 6 Update
 
 ### 📚 **Major Documentation Overhaul**

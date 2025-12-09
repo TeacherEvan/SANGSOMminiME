@@ -492,13 +492,13 @@ public void PracticeGesture(GestureType type)
 
 ### Phase 3: Character & Customization 🔄 _Current Priority_
 
-- [ ] Eye scaling system
+- [x] Eye scaling system
 - [ ] Outfit system implementation
   - Attachment points on character mesh
   - Runtime outfit swapping
 - [ ] Accessory system (hats, jewelry, items)
-- [ ] Shop UI with currency display
-- [ ] Rarity tier visual indicators
+- [x] Shop UI with currency display
+- [x] Rarity tier visual indicators
   - Common (60%), Uncommon (25%), Rare (10%), Epic (4%), Legendary (1%)
 - [ ] Unlock notification system
 - [ ] Thai gesture animations (Wai, Curtsy, Bow)

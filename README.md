@@ -160,11 +160,11 @@ SangsomMiniMe.Educational // Analytics, homework integration
 
 ### **Phase 3 - Character & Customization** 🔄 _(Current Priority)_
 
-- [ ] Eye scaling and appearance customization
+- [x] Eye scaling and appearance customization
 - [ ] Outfit system with attachment points
 - [ ] Accessory system (hats, jewelry, items)
-- [ ] Shop UI with currency display
-- [ ] Rarity tier visual indicators (Common → Legendary)
+- [x] Shop UI with currency display
+- [x] Rarity tier visual indicators (Common → Legendary)
 - [ ] Thai gesture animations (Wai, Curtsy, Bow)
 
 ### **Phase 4 - Mini-Games & Universe** 📋
