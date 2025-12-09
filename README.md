@@ -165,6 +165,9 @@ SangsomMiniMe.Educational // Analytics, homework integration
 - [ ] Accessory system (hats, jewelry, items)
 - [x] Shop UI with currency display
 - [x] Rarity tier visual indicators (Common → Legendary)
+- [x] **Coin collection animations with flying coins**
+- [x] **Premium easing library (Elastic, Bounce, Back, Spring)**
+- [x] **Smooth meter fill animations (Happiness, Hunger, Energy)**
 - [ ] Thai gesture animations (Wai, Curtsy, Bow)
 
 ### **Phase 4 - Mini-Games & Universe** 📋

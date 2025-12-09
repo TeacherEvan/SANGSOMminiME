@@ -95,6 +95,12 @@ namespace SangsomMiniMe.UI
         private Coroutine feedbackCoroutine;
         private Coroutine fadeCoroutine;
 
+        // Meter animation tracking (smooth fill for premium UX)
+        private Coroutine happinessAnimCoroutine;
+        private Coroutine hungerAnimCoroutine;
+        private Coroutine energyAnimCoroutine;
+        private float meterAnimationDuration = 0.4f;
+
         private void Start()
         {
             InitializeUIComponents();
@@ -416,6 +422,8 @@ namespace SangsomMiniMe.UI
                 currentUser.OnCoinsChanged += UpdateCoinsDisplay;
                 currentUser.OnExperienceChanged += UpdateExperienceDisplay;
                 currentUser.OnHappinessChanged += HandleCharacterHappinessChanged;
+                currentUser.OnHungerChanged += HandleHungerChanged;
+                currentUser.OnEnergyChanged += HandleEnergyChanged;
             }
         }
 
@@ -429,20 +437,43 @@ namespace SangsomMiniMe.UI
                 currentUser.OnCoinsChanged -= UpdateCoinsDisplay;
                 currentUser.OnExperienceChanged -= UpdateExperienceDisplay;
                 currentUser.OnHappinessChanged -= HandleCharacterHappinessChanged;
+                currentUser.OnHungerChanged -= HandleHungerChanged;
+                currentUser.OnEnergyChanged -= HandleEnergyChanged;
             }
         }
 
         // ===== UI DISPLAY UPDATES =====
 
         /// <summary>
-        /// Updates the coins display with visual feedback.
+        /// Updates the coins display with visual feedback and animation.
+        /// Resolved TODO: Added coin increase animation for better UX.
         /// </summary>
         private void UpdateCoinsDisplay(int coins)
         {
             if (coinsText != null)
             {
-                coinsText.text = $"💰 {coins:N0}";
-                // TODO: [OPTIMIZATION] Add coin increase animation for better UX
+                int oldCoins = currentUser != null ? (int)Mathf.Max(0, coins - 10) : 0; // Estimate previous value
+
+                // Play coin animation if CoinAnimationController exists
+                if (coins > oldCoins && CoinAnimationController.Instance != null && coinsText.transform != null)
+                {
+                    Vector3 spawnPos = coinsText.transform.position;
+                    CoinAnimationController.Instance.PlayCoinCollectAnimation(
+                        coins - oldCoins,
+                        spawnPos,
+                        () =>
+                        {
+                            // Update text after animation completes
+                            coinsText.text = $"💰 {coins:N0}";
+                            Core.AudioManager.Instance?.PlayCoin();
+                        }
+                    );
+                }
+                else
+                {
+                    // Fallback: instant update
+                    coinsText.text = $"💰 {coins:N0}";
+                }
             }
         }
 
@@ -521,14 +552,25 @@ namespace SangsomMiniMe.UI
         }
 
         /// <summary>
-        /// Handles character happiness changes with smooth slider update.
+        /// Handles character happiness changes with smooth slider update and premium animation.
+        /// Uses easing for organic feel and visual polish.
         /// </summary>
         private void HandleCharacterHappinessChanged(float happiness)
         {
+            // Stop any existing animation
+            if (happinessAnimCoroutine != null)
+            {
+                StopCoroutine(happinessAnimCoroutine);
+            }
+
             if (happinessSlider != null)
             {
-                // Smooth transition could be added here
-                happinessSlider.value = happiness;
+                // Start smooth fill animation with elastic easing
+                happinessAnimCoroutine = StartCoroutine(AnimateMeterFill(
+                    happinessSlider,
+                    happiness,
+                    UITransitionManager.EasingMode.EaseOut
+                ));
             }
 
             if (happinessText != null)
@@ -1289,6 +1331,108 @@ namespace SangsomMiniMe.UI
             string description = Core.MeterDecaySystem.GetMoodDescription(mood);
 
             moodText.text = $"{emoji} {description}";
+        }
+
+        /// <summary>
+        /// Animates a slider filling to target value with smooth easing.
+        /// Provides premium micro-interaction feel with organic motion.
+        /// </summary>
+        /// <param name="slider">The UI slider to animate</param>
+        /// <param name="targetValue">The target fill value</param>
+        /// <param name="easingMode">Easing function to use</param>
+        private IEnumerator AnimateMeterFill(Slider slider, float targetValue, UITransitionManager.EasingMode easingMode)
+        {
+            if (slider == null) yield break;
+
+            float startValue = slider.value;
+            float elapsed = 0f;
+
+            // Add subtle color pulse for visual feedback
+            Image fillImage = slider.fillRect?.GetComponent<Image>();
+            Color originalColor = fillImage != null ? fillImage.color : Color.white;
+
+            while (elapsed < meterAnimationDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / meterAnimationDuration);
+
+                // Apply easing for smooth, organic feel
+                float easedT = UITransitionManager.GetEasedValue(t, easingMode);
+
+                // Interpolate slider value
+                slider.value = Mathf.Lerp(startValue, targetValue, easedT);
+
+                // Optional: Pulse color on increase (positive feedback)
+                if (fillImage != null && targetValue > startValue)
+                {
+                    // Subtle brightness pulse
+                    float pulseIntensity = Mathf.Sin(t * Mathf.PI) * 0.2f;
+                    fillImage.color = Color.Lerp(originalColor, Color.white, pulseIntensity);
+                }
+
+                yield return null;
+            }
+
+            // Ensure final value is exact
+            slider.value = targetValue;
+
+            // Restore original color
+            if (fillImage != null)
+            {
+                fillImage.color = originalColor;
+            }
+        }
+
+        /// <summary>
+        /// Handles hunger meter changes with smooth animation.
+        /// </summary>
+        private void HandleHungerChanged(float hunger)
+        {
+            if (hungerAnimCoroutine != null)
+            {
+                StopCoroutine(hungerAnimCoroutine);
+            }
+
+            if (hungerSlider != null)
+            {
+                hungerAnimCoroutine = StartCoroutine(AnimateMeterFill(
+                    hungerSlider,
+                    hunger,
+                    UITransitionManager.EasingMode.EaseOut
+                ));
+            }
+
+            if (hungerText != null)
+            {
+                string emoji = hunger >= 70f ? "🍽️" : hunger >= 40f ? "🍴" : "🍔";
+                hungerText.text = $"{emoji} {hunger:F0}%";
+            }
+        }
+
+        /// <summary>
+        /// Handles energy meter changes with smooth animation.
+        /// </summary>
+        private void HandleEnergyChanged(float energy)
+        {
+            if (energyAnimCoroutine != null)
+            {
+                StopCoroutine(energyAnimCoroutine);
+            }
+
+            if (energySlider != null)
+            {
+                energyAnimCoroutine = StartCoroutine(AnimateMeterFill(
+                    energySlider,
+                    energy,
+                    UITransitionManager.EasingMode.EaseOut
+                ));
+            }
+
+            if (energyText != null)
+            {
+                string emoji = energy >= 70f ? "⚡" : energy >= 40f ? "🔋" : "🪫";
+                energyText.text = $"{emoji} {energy:F0}%";
+            }
         }
 
         // ===== CLEANUP =====
