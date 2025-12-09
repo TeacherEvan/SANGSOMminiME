@@ -678,6 +678,9 @@ namespace SangsomMiniMe.UI
                 currentUser.CompleteHomework();
                 characterController?.IncreaseHappiness(10f);
 
+                // Play coin reward sound
+                Core.AudioManager.Instance?.PlayCoin();
+
                 // Trigger celebration animation
                 if (characterController != null && !characterController.IsAnimating)
                 {
@@ -787,6 +790,9 @@ namespace SangsomMiniMe.UI
                 currentUser.SpendCoins(Core.GameConstants.FeedCost);
                 currentUser.Feed();
 
+                // Play feed sound
+                Core.AudioManager.Instance?.PlayFeed();
+
                 // Update UI
                 RefreshAllUIElements();
                 UpdateMeterDisplays();
@@ -836,6 +842,9 @@ namespace SangsomMiniMe.UI
                 currentUser.SpendCoins(Core.GameConstants.RestCost);
                 currentUser.Rest();
 
+                // Play rest sound
+                Core.AudioManager.Instance?.PlayRest();
+
                 // Update UI
                 RefreshAllUIElements();
                 UpdateMeterDisplays();
@@ -869,6 +878,9 @@ namespace SangsomMiniMe.UI
 
                 // Play is free! Just increase happiness
                 currentUser.IncreaseHappiness(Core.GameConstants.PlayHappinessBonus);
+
+                // Play happy sound
+                Core.AudioManager.Instance?.PlayPlay();
 
                 // Trigger celebration animation
                 if (characterController != null && !characterController.IsAnimating)
@@ -1010,6 +1022,9 @@ namespace SangsomMiniMe.UI
         /// <param name="message">The friendly reminder message</param>
         public void ShowGentleReminder(string message)
         {
+            // Play gentle reminder sound
+            Core.AudioManager.Instance?.PlayGentleReminder();
+
             // Use a soft color for gentle reminders - not red/alarming
             ShowFeedbackText(message, new Color(0.4f, 0.7f, 1f), 3f); // Soft blue
         }
@@ -1124,6 +1139,16 @@ namespace SangsomMiniMe.UI
 
             try
             {
+                // Play appropriate sound effect
+                if (result.HitMilestone)
+                {
+                    Core.AudioManager.Instance?.PlayMilestone();
+                }
+                else
+                {
+                    Core.AudioManager.Instance?.PlayLoginBonus();
+                }
+
                 // Update celebration UI text
                 if (celebrationTitleText != null)
                 {
