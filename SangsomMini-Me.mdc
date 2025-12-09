@@ -16,13 +16,13 @@ alwaysApply: true
   "development_stage": "prototype",
   "ai_integration": "VSCode-assisted",
   "universe": "minime-expandable-ecosystem",
-  "unity_version": "2022.3.12f1 LTS"
+  "unity_version": "6000.2.15f1"
 }
 
 @project_structure {
   "root_organization": {
     "docs_external": "Keep all documentation in Docs/ folder",
-    "unity_standard": "Follow Unity 2022.3 LTS project conventions",
+    "unity_standard": "Follow Unity 6 project conventions",
     "builds_ignored": "All build outputs in git-ignored Builds/ directory"
   },
   "unity_architecture": {
@@ -125,7 +125,7 @@ alwaysApply: true
 ## Development Stack
 
 @technical_stack {
-  "game_engine": "Unity 2022.3.12f1 LTS",
+  "game_engine": "Unity 6000.2.15f1",
   "scripting_language": "C# .NET",
   "ide": "VSCode with C# extensions",
   "testing": "NUnit via Unity Test Runner",
@@ -185,7 +185,7 @@ alwaysApply: true
     "title": "Core Systems",
     "status": "current",
     "tasks": [
-      "Unity 2022.3.12f1 project setup",
+      "Unity 6000.2.15f1 project setup",
       "C# core systems (GameManager, UserManager, CharacterController)",
       "Basic UI framework with TextMeshPro",
       "Character customization (eye scaling, outfits)",

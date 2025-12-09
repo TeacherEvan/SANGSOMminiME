@@ -28,12 +28,22 @@ namespace SangsomMiniMe.Core
         // Singleton instance with thread safety consideration
         private static GameManager instance;
         public static GameManager Instance => instance;
-        
-        // Public configuration accessor with null safety
-        public GameConfiguration Config => gameConfig != null ? gameConfig : ScriptableObject.CreateInstance<GameConfiguration>();
+
+        // Public configuration accessor with null safety and caching
+        public GameConfiguration Config
+        {
+            get
+            {
+                if (gameConfig == null)
+                {
+                    gameConfig = ScriptableObject.CreateInstance<GameConfiguration>();
+                }
+                return gameConfig;
+            }
+        }
 
         // Cached time tracking for auto-save optimization
-        private float lastAutoSaveTime;
+        private Coroutine autoSaveCoroutine;
         private bool isInitialized;
 
         // Event system for decoupled communication
@@ -66,10 +76,11 @@ namespace SangsomMiniMe.Core
                 ValidateRequiredReferences();
                 SubscribeToGameEvents();
                 InitializeAutoSave();
-                
+                InitializeMeterDecay();
+
                 isInitialized = true;
                 OnGameInitialized?.Invoke();
-                
+
                 LogInfo("Sangsom Mini-Me Game Manager initialized successfully.");
             }
             catch (Exception ex)
@@ -86,13 +97,13 @@ namespace SangsomMiniMe.Core
         {
             if (loginUI == null)
                 Debug.LogWarning("[GameManager] LoginUI reference is not assigned. Login functionality may not work.");
-            
+
             if (gameUI == null)
                 Debug.LogWarning("[GameManager] GameUI reference is not assigned. Game UI may not display.");
-            
+
             if (characterController == null)
                 Debug.LogWarning("[GameManager] CharacterController reference is not assigned. Character interactions will be limited.");
-            
+
             if (gameConfig == null)
             {
                 Debug.LogWarning("[GameManager] GameConfiguration is not assigned. Using default configuration.");
@@ -115,6 +126,21 @@ namespace SangsomMiniMe.Core
             {
                 Debug.LogError("[GameManager] UserManager.Instance is null. Cannot subscribe to user events.");
             }
+
+            // Subscribe to meter decay events for gentle reminders
+            MeterDecaySystem.OnMeterLow += HandleMeterLowReminder;
+        }
+
+        /// <summary>
+        /// Handles low meter gentle reminders (not warnings - cozy gameplay!).
+        /// </summary>
+        private void HandleMeterLowReminder(string meterName)
+        {
+            if (gameUI != null)
+            {
+                string message = MeterDecaySystem.GetLowMeterMessage(meterName);
+                gameUI.ShowGentleReminder(message);
+            }
         }
 
         /// <summary>
@@ -122,8 +148,61 @@ namespace SangsomMiniMe.Core
         /// </summary>
         private void InitializeAutoSave()
         {
-            lastAutoSaveTime = Time.time;
+            if (autoSaveCoroutine != null) StopCoroutine(autoSaveCoroutine);
+            autoSaveCoroutine = StartCoroutine(AutoSaveRoutine());
             LogInfo($"Auto-save initialized. Interval: {(gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval)}s");
+        }
+
+        private System.Collections.IEnumerator AutoSaveRoutine()
+        {
+            var wait = new WaitForSeconds(gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval);
+            while (true)
+            {
+                yield return wait;
+                if (autoSaveEnabled && isInitialized)
+                {
+                    UserManager.Instance?.SaveIfDirty();
+                }
+            }
+        }
+
+        // Meter decay coroutine reference
+        private Coroutine meterDecayCoroutine;
+
+        /// <summary>
+        /// Initializes the meter decay system with gentle decay rates.
+        /// </summary>
+        private void InitializeMeterDecay()
+        {
+            if (meterDecayCoroutine != null) StopCoroutine(meterDecayCoroutine);
+            meterDecayCoroutine = StartCoroutine(MeterDecayRoutine());
+            LogInfo($"Meter decay initialized. Interval: {GameConstants.MeterDecayInterval}s");
+        }
+
+        /// <summary>
+        /// Coroutine for gentle meter decay at regular intervals.
+        /// Only decays when a user is logged in.
+        /// </summary>
+        private System.Collections.IEnumerator MeterDecayRoutine()
+        {
+            var wait = new WaitForSeconds(GameConstants.MeterDecayInterval);
+            while (true)
+            {
+                yield return wait;
+
+                // Only decay if user is logged in
+                var currentUser = UserManager.Instance?.CurrentUser;
+                if (currentUser != null && isInitialized)
+                {
+                    MeterDecaySystem.ApplyDecay(currentUser);
+
+                    // Update UI if available
+                    if (gameUI != null)
+                    {
+                        gameUI.UpdateMeterDisplays();
+                    }
+                }
+            }
         }
 
         private void Start()
@@ -134,7 +213,7 @@ namespace SangsomMiniMe.Core
                 Debug.LogError("[GameManager] Start called but initialization failed. Attempting re-initialization.");
                 InitializeGameSystems();
             }
-            
+
             SetupInitialUserInterface();
         }
 
@@ -202,6 +281,7 @@ namespace SangsomMiniMe.Core
 
         /// <summary>
         /// Handles user login event with comprehensive error handling.
+        /// Processes daily login bonus and triggers celebration events.
         /// </summary>
         private void HandleUserLoggedIn(UserProfile user)
         {
@@ -214,6 +294,26 @@ namespace SangsomMiniMe.Core
             try
             {
                 LogInfo($"User logged in: {user.DisplayName} (ID: {user.UserName})");
+
+                // Process daily login bonus (positive-only streak system)
+                var loginResult = DailyLoginSystem.ProcessLogin(user);
+
+                if (loginResult.IsFirstLoginToday)
+                {
+                    LogInfo($"Daily bonus awarded: +{loginResult.CoinsEarned} coins | Streak: {loginResult.CurrentStreak} days");
+
+                    // Notify UI to show celebration
+                    if (gameUI != null)
+                    {
+                        gameUI.ShowLoginBonusCelebration(loginResult);
+                    }
+
+                    // Trigger celebration animation for milestones
+                    if (loginResult.HitMilestone && characterController != null)
+                    {
+                        characterController.PlayDance();
+                    }
+                }
 
                 // Transition UI
                 ShowGameUI();
@@ -253,7 +353,7 @@ namespace SangsomMiniMe.Core
                     loginUI.gameObject.SetActive(true);
                     loginUI.ShowLoginInterface();
                 }
-                
+
                 ShowLoginUI();
 
                 // Notify other systems of state change
@@ -269,41 +369,10 @@ namespace SangsomMiniMe.Core
         {
             if (!isInitialized) return;
 
-            // Optimized auto-save with dirty flag checking
-            ProcessAutoSave();
-
             // Debug input processing (development only)
             if (enableDebugMode)
             {
                 ProcessDebugInput();
-            }
-        }
-
-        /// <summary>
-        /// Processes auto-save with optimized dirty flag checking.
-        /// Only saves when data has changed to reduce I/O operations.
-        /// </summary>
-        private void ProcessAutoSave()
-        {
-            if (!autoSaveEnabled || UserManager.Instance?.CurrentUser == null)
-                return;
-
-            float saveInterval = gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval;
-            
-            if (Time.time - lastAutoSaveTime >= saveInterval)
-            {
-                try
-                {
-                    // Only save if data has actually changed (performance optimization)
-                    UserManager.Instance.SaveIfDirty();
-                    lastAutoSaveTime = Time.time;
-
-                    LogInfo("Auto-save check completed.", true);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[GameManager] Auto-save failed: {ex.Message}");
-                }
             }
         }
 

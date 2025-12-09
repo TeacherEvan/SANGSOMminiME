@@ -1,12 +1,13 @@
 {
-  "recommendations": [
-    "ms-python.python",
-    "JacquesLucke.blender-development",
-    "ms-python.vscode-pylance",
-    "ms-dotnettools.csharp",
-    "ms-dotnettools.csdevkit",
-    "kreativ-software.unity-snippets",
-    "editorconfig.editorconfig",
-    "VisualStudioToolsForUnity.vstuc"
-  ]
+    "recommendations": [
+        "ms-python.python",
+        "JacquesLucke.blender-development",
+        "ms-python.vscode-pylance",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "kreativ-software.unity-snippets",
+        "editorconfig.editorconfig",
+        "VisualStudioToolsForUnity.vstuc",
+        "visualstudiotoolsforunity.vstuc"
+    ]
 }

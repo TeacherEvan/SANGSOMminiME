@@ -123,3 +123,4 @@ non-critical-errors.json
 *.bak
 *.temp
 *.log
+.fake
