@@ -156,7 +156,7 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 
 ### Dependencies
 
-- Unity 2022.3.12f1 LTS
+- Unity 6000.2.15f1
 - C# / .NET
 - TextMeshPro (UI text rendering)
 - NUnit (via Unity Test Runner)

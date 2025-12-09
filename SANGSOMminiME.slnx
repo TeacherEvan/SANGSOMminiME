@@ -23,7 +23,6 @@
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
   <Project Path="Unity.TestTools.CodeCoverage.Editor.OpenCover.Mono.Reflection.csproj" />
   <Project Path="Unity.Settings.Editor.csproj" />
-  <Project Path="SangsomMiniMe.Runtime.csproj" />
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
   <Project Path="SangsomMiniMe.Tests.csproj" />
   <Project Path="Unity.VisualScripting.DocCodeExamples.csproj" />

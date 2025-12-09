@@ -2,13 +2,13 @@
 
 > **An AI-powered educational gaming ecosystem where students nurture personalized 3D Mini-Me characters through academic achievement**
 
-[![Unity](https://img.shields.io/badge/Unity-2022.3.12f1_LTS-black)](https://unity.com/)
+[![Unity](https://img.shields.io/badge/Unity-6000.2.15f1-black)](https://unity.com/)
 [![C#](https://img.shields.io/badge/C%23-.NET-purple)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![License](https://img.shields.io/badge/License-Educational-orange)](LICENSE)
 
 ## 🌟 **Project Overview**
 
-Sangsom Mini-Me combines modern AI-assisted development with educational game design to create personalized 3D tamagotchi-style characters for students. Built entirely with **Unity 2022.3.12f1 LTS**, we create anime-style characters that integrate homework completion directly into character care mechanics.
+Sangsom Mini-Me combines modern AI-assisted development with educational game design to create personalized 3D tamagotchi-style characters for students. Built entirely with **Unity 6000.2.15f1**, we create anime-style characters that integrate homework completion directly into character care mechanics.
 
 ### 🎯 **Core Features**
 
@@ -22,7 +22,7 @@ Sangsom Mini-Me combines modern AI-assisted development with educational game de
 
 ## 🚀 **Development Stack**
 
-- **Unity 2022.3.12f1 LTS**: Industry-standard game engine for interactive gameplay
+- **Unity 6000.2.15f1**: Industry-standard game engine for interactive gameplay
 - **C# .NET**: Unity scripting with strong type safety and modern language features
 - **Async Architecture**: Task-based I/O for non-blocking persistence
 - **VSCode**: AI-powered code generation and debugging assistance
@@ -75,7 +75,7 @@ SANGSOMminiME/
 
 ### 1. **Prerequisites**
 
-- [Unity Hub](https://unity.com/download) with Unity 2022.3.12f1 LTS
+- [Unity Hub](https://unity.com/download) with Unity 6000.2.15f1
 - [VSCode](https://code.visualstudio.com/) (recommended for C# development)
 - Git for version control
 
@@ -88,7 +88,7 @@ cd SANGSOMminiME
 
 # Open Unity Hub
 # Click "Add" and select the SANGSOMminiME folder
-# Unity will open with version 2022.3.12f1
+# Unity will open with version 6000.2.15f1
 # Open Assets/Scenes/MainScene.unity
 ```
 
@@ -139,34 +139,56 @@ SangsomMiniMe.Educational // Analytics, homework integration
 
 ## 🛠️ **Development Roadmap**
 
-### **Phase 1 - Core Systems** _(Current)_
+> 📖 **See [Docs/GAMEPLAY_UX_GUIDE.md](Docs/GAMEPLAY_UX_GUIDE.md) for detailed UX specifications and tamagotchi-style best practices.**
 
-- [x] Unity 2022.3.12f1 project initialization
+### **Phase 1 - Core Systems** ✅ _Complete_
+
+- [x] Unity 6000.2.15f1 project initialization
 - [x] C# core systems (GameManager, UserManager, CharacterController)
 - [x] Basic UI framework with TextMeshPro
-- [ ] Character customization (eye scaling, outfits)
-- [ ] Animation system (dance, wave, wai, curtsy, bow)
-- [ ] Homework integration prototype
+- [x] Event-driven architecture (delegates, OnUserLoggedIn, etc.)
+- [x] Async I/O persistence (UserManager.SaveAsync)
+- [x] Educational analytics foundation (EducationalAnalytics.cs)
 
-### **Phase 2 - Multi-User System**
+### **Phase 2 - Engagement Loop** 🔄 _(Current Priority)_
+
+- [ ] Daily login bonus system (positive-only streaks)
+- [ ] Streak tracking with reset protection (no penalties)
+- [ ] Homework completion flow UI
+- [ ] Celebration animations & sound effects
+- [ ] Meter decay system (Happiness/Hunger/Energy with floors)
+
+### **Phase 3 - Character & Customization** 📋
+
+- [ ] Eye scaling and appearance customization
+- [ ] Outfit system with attachment points
+- [ ] Accessory system (hats, jewelry, items)
+- [ ] Shop UI with currency display
+- [ ] Rarity tier visual indicators (Common → Legendary)
+- [ ] Thai gesture animations (Wai, Curtsy, Bow)
+
+### **Phase 4 - Mini-Games & Universe** 📋
+
+- [ ] Minime Universe side game integration
+- [ ] Cross-game coin/XP rewards
+- [ ] Progress sync with main character
+- [ ] ScriptableObject-based resource system
+- [ ] Classroom leaderboards (optional)
+
+### **Phase 5 - Multi-User & Social** 📋
 
 - [ ] Multi-user account framework with password protection
-- [ ] Room environments with interaction systems
-- [ ] Administrative dashboard for teachers
-- [ ] Performance optimization with Unity Profiler
-
-### **Phase 3 - Educational Integration**
-
-- [ ] School homework platform API integration
-- [ ] Minime Universe side games
-- [ ] Cross-game resource system with ScriptableObjects
+- [ ] Teacher administrative dashboard
+- [ ] Classroom group system
+- [ ] Friend Mini-Me visits & gift exchange
 - [ ] Parent/teacher progress reporting
 
-### **Phase 4 - Expansion**
+### **Phase 6 - Polish & Deployment** 📋
 
-- [ ] Additional educational games
-- [ ] Advanced customization (jewelry, seasonal items)
-- [ ] Cultural content expansion
+- [ ] Performance profiling (Unity Profiler, 60 FPS target)
+- [ ] Battery optimization for mobile
+- [ ] Accessibility audit
+- [ ] Localization (Thai/English)
 - [ ] Mobile deployment (Android/iOS)
 
 ## 🧪 **Testing**
@@ -186,7 +208,7 @@ Unity.exe -runTests -testResults results.xml -projectPath .
 
 ## 🤝 **Contributing**
 
-1. Use Unity 2022.3.12f1 LTS for all work
+1. Use Unity 6000.2.15f1 for all work
 2. Follow SangsomMiniMe namespace conventions
 3. Test changes with the Leandi test character
 4. Run Unity Test Runner before committing

@@ -14,7 +14,7 @@ alwaysApply: false
 ## Project Overview
 - **Educational 3D Tamagotchi**: Students care for personalized Mini-Me characters through homework completion
 - **Minime Universe**: Expandable ecosystem with educational side games feeding resources to main character
-- **Unity 2022.3.12f1 + Blender 5.0**: Unity for game runtime (C#), Blender for asset creation (Python)
+- **Unity 6000.2.15f1 + Blender 5.0**: Unity for game runtime (C#), Blender for asset creation (Python)
 - **AI-assisted development**: VSCode with automated code generation for both Unity C# and Blender Python
 - **Target**: Schools/educators with multi-user account management
 
@@ -33,7 +33,7 @@ alwaysApply: false
 - **Cross-game currency** from Minime Universe side games
 
 ### Technical Architecture
-- **Unity 2022.3.12f1 LTS** as primary game engine with C# scripting
+- **Unity 6000.2.15f1** as primary game engine with C# scripting
 - **Blender 5.0** for 3D asset creation and FBX export to Unity
 - **Multi-structural folders** for performance optimization
 - **Administrative access** with password protection for teachers (Unity C#)
