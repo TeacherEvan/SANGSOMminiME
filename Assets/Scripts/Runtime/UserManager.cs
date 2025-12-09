@@ -25,6 +25,7 @@ namespace SangsomMiniMe.Core
 
         // User data storage
         private List<UserProfile> userProfiles = new List<UserProfile>();
+        private Dictionary<string, UserProfile> userProfileLookup = new Dictionary<string, UserProfile>(StringComparer.OrdinalIgnoreCase);
         private UserProfile currentUser;
         private string saveFilePath;
         private bool isDirty = false;
@@ -37,7 +38,7 @@ namespace SangsomMiniMe.Core
 
         // Public accessors with defensive copies
         public UserProfile CurrentUser => currentUser;
-        public List<UserProfile> AllUsers => new List<UserProfile>(userProfiles);
+        public IReadOnlyList<UserProfile> AllUsers => userProfiles;
 
         // Event system for decoupled communication
         public event Action<UserProfile> OnUserLoggedIn;
@@ -77,12 +78,28 @@ namespace SangsomMiniMe.Core
                 // Load existing user profiles
                 LoadUserProfilesFromDisk();
 
+                // Rebuild lookup cache
+                RebuildUserLookup();
+
                 LogInfo($"UserManager initialized successfully. Found {userProfiles.Count} user profile(s).");
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[UserManager] Fatal initialization error: {ex.Message}\n{ex.StackTrace}");
                 userProfiles = new List<UserProfile>(); // Ensure we have a valid list
+                userProfileLookup.Clear();
+            }
+        }
+
+        private void RebuildUserLookup()
+        {
+            userProfileLookup.Clear();
+            foreach (var user in userProfiles)
+            {
+                if (!userProfileLookup.ContainsKey(user.UserName))
+                {
+                    userProfileLookup.Add(user.UserName, user);
+                }
             }
         }
 
@@ -113,7 +130,7 @@ namespace SangsomMiniMe.Core
                 }
 
                 // Check for duplicate username
-                if (userProfiles.Any(u => string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)))
+                if (userProfileLookup.ContainsKey(userName))
                 {
                     Debug.LogWarning($"[UserManager] Username '{userName}' already exists. Please choose a different username.");
                     return null;
@@ -122,9 +139,10 @@ namespace SangsomMiniMe.Core
                 // Create new user profile
                 var newUser = new UserProfile(userName, displayName, config);
                 userProfiles.Add(newUser);
+                userProfileLookup[userName] = newUser;
 
                 // Persist immediately
-                SaveUserProfilesToDisk();
+                SaveUserProfilesToDiskAsync().WrapErrors();
 
                 // Notify listeners
                 OnUserCreated?.Invoke(newUser);
@@ -154,12 +172,8 @@ namespace SangsomMiniMe.Core
                     return false;
                 }
 
-                // Find user with case-insensitive matching
-                var user = userProfiles.FirstOrDefault(u =>
-                    string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase)
-                    && u.IsActive);
-
-                if (user == null)
+                // Find user with case-insensitive matching (O(1) lookup)
+                if (!userProfileLookup.TryGetValue(userName, out var user) || !user.IsActive)
                 {
                     Debug.LogWarning($"[UserManager] Login failed: User '{userName}' not found or inactive.");
                     return false;
@@ -197,7 +211,7 @@ namespace SangsomMiniMe.Core
                 // Save any pending changes before logout
                 if (isDirty)
                 {
-                    SaveUserProfilesToDisk();
+                    SaveUserProfilesToDiskAsync().WrapErrors();
                 }
 
                 // Clear current user and notify
@@ -222,8 +236,8 @@ namespace SangsomMiniMe.Core
             if (string.IsNullOrWhiteSpace(userName))
                 return null;
 
-            return userProfiles.FirstOrDefault(u =>
-                string.Equals(u.UserName, userName, StringComparison.OrdinalIgnoreCase));
+            userProfileLookup.TryGetValue(userName, out var user);
+            return user;
         }
 
         /// <summary>
@@ -250,7 +264,8 @@ namespace SangsomMiniMe.Core
 
                 // Remove and persist
                 userProfiles.Remove(user);
-                SaveUserProfilesToDisk();
+                userProfileLookup.Remove(userName);
+                SaveUserProfilesToDiskAsync().WrapErrors();
 
                 // Notify listeners
                 OnUserDeleted?.Invoke(user);
@@ -283,7 +298,7 @@ namespace SangsomMiniMe.Core
         {
             if (currentUser != null)
             {
-                SaveUserProfilesToDisk();
+                SaveUserProfilesToDiskAsync().WrapErrors();
                 isDirty = false;
             }
             else
@@ -298,423 +313,525 @@ namespace SangsomMiniMe.Core
         /// </summary>
         public void SaveIfDirty()
         {
-            if (isDirty && currentUser != null)
+            if (isDirty && !isSaving)
             {
-                SaveUserProfilesToDisk();
-                if (!isDirty || currentUser == null)
-                    return;
+                SaveUserProfilesToDiskAsync().WrapErrors();
+            }
+        }
 
-                SaveUserProfilesToDisk();
-                LogInfo("Dirty data saved successfully.", true);
+        private async Task SaveUserProfilesToDiskAsync()
+        {
+            if (isSaving) return;
+            isSaving = true;
+
+            try
+            {
+                // Serialize on main thread (JsonUtility requirement)
+                string json = JsonUtility.ToJson(new UserProfileCollection { profiles = userProfiles }, true);
+
+                // Write to disk on background thread
+                await Task.Run(() =>
+                {
+                    File.WriteAllText(saveFilePath, json);
+                });
+
+                isDirty = false;
+                OnDataSaved?.Invoke();
+                if (enableDetailedLogging) LogInfo("User profiles saved successfully (Async).");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Error saving user profiles: {ex.Message}");
+            }
+            finally
+            {
+                isSaving = false;
+            }
+        }
+
+        // Legacy synchronous save for initialization/shutdown if needed
+        private void SaveUserProfilesToDisk()
+        {
+            try
+            {
+                string json = JsonUtility.ToJson(new UserProfileCollection { profiles = userProfiles }, true);
+                File.WriteAllText(saveFilePath, json);
+                isDirty = false;
+                OnDataSaved?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Error saving user profiles: {ex.Message}");
+            }
+        }
+
+        private void LoadUserProfilesFromDisk()
+        {
+            if (!File.Exists(saveFilePath))
+            {
+                userProfiles = new List<UserProfile>();
+                return;
+            }
+
+            try
+            {
+                string json = File.ReadAllText(saveFilePath);
+                var collection = JsonUtility.FromJson<UserProfileCollection>(json);
+                userProfiles = collection != null ? collection.profiles : new List<UserProfile>();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Error loading user profiles: {ex.Message}");
+                userProfiles = new List<UserProfile>();
+            }
+        }
+
+        [Serializable]
+        private class UserProfileCollection
+        {
+            public List<UserProfile> profiles;
+        }
+
+        private void LogInfo(string message)
+        {
+            if (enableDetailedLogging)
+                Debug.Log($"[UserManager] {message}");
+        }
+    }
+
+    // Extension method to fire-and-forget tasks safely
+    public static class TaskExtensions
+    {
+        public static async void WrapErrors(this Task task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Async task error: {ex.Message}");
+            }
+        }
+    }
+}
+if (isDirty && currentUser != null)
+{
+    SaveUserProfilesToDisk();
+    if (!isDirty || currentUser == null)
+        return;
+
+    SaveUserProfilesToDisk();
+    LogInfo("Dirty data saved successfully.", true);
         /// Saves all user profiles to disk with error handling and optional backup.
         /// </summary>
         private void SaveUserProfilesToDisk()
-        {
-            if (!enableDataPersistence)
-                public void SaveCurrentUser(bool force = false)
+{
+    if (!enableDataPersistence)
+        public void SaveCurrentUser(bool force = false)
                 LogInfo("Data persistence is disabled. Skipping save.", true);
-            if (currentUser == null)
-            {
-                Debug.LogWarning("[UserManager] Cannot save: No user is currently logged in.");
-                return;
-            }
+    if (currentUser == null)
+    {
+        Debug.LogWarning("[UserManager] Cannot save: No user is currently logged in.");
+        return;
+    }
 
-            if (!force && !isDirty)
-            {
-                LogInfo("Save skipped: No pending changes detected.", true);
-                return;
-            }
+    if (!force && !isDirty)
+    {
+        LogInfo("Save skipped: No pending changes detected.", true);
+        return;
+    }
 
+    SaveUserProfilesToDisk();
+    isDirty = false;
+    try
+    {
+        isSaving = true;
+
+        // Create backup if enabled
+        if (createBackups && File.Exists(saveFilePath))
+        {
+            CreateBackupFile();
+        }
+
+        // Serialize and save
+        var collection = new UserProfileCollection { profiles = userProfiles };
+        string jsonData = JsonUtility.ToJson(collection, true);
+
+        // Write to disk
+        File.WriteAllText(saveFilePath, jsonData);
+
+        // Notify listeners
+        OnDataSaved?.Invoke();
+
+        LogInfo($"User profiles saved successfully. Total profiles: {userProfiles.Count}");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Failed to save user profiles: {ex.Message}\n{ex.StackTrace}");
+        // TODO: [OPTIMIZATION] Implement retry logic with exponential backoff for network storage
+    }
+    finally
+    {
+        isSaving = false;
+    }
+}
+
+/// <summary>
+/// Creates a backup of the current save file.
+
+// Clear dirty flag after successful write
+isDirty = false;
+/// Maintains a rolling backup system with configurable max count.
+/// </summary>
+private void CreateBackupFile()
+{
+    try
+    {
+        string backupPath = saveFilePath + $".backup_{DateTime.Now:yyyyMMdd_HHmmss}";
+        File.Copy(saveFilePath, backupPath, true);
+
+        // Clean up old backups
+        CleanupOldBackups();
+
+        LogInfo($"Backup created: {Path.GetFileName(backupPath)}", true);
+    }
+    catch (Exception ex)
+    {
+        Debug.LogWarning($"[UserManager] Failed to create backup: {ex.Message}");
+    }
+}
+
+/// <summary>
+/// Removes old backup files keeping only the most recent ones.
+/// </summary>
+private void CleanupOldBackups()
+{
+    try
+    {
+        var directory = Path.GetDirectoryName(saveFilePath);
+        var backupFiles = Directory.GetFiles(directory, "*.backup_*")
+            .OrderByDescending(f => File.GetCreationTime(f))
+            .Skip(maxBackupCount)
+            .ToList();
+
+        foreach (var oldBackup in backupFiles)
+        {
+            File.Delete(oldBackup);
+            LogInfo($"Deleted old backup: {Path.GetFileName(oldBackup)}", true);
+        }
+    }
+    catch (Exception ex)
+    {
+        Debug.LogWarning($"[UserManager] Failed to cleanup old backups: {ex.Message}");
+    }
+}
+
+/// <summary>
+/// Loads user profiles from disk with error handling and recovery.
+/// </summary>
+private void LoadUserProfilesFromDisk()
+{
+    if (!enableDataPersistence)
+    {
+        LogInfo("Data persistence is disabled. Skipping load.", true);
+        userProfiles = new List<UserProfile>();
+        return;
+    }
+
+    if (isLoading)
+    {
+        Debug.LogWarning("[UserManager] Load already in progress.");
+        return;
+    }
+
+    try
+    {
+        isLoading = true;
+
+        if (!File.Exists(saveFilePath))
+        {
+            LogInfo("No saved user profiles found. Starting with empty user list.");
+            userProfiles = new List<UserProfile>();
+            return;
+        }
+
+        // Read and deserialize
+        string jsonData = File.ReadAllText(saveFilePath);
+        var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
+
+        userProfiles = collection?.profiles ?? new List<UserProfile>();
+
+        // Notify listeners
+        OnDataLoaded?.Invoke();
+
+        LogInfo($"Successfully loaded {userProfiles.Count} user profile(s) from disk.");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Failed to load user profiles: {ex.Message}");
+        userProfiles = new List<UserProfile>();
+
+        // TODO: [OPTIMIZATION] Attempt to load from backup if main save is corrupted
+        TryLoadFromBackup();
+    }
+    finally
+    {
+        isLoading = false;
+    }
+}
+
+/// <summary>
+/// Attempts to recover data from the most recent backup file.
+/// </summary>
+private void TryLoadFromBackup()
+{
+    try
+    {
+        var directory = Path.GetDirectoryName(saveFilePath);
+        var backupFiles = Directory.GetFiles(directory, "*.backup_*")
+            .OrderByDescending(f => File.GetCreationTime(f))
+            .ToList();
+
+        if (backupFiles.Count == 0)
+        {
+            Debug.LogWarning("[UserManager] No backup files found for recovery.");
+            return;
+        }
+
+        // Try most recent backup
+        string backupFile = backupFiles[0];
+        string jsonData = File.ReadAllText(backupFile);
+        var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
+
+        userProfiles = collection?.profiles ?? new List<UserProfile>();
+
+        Debug.LogWarning($"[UserManager] Recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Backup recovery failed: {ex.Message}");
+        userProfiles = new List<UserProfile>();
+    }
+}
+
+// ===== LIFECYCLE EVENTS =====
+
+/// <summary>
+/// Saves data when application is paused (important for mobile).
+/// </summary>
+private void OnApplicationPause(bool pauseStatus)
+{
+    if (pauseStatus && currentUser != null)
+    {
+        try
+        {
             SaveUserProfilesToDisk();
-            isDirty = false;
-            try
-            {
-                isSaving = true;
-
-                // Create backup if enabled
-                if (createBackups && File.Exists(saveFilePath))
-                {
-                    CreateBackupFile();
-                }
-
-                // Serialize and save
-                var collection = new UserProfileCollection { profiles = userProfiles };
-                string jsonData = JsonUtility.ToJson(collection, true);
-
-                // Write to disk
-                File.WriteAllText(saveFilePath, jsonData);
-
-                // Notify listeners
-                OnDataSaved?.Invoke();
-
-                LogInfo($"User profiles saved successfully. Total profiles: {userProfiles.Count}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Failed to save user profiles: {ex.Message}\n{ex.StackTrace}");
-                // TODO: [OPTIMIZATION] Implement retry logic with exponential backoff for network storage
-            }
-            finally
-            {
-                isSaving = false;
-            }
+            LogInfo("Auto-saved on application pause.");
         }
-
-        /// <summary>
-        /// Creates a backup of the current save file.
-
-        // Clear dirty flag after successful write
-        isDirty = false;
-        /// Maintains a rolling backup system with configurable max count.
-        /// </summary>
-        private void CreateBackupFile()
+        catch (Exception ex)
         {
-            try
-            {
-                string backupPath = saveFilePath + $".backup_{DateTime.Now:yyyyMMdd_HHmmss}";
-                File.Copy(saveFilePath, backupPath, true);
-
-                // Clean up old backups
-                CleanupOldBackups();
-
-                LogInfo($"Backup created: {Path.GetFileName(backupPath)}", true);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"[UserManager] Failed to create backup: {ex.Message}");
-            }
+            Debug.LogError($"[UserManager] Save on pause failed: {ex.Message}");
         }
+    }
+}
 
-        /// <summary>
-        /// Removes old backup files keeping only the most recent ones.
-        /// </summary>
-        private void CleanupOldBackups()
+/// <summary>
+/// Saves data when application loses focus.
+/// </summary>
+private void OnApplicationFocus(bool hasFocus)
+{
+    if (!hasFocus && currentUser != null)
+    {
+        try
         {
-            try
-            {
-                var directory = Path.GetDirectoryName(saveFilePath);
-                var backupFiles = Directory.GetFiles(directory, "*.backup_*")
-                    .OrderByDescending(f => File.GetCreationTime(f))
-                    .Skip(maxBackupCount)
-                    .ToList();
-
-                foreach (var oldBackup in backupFiles)
-                {
-                    File.Delete(oldBackup);
-                    LogInfo($"Deleted old backup: {Path.GetFileName(oldBackup)}", true);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"[UserManager] Failed to cleanup old backups: {ex.Message}");
-            }
+            SaveUserProfilesToDisk();
+            LogInfo("Auto-saved on focus lost.");
         }
-
-        /// <summary>
-        /// Loads user profiles from disk with error handling and recovery.
-        /// </summary>
-        private void LoadUserProfilesFromDisk()
+        catch (Exception ex)
         {
-            if (!enableDataPersistence)
-            {
-                LogInfo("Data persistence is disabled. Skipping load.", true);
-                userProfiles = new List<UserProfile>();
-                return;
-            }
-
-            if (isLoading)
-            {
-                Debug.LogWarning("[UserManager] Load already in progress.");
-                return;
-            }
-
-            try
-            {
-                isLoading = true;
-
-                if (!File.Exists(saveFilePath))
-                {
-                    LogInfo("No saved user profiles found. Starting with empty user list.");
-                    userProfiles = new List<UserProfile>();
-                    return;
-                }
-
-                // Read and deserialize
-                string jsonData = File.ReadAllText(saveFilePath);
-                var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
-
-                userProfiles = collection?.profiles ?? new List<UserProfile>();
-
-                // Notify listeners
-                OnDataLoaded?.Invoke();
-
-                LogInfo($"Successfully loaded {userProfiles.Count} user profile(s) from disk.");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Failed to load user profiles: {ex.Message}");
-                userProfiles = new List<UserProfile>();
-
-                // TODO: [OPTIMIZATION] Attempt to load from backup if main save is corrupted
-                TryLoadFromBackup();
-            }
-            finally
-            {
-                isLoading = false;
-            }
+            Debug.LogError($"[UserManager] Save on focus lost failed: {ex.Message}");
         }
+    }
+}
 
-        /// <summary>
-        /// Attempts to recover data from the most recent backup file.
-        /// </summary>
-        private void TryLoadFromBackup()
+/// <summary>
+/// Final cleanup and save before destruction.
+/// </summary>
+private void OnDestroy()
+{
+    try
+    {
+        if (currentUser != null)
         {
-            try
-            {
-                var directory = Path.GetDirectoryName(saveFilePath);
-                var backupFiles = Directory.GetFiles(directory, "*.backup_*")
-                    .OrderByDescending(f => File.GetCreationTime(f))
-                    .ToList();
-
-                if (backupFiles.Count == 0)
-                {
-                    Debug.LogWarning("[UserManager] No backup files found for recovery.");
-                    return;
-                }
-
-                // Try most recent backup
-                string backupFile = backupFiles[0];
-                string jsonData = File.ReadAllText(backupFile);
-                var collection = JsonUtility.FromJson<UserProfileCollection>(jsonData);
-
-                userProfiles = collection?.profiles ?? new List<UserProfile>();
-
-                Debug.LogWarning($"[UserManager] Recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Backup recovery failed: {ex.Message}");
-                userProfiles = new List<UserProfile>();
-            }
+            SaveUserProfilesToDisk();
+            LogInfo("Final save completed on destroy.");
         }
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Save on destroy failed: {ex.Message}");
+    }
+}
 
-        // ===== LIFECYCLE EVENTS =====
+// ===== ASYNC SAVE/LOAD FOR PERFORMANCE =====
 
-        /// <summary>
-        /// Saves data when application is paused (important for mobile).
-        /// </summary>
-        private void OnApplicationPause(bool pauseStatus)
+/// <summary>
+/// Asynchronously saves user profiles to disk using modern async/await patterns.
+/// Prevents blocking the main thread during I/O operations.
+/// Uses CancellationToken for proper async operation cancellation.
+/// </summary>
+/// <param name="cancellationToken">Token to cancel the async operation</param>
+/// <returns>Task representing the async operation</returns>
+public async Task SaveUserProfilesAsync(CancellationToken cancellationToken = default)
+{
+    if (!enableDataPersistence)
+    {
+        LogInfo("Data persistence is disabled. Skipping async save.", true);
+        return;
+    }
+
+    if (isSaving)
+    {
+        Debug.LogWarning("[UserManager] Save already in progress. Skipping duplicate async save request.");
+        return;
+    }
+
+    try
+    {
+        isSaving = true;
+
+        // Create backup if enabled
+        if (createBackups && File.Exists(saveFilePath))
         {
-            if (pauseStatus && currentUser != null)
-            {
-                try
-                {
-                    SaveUserProfilesToDisk();
-                    LogInfo("Auto-saved on application pause.");
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[UserManager] Save on pause failed: {ex.Message}");
-                }
-            }
+            await Task.Run(() => CreateBackupFile(), cancellationToken);
         }
 
-        /// <summary>
-        /// Saves data when application loses focus.
-        /// </summary>
-        private void OnApplicationFocus(bool hasFocus)
+        // Serialize on background thread
+        var collection = new UserProfileCollection { profiles = userProfiles };
+        string jsonData = await Task.Run(() => JsonUtility.ToJson(collection, true), cancellationToken);
+
+        // Write to disk asynchronously
+        await File.WriteAllTextAsync(saveFilePath, jsonData, cancellationToken);
+
+        // Notify listeners on main thread
+        OnDataSaved?.Invoke();
+
+        LogInfo($"User profiles saved asynchronously. Total profiles: {userProfiles.Count}");
+    }
+    catch (OperationCanceledException)
+    {
+        Debug.LogWarning("[UserManager] Async save operation was cancelled.");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Async save failed: {ex.Message}\n{ex.StackTrace}");
+        // TODO: [OPTIMIZATION] Implement exponential backoff retry (max 3 retries, 1s/2s/4s intervals) for transient I/O failures
+    }
+    finally
+    {
+        isSaving = false;
+    }
+}
+
+/// <summary>
+/// Asynchronously loads user profiles from disk without blocking main thread.
+/// Uses modern async/await patterns for better performance.
+/// </summary>
+/// <param name="cancellationToken">Token to cancel the async operation</param>
+/// <returns>Task representing the async operation</returns>
+public async Task LoadUserProfilesAsync(CancellationToken cancellationToken = default)
+{
+    if (!enableDataPersistence)
+    {
+        LogInfo("Data persistence is disabled. Skipping async load.", true);
+        userProfiles = new List<UserProfile>();
+        return;
+    }
+
+    if (isLoading)
+    {
+        Debug.LogWarning("[UserManager] Load already in progress.");
+        return;
+    }
+
+    try
+    {
+        isLoading = true;
+
+        if (!File.Exists(saveFilePath))
         {
-            if (!hasFocus && currentUser != null)
-            {
-                try
-                {
-                    SaveUserProfilesToDisk();
-                    LogInfo("Auto-saved on focus lost.");
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[UserManager] Save on focus lost failed: {ex.Message}");
-                }
-            }
+            LogInfo("No saved user profiles found. Starting with empty user list.");
+            userProfiles = new List<UserProfile>();
+            return;
         }
 
-        /// <summary>
-        /// Final cleanup and save before destruction.
-        /// </summary>
-        private void OnDestroy()
+        // Read from disk asynchronously
+        string jsonData = await File.ReadAllTextAsync(saveFilePath, cancellationToken);
+
+        // Deserialize on background thread
+        var collection = await Task.Run(() => JsonUtility.FromJson<UserProfileCollection>(jsonData), cancellationToken);
+
+        userProfiles = collection?.profiles ?? new List<UserProfile>();
+
+        // Notify listeners on main thread
+        OnDataLoaded?.Invoke();
+
+        LogInfo($"Asynchronously loaded {userProfiles.Count} user profile(s) from disk.");
+    }
+    catch (OperationCanceledException)
+    {
+        Debug.LogWarning("[UserManager] Async load operation was cancelled.");
+        userProfiles = new List<UserProfile>();
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Async load failed: {ex.Message}");
+        userProfiles = new List<UserProfile>();
+
+        // TODO: [OPTIMIZATION] Attempt async backup recovery
+        await TryLoadFromBackupAsync(cancellationToken);
+    }
+    finally
+    {
+        isLoading = false;
+    }
+}
+
+/// <summary>
+/// Asynchronously attempts to recover data from backup.
+/// </summary>
+private async Task TryLoadFromBackupAsync(CancellationToken cancellationToken = default)
+{
+    try
+    {
+        var directory = Path.GetDirectoryName(saveFilePath);
+        var backupFiles = await Task.Run(() =>
+            Directory.GetFiles(directory, "*.backup_*")
+                .OrderByDescending(f => File.GetCreationTime(f))
+                .ToList(), cancellationToken);
+
+        if (backupFiles.Count == 0)
         {
-            try
-            {
-                if (currentUser != null)
-                {
-                    SaveUserProfilesToDisk();
-                    LogInfo("Final save completed on destroy.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Save on destroy failed: {ex.Message}");
-            }
+            Debug.LogWarning("[UserManager] No backup files found for async recovery.");
+            return;
         }
 
-        // ===== ASYNC SAVE/LOAD FOR PERFORMANCE =====
+        // Try most recent backup
+        string backupFile = backupFiles[0];
+        string jsonData = await File.ReadAllTextAsync(backupFile, cancellationToken);
+        var collection = await Task.Run(() => JsonUtility.FromJson<UserProfileCollection>(jsonData), cancellationToken);
 
-        /// <summary>
-        /// Asynchronously saves user profiles to disk using modern async/await patterns.
-        /// Prevents blocking the main thread during I/O operations.
-        /// Uses CancellationToken for proper async operation cancellation.
-        /// </summary>
-        /// <param name="cancellationToken">Token to cancel the async operation</param>
-        /// <returns>Task representing the async operation</returns>
-        public async Task SaveUserProfilesAsync(CancellationToken cancellationToken = default)
-        {
-            if (!enableDataPersistence)
-            {
-                LogInfo("Data persistence is disabled. Skipping async save.", true);
-                return;
-            }
+        userProfiles = collection?.profiles ?? new List<UserProfile>();
 
-            if (isSaving)
-            {
-                Debug.LogWarning("[UserManager] Save already in progress. Skipping duplicate async save request.");
-                return;
-            }
-
-            try
-            {
-                isSaving = true;
-
-                // Create backup if enabled
-                if (createBackups && File.Exists(saveFilePath))
-                {
-                    await Task.Run(() => CreateBackupFile(), cancellationToken);
-                }
-
-                // Serialize on background thread
-                var collection = new UserProfileCollection { profiles = userProfiles };
-                string jsonData = await Task.Run(() => JsonUtility.ToJson(collection, true), cancellationToken);
-
-                // Write to disk asynchronously
-                await File.WriteAllTextAsync(saveFilePath, jsonData, cancellationToken);
-
-                // Notify listeners on main thread
-                OnDataSaved?.Invoke();
-
-                LogInfo($"User profiles saved asynchronously. Total profiles: {userProfiles.Count}");
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.LogWarning("[UserManager] Async save operation was cancelled.");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Async save failed: {ex.Message}\n{ex.StackTrace}");
-                // TODO: [OPTIMIZATION] Implement exponential backoff retry (max 3 retries, 1s/2s/4s intervals) for transient I/O failures
-            }
-            finally
-            {
-                isSaving = false;
-            }
-        }
-
-        /// <summary>
-        /// Asynchronously loads user profiles from disk without blocking main thread.
-        /// Uses modern async/await patterns for better performance.
-        /// </summary>
-        /// <param name="cancellationToken">Token to cancel the async operation</param>
-        /// <returns>Task representing the async operation</returns>
-        public async Task LoadUserProfilesAsync(CancellationToken cancellationToken = default)
-        {
-            if (!enableDataPersistence)
-            {
-                LogInfo("Data persistence is disabled. Skipping async load.", true);
-                userProfiles = new List<UserProfile>();
-                return;
-            }
-
-            if (isLoading)
-            {
-                Debug.LogWarning("[UserManager] Load already in progress.");
-                return;
-            }
-
-            try
-            {
-                isLoading = true;
-
-                if (!File.Exists(saveFilePath))
-                {
-                    LogInfo("No saved user profiles found. Starting with empty user list.");
-                    userProfiles = new List<UserProfile>();
-                    return;
-                }
-
-                // Read from disk asynchronously
-                string jsonData = await File.ReadAllTextAsync(saveFilePath, cancellationToken);
-
-                // Deserialize on background thread
-                var collection = await Task.Run(() => JsonUtility.FromJson<UserProfileCollection>(jsonData), cancellationToken);
-
-                userProfiles = collection?.profiles ?? new List<UserProfile>();
-
-                // Notify listeners on main thread
-                OnDataLoaded?.Invoke();
-
-                LogInfo($"Asynchronously loaded {userProfiles.Count} user profile(s) from disk.");
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.LogWarning("[UserManager] Async load operation was cancelled.");
-                userProfiles = new List<UserProfile>();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Async load failed: {ex.Message}");
-                userProfiles = new List<UserProfile>();
-
-                // TODO: [OPTIMIZATION] Attempt async backup recovery
-                await TryLoadFromBackupAsync(cancellationToken);
-            }
-            finally
-            {
-                isLoading = false;
-            }
-        }
-
-        /// <summary>
-        /// Asynchronously attempts to recover data from backup.
-        /// </summary>
-        private async Task TryLoadFromBackupAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var directory = Path.GetDirectoryName(saveFilePath);
-                var backupFiles = await Task.Run(() =>
-                    Directory.GetFiles(directory, "*.backup_*")
-                        .OrderByDescending(f => File.GetCreationTime(f))
-                        .ToList(), cancellationToken);
-
-                if (backupFiles.Count == 0)
-                {
-                    Debug.LogWarning("[UserManager] No backup files found for async recovery.");
-                    return;
-                }
-
-                // Try most recent backup
-                string backupFile = backupFiles[0];
-                string jsonData = await File.ReadAllTextAsync(backupFile, cancellationToken);
-                var collection = await Task.Run(() => JsonUtility.FromJson<UserProfileCollection>(jsonData), cancellationToken);
-
-                userProfiles = collection?.profiles ?? new List<UserProfile>();
-
-                Debug.LogWarning($"[UserManager] Async recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[UserManager] Async backup recovery failed: {ex.Message}");
-                userProfiles = new List<UserProfile>();
-            }
-        }
+        Debug.LogWarning($"[UserManager] Async recovered {userProfiles.Count} profile(s) from backup: {Path.GetFileName(backupFile)}");
+    }
+    catch (Exception ex)
+    {
+        Debug.LogError($"[UserManager] Async backup recovery failed: {ex.Message}");
+        userProfiles = new List<UserProfile>();
+    }
+}
         }
 
         // ===== UTILITY METHODS =====
@@ -725,12 +842,12 @@ namespace SangsomMiniMe.Core
         /// <param name="message">The message to log</param>
         /// <param name="verboseOnly">If true, only logs when detailed logging is enabled</param>
         private void LogInfo(string message, bool verboseOnly = false)
-        {
-            if (!verboseOnly || enableDetailedLogging)
-            {
-                Debug.Log($"[UserManager] {message}");
-            }
-        }
+{
+    if (!verboseOnly || enableDetailedLogging)
+    {
+        Debug.Log($"[UserManager] {message}");
+    }
+}
     }
 
     /// <summary>

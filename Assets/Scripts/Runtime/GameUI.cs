@@ -60,7 +60,7 @@ namespace SangsomMiniMe.UI
         // Cached references
         private Character.CharacterController characterController;
         private Core.UserProfile currentUser;
-        
+
         // State tracking
         private int currentOutfitIndex = 0;
         private int currentAccessoryIndex = 0;
@@ -107,7 +107,7 @@ namespace SangsomMiniMe.UI
                 // Hide loading and feedback elements initially
                 SetLoadingState(false);
                 HideFeedbackText();
-                
+
                 if (rewardNotification != null)
                     rewardNotification.SetActive(false);
 
@@ -140,23 +140,23 @@ namespace SangsomMiniMe.UI
                 // Character animation buttons with visual feedback
                 SetupButtonWithFeedback(danceButton, () => TriggerCharacterAction(
                     () => characterController?.PlayDance(), "Playing dance animation..."));
-                
+
                 SetupButtonWithFeedback(waveButton, () => TriggerCharacterAction(
                     () => characterController?.PlayWave(), "Waving..."));
-                
+
                 SetupButtonWithFeedback(waiButton, () => TriggerCharacterAction(
                     () => characterController?.PlayWai(), "Performing Thai Wai gesture..."));
-                
+
                 SetupButtonWithFeedback(curtsyButton, () => TriggerCharacterAction(
                     () => characterController?.PlayCurtsy(), "Performing curtsy..."));
-                
+
                 SetupButtonWithFeedback(bowButton, () => TriggerCharacterAction(
                     () => characterController?.PlayBow(), "Bowing..."));
 
                 // Customization controls
                 if (eyeScaleSlider != null)
                     eyeScaleSlider.onValueChanged.AddListener(HandleEyeScaleChanged);
-                
+
                 SetupButtonWithFeedback(prevOutfitButton, HandlePreviousOutfit);
                 SetupButtonWithFeedback(nextOutfitButton, HandleNextOutfit);
                 SetupButtonWithFeedback(prevAccessoryButton, HandlePreviousAccessory);
@@ -195,41 +195,68 @@ namespace SangsomMiniMe.UI
 
         /// <summary>
         /// Animates a button press with smooth scale animation for tactile feedback.
-        /// Implements modern UI microinteraction patterns.
+        /// Implements modern UI microinteraction patterns with overshoot (spring) effect.
         /// </summary>
         private IEnumerator AnimateButtonPress(Transform buttonTransform)
         {
             if (buttonTransform == null) yield break;
 
             Vector3 originalScale = buttonTransform.localScale;
-            Vector3 pressedScale = originalScale * buttonPressScale;
+            Vector3 targetScale = originalScale * buttonPressScale;
+            float duration = buttonPressDuration;
 
-            // Scale down (press)
+            // Press down
             float elapsed = 0f;
-            while (elapsed < buttonPressDuration)
+            while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / buttonPressDuration);
-                // Apply ease-out curve for smooth animation
-                t = 1f - (1f - t) * (1f - t);
-                buttonTransform.localScale = Vector3.Lerp(originalScale, pressedScale, t);
+                float t = elapsed / duration;
+                // Cubic ease out
+                t = 1f - Mathf.Pow(1f - t, 3);
+                buttonTransform.localScale = Vector3.Lerp(originalScale, targetScale, t);
                 yield return null;
             }
 
-            // Scale back up (release)
+            // Release with overshoot (spring effect)
             elapsed = 0f;
-            while (elapsed < buttonPressDuration)
+            float releaseDuration = duration * 1.5f;
+            while (elapsed < releaseDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / buttonPressDuration);
-                // Apply ease-out curve
-                t = 1f - (1f - t) * (1f - t);
-                buttonTransform.localScale = Vector3.Lerp(pressedScale, originalScale, t);
+                float t = elapsed / releaseDuration;
+
+                // Elastic overshoot math
+                float s = 1.70158f; // Overshoot amount
+                float elasticT = --t * t * ((s + 1) * t + s) + 1;
+
+                buttonTransform.localScale = Vector3.Lerp(targetScale, originalScale, elasticT);
                 yield return null;
             }
 
             // Ensure we return to exact original scale
             buttonTransform.localScale = originalScale;
+        }
+
+        /// <summary>
+        /// Toggles the loading skeleton/state.
+        /// </summary>
+        public void SetLoadingState(bool isLoading)
+        {
+            if (loadingState != null)
+            {
+                loadingState.SetLoading(isLoading);
+            }
+            else if (loadingIndicator != null)
+            {
+                loadingIndicator.SetActive(isLoading);
+            }
+
+            if (mainCanvasGroup != null)
+            {
+                mainCanvasGroup.interactable = !isLoading;
+                mainCanvasGroup.blocksRaycasts = !isLoading;
+                mainCanvasGroup.alpha = isLoading ? 0.7f : 1.0f;
+            }
         }
 
         /// <summary>
@@ -307,14 +334,14 @@ namespace SangsomMiniMe.UI
 
                 // Set new current user
                 currentUser = user;
-                
+
                 // Show UI with fade-in animation
                 gameObject.SetActive(true);
                 StartFadeIn();
 
                 // Subscribe to new user events
                 SubscribeToCurrentUserEvents();
-                
+
                 // Update all UI elements
                 RefreshAllUIElements();
 
@@ -336,10 +363,10 @@ namespace SangsomMiniMe.UI
             {
                 UnsubscribeFromCurrentUserEvents();
                 currentUser = null;
-                
+
                 // Fade out and hide UI
                 StartCoroutine(FadeOutAndHide());
-                
+
                 Debug.Log("[GameUI] UI hidden after user logout.");
             }
             catch (Exception ex)
@@ -632,7 +659,7 @@ namespace SangsomMiniMe.UI
 
                 // Show rewarding feedback
                 ShowFeedbackText("📚 Great job! Homework completed! +10 Happiness", Color.green);
-                
+
                 // Show reward notification
                 StartCoroutine(ShowRewardNotificationCoroutine());
 
@@ -740,9 +767,9 @@ namespace SangsomMiniMe.UI
             try
             {
                 isProcessingAction = true;
-                
+
                 ShowFeedbackText("Logging out...", Color.white, 1f);
-                
+
                 // Small delay for feedback visibility
                 StartCoroutine(LogoutWithDelay());
             }
@@ -759,7 +786,7 @@ namespace SangsomMiniMe.UI
         private IEnumerator LogoutWithDelay()
         {
             yield return new WaitForSeconds(0.5f);
-            
+
             Core.UserManager.Instance?.LogoutUser();
             isProcessingAction = false;
         }
@@ -777,7 +804,7 @@ namespace SangsomMiniMe.UI
                 SetLoadingState(true);
 
                 Core.UserManager.Instance?.SaveCurrentUser();
-                
+
                 ShowFeedbackText("✓ Progress saved successfully!", Color.green);
                 Debug.Log("[GameUI] Manual save completed.");
             }

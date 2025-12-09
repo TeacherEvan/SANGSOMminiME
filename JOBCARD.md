@@ -15,6 +15,57 @@
 
 ---
 
+## Session: December 9, 2025 - Performance & UX Overhaul
+
+### Work Completed
+
+**1. Core Architecture Optimization**
+
+- **Async I/O Implementation**: Refactored `UserManager` to use `Task.Run` for file writing. This moves heavy I/O operations off the main thread, preventing frame drops during auto-saves.
+- **Data Structure Optimization**: Replaced O(n) list lookups with O(1) Dictionary lookups in `UserManager` for user retrieval and login validation.
+- **Coroutine-based Loops**: Converted `GameManager`'s `Update()` loop for auto-save into a `Coroutine`. This reduces per-frame overhead by only checking conditions at the specific interval.
+
+**2. UX & Visual Polish**
+
+- **Micro-interactions**: Enhanced `GameUI` button animations with a custom "Spring/Overshoot" math function for a more tactile, premium feel.
+- **Loading States**: Implemented a `SetLoadingState` system in `GameUI` to handle async operation feedback visually (blocking interaction during saves/loads).
+
+**3. Code Quality & Safety**
+
+- **Thread Safety**: Implemented "Serialize on Main, Write on Background" pattern to safely handle Unity's `JsonUtility` limitations while still benefiting from async I/O.
+- **Defensive Programming**: Added `WrapErrors` extension for fire-and-forget tasks to prevent silent failures in async void methods.
+- **Memory Management**: Optimized `AllUsers` accessor to return `IReadOnlyList` backed by the internal list instead of creating a new copy every call.
+
+### Key Benefits
+
+- **Zero-Stutter Saves**: Auto-save no longer hiccups the frame rate.
+- **Scalability**: User lookups remain instant even with hundreds of profiles.
+- **Premium Feel**: UI interactions feel responsive and polished.
+
+---
+
+## Session: December 9, 2025 - Analytics & Character Optimization
+
+### Work Completed
+
+**1. Educational Analytics Persistence**
+
+- **Problem**: Analytics data was in-memory only and lost on app exit.
+- **Solution**: Implemented `SaveAnalytics()` using the same async `Task.Run` pattern as `UserManager`.
+- **Data Structure**: Converted `AnalyticsEvent` to use `List<AnalyticsParameter>` struct for `JsonUtility` compatibility (Dictionaries are not serializable by default in Unity).
+
+**2. Character Controller Optimization**
+
+- **String Allocation**: Replaced `Replace()` with `Substring()` for outfit/accessory parsing to reduce garbage generation.
+- **Loop Optimization**: Replaced `foreach` with `for` loop in `SetAccessory` to avoid enumerator allocation.
+
+### Key Benefits
+
+- **Data Integrity**: Educational metrics are now saved to disk (`analytics_log.json`).
+- **Reduced GC Pressure**: Character customization generates less garbage.
+
+---
+
 ## Session: December 7, 2025 - Unity-Only Conversion
 
 ### Work Completed

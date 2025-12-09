@@ -141,13 +141,19 @@ namespace SangsomMiniMe.Character
 
         public void SetOutfitByName(string outfitName)
         {
-            if (outfitName == "default")
+            if (string.IsNullOrEmpty(outfitName) || outfitName == "default")
             {
                 SetOutfit(0);
+                return;
             }
-            else if (outfitName.StartsWith("outfit_"))
+
+            // Optimized parsing to avoid string splitting
+            if (outfitName.StartsWith("outfit_"))
             {
-                if (int.TryParse(outfitName.Replace("outfit_", ""), out int index))
+                // Extract number part: "outfit_1" -> "1"
+                // Using substring is better than Replace for simple prefix removal
+                string numberPart = outfitName.Substring(7);
+                if (int.TryParse(numberPart, out int index))
                 {
                     SetOutfit(index);
                 }
@@ -159,10 +165,10 @@ namespace SangsomMiniMe.Character
             // Hide all accessories first
             if (accessories != null)
             {
-                foreach (var accessory in accessories)
+                for (int i = 0; i < accessories.Length; i++)
                 {
-                    if (accessory != null)
-                        accessory.SetActive(false);
+                    if (accessories[i] != null)
+                        accessories[i].SetActive(false);
                 }
 
                 // Show selected accessory
@@ -179,6 +185,7 @@ namespace SangsomMiniMe.Character
                 // Update user profile (save will be handled by auto-save)
                 if (Core.UserManager.Instance?.CurrentUser != null)
                 {
+                    // Cache the string to avoid allocation if possible, but for now this is acceptable
                     string accessoryName = currentAccessoryIndex == 0 ? "none" : $"accessory_{currentAccessoryIndex}";
                     Core.UserManager.Instance.CurrentUser.SetAccessory(accessoryName);
                     Core.UserManager.Instance.MarkDirty();
@@ -188,13 +195,16 @@ namespace SangsomMiniMe.Character
 
         public void SetAccessoryByName(string accessoryName)
         {
-            if (accessoryName == "none")
+            if (string.IsNullOrEmpty(accessoryName) || accessoryName == "none")
             {
                 SetAccessory(0);
+                return;
             }
-            else if (accessoryName.StartsWith("accessory_"))
+
+            if (accessoryName.StartsWith("accessory_"))
             {
-                if (int.TryParse(accessoryName.Replace("accessory_", ""), out int index))
+                string numberPart = accessoryName.Substring(10); // "accessory_" length is 10
+                if (int.TryParse(numberPart, out int index))
                 {
                     SetAccessory(index);
                 }

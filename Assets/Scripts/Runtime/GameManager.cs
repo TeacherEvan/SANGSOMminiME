@@ -28,12 +28,22 @@ namespace SangsomMiniMe.Core
         // Singleton instance with thread safety consideration
         private static GameManager instance;
         public static GameManager Instance => instance;
-        
-        // Public configuration accessor with null safety
-        public GameConfiguration Config => gameConfig != null ? gameConfig : ScriptableObject.CreateInstance<GameConfiguration>();
+
+        // Public configuration accessor with null safety and caching
+        public GameConfiguration Config
+        {
+            get
+            {
+                if (gameConfig == null)
+                {
+                    gameConfig = ScriptableObject.CreateInstance<GameConfiguration>();
+                }
+                return gameConfig;
+            }
+        }
 
         // Cached time tracking for auto-save optimization
-        private float lastAutoSaveTime;
+        private Coroutine autoSaveCoroutine;
         private bool isInitialized;
 
         // Event system for decoupled communication
@@ -66,10 +76,10 @@ namespace SangsomMiniMe.Core
                 ValidateRequiredReferences();
                 SubscribeToGameEvents();
                 InitializeAutoSave();
-                
+
                 isInitialized = true;
                 OnGameInitialized?.Invoke();
-                
+
                 LogInfo("Sangsom Mini-Me Game Manager initialized successfully.");
             }
             catch (Exception ex)
@@ -86,13 +96,13 @@ namespace SangsomMiniMe.Core
         {
             if (loginUI == null)
                 Debug.LogWarning("[GameManager] LoginUI reference is not assigned. Login functionality may not work.");
-            
+
             if (gameUI == null)
                 Debug.LogWarning("[GameManager] GameUI reference is not assigned. Game UI may not display.");
-            
+
             if (characterController == null)
                 Debug.LogWarning("[GameManager] CharacterController reference is not assigned. Character interactions will be limited.");
-            
+
             if (gameConfig == null)
             {
                 Debug.LogWarning("[GameManager] GameConfiguration is not assigned. Using default configuration.");
@@ -122,8 +132,22 @@ namespace SangsomMiniMe.Core
         /// </summary>
         private void InitializeAutoSave()
         {
-            lastAutoSaveTime = Time.time;
+            if (autoSaveCoroutine != null) StopCoroutine(autoSaveCoroutine);
+            autoSaveCoroutine = StartCoroutine(AutoSaveRoutine());
             LogInfo($"Auto-save initialized. Interval: {(gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval)}s");
+        }
+
+        private System.Collections.IEnumerator AutoSaveRoutine()
+        {
+            var wait = new WaitForSeconds(gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval);
+            while (true)
+            {
+                yield return wait;
+                if (autoSaveEnabled && isInitialized)
+                {
+                    UserManager.Instance?.SaveIfDirty();
+                }
+            }
         }
 
         private void Start()
@@ -134,7 +158,7 @@ namespace SangsomMiniMe.Core
                 Debug.LogError("[GameManager] Start called but initialization failed. Attempting re-initialization.");
                 InitializeGameSystems();
             }
-            
+
             SetupInitialUserInterface();
         }
 
@@ -253,7 +277,7 @@ namespace SangsomMiniMe.Core
                     loginUI.gameObject.SetActive(true);
                     loginUI.ShowLoginInterface();
                 }
-                
+
                 ShowLoginUI();
 
                 // Notify other systems of state change
@@ -269,41 +293,10 @@ namespace SangsomMiniMe.Core
         {
             if (!isInitialized) return;
 
-            // Optimized auto-save with dirty flag checking
-            ProcessAutoSave();
-
             // Debug input processing (development only)
             if (enableDebugMode)
             {
                 ProcessDebugInput();
-            }
-        }
-
-        /// <summary>
-        /// Processes auto-save with optimized dirty flag checking.
-        /// Only saves when data has changed to reduce I/O operations.
-        /// </summary>
-        private void ProcessAutoSave()
-        {
-            if (!autoSaveEnabled || UserManager.Instance?.CurrentUser == null)
-                return;
-
-            float saveInterval = gameConfig != null ? gameConfig.AutoSaveInterval : autoSaveInterval;
-            
-            if (Time.time - lastAutoSaveTime >= saveInterval)
-            {
-                try
-                {
-                    // Only save if data has actually changed (performance optimization)
-                    UserManager.Instance.SaveIfDirty();
-                    lastAutoSaveTime = Time.time;
-
-                    LogInfo("Auto-save check completed.", true);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[GameManager] Auto-save failed: {ex.Message}");
-                }
             }
         }
 

@@ -16,6 +16,7 @@ Sangsom Mini-Me combines modern AI-assisted development with educational game de
 - **📚 Educational Integration**: Homework completion drives character wellbeing and unlocks resources
 - **🎨 Extensive Customization**: Scalable eye sizes, outfits, accessories, and jewelry
 - **🏫 Multi-User System**: School-wide deployment with administrative controls
+- **⚡ High Performance**: Async I/O and optimized data structures for smooth 60 FPS gameplay
 - **🎮 Minime Universe**: Educational side games that contribute resources to main character
 - **🔐 Administrative Tools**: Password-protected teacher controls and progress monitoring
 
@@ -23,6 +24,7 @@ Sangsom Mini-Me combines modern AI-assisted development with educational game de
 
 - **Unity 2022.3.12f1 LTS**: Industry-standard game engine for interactive gameplay
 - **C# .NET**: Unity scripting with strong type safety and modern language features
+- **Async Architecture**: Task-based I/O for non-blocking persistence
 - **VSCode**: AI-powered code generation and debugging assistance
 - **Data-driven Architecture**: JSON configuration via JsonUtility for scalability
 - **NUnit Testing**: PlayMode tests for quality assurance

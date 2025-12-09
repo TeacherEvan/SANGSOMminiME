@@ -38,5 +38,6 @@
         "javascript",
         "json",
         "csharp"
-    ]
+    ],
+    "dotnet.defaultSolution": "SANGSOMminiME.slnx"
 }
