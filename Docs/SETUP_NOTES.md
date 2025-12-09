@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- [Unity Hub](https://unity.com/download) with **Unity 2022.3.12f1 LTS**
+- [Unity Hub](https://unity.com/download) with **Unity 6000.2.15f1**
 - [VSCode](https://code.visualstudio.com/) (recommended for C# development)
 - Git for version control
 
@@ -21,7 +21,7 @@
 
    - Open Unity Hub
    - Click "Add" → Select SANGSOMminiME folder
-   - Unity Hub will detect version 2022.3.12f1
+   - Unity Hub will detect version 6000.2.15f1
    - Click to open the project
    - Navigate to Assets/Scenes/ and open **MainScene.unity**
 
@@ -72,7 +72,7 @@ SANGSOMminiME/
 │   ├── SETUP_NOTES.md        # This file
 │   └── EXTENSIONS_AND_TOOLS.md
 ├── ProjectSettings/           # Unity project configuration
-│   └── ProjectVersion.txt    # Unity 2022.3.12f1
+│   └── ProjectVersion.txt    # Unity 6000.2.15f1
 ├── Packages/                  # Unity Package Manager
 ├── .vscode/                   # VSCode configuration
 ├── README.md                  # Project overview
@@ -215,7 +215,7 @@ SANGSOMminiME/
 
 ### Unity project won't open
 
-- Ensure Unity 2022.3.12f1 is installed via Unity Hub
+- Ensure Unity 6000.2.15f1 is installed via Unity Hub
 - Delete Library folder and reimport project
 - Check Unity Hub for any error messages
 

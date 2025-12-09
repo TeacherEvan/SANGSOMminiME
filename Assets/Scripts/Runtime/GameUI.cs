@@ -19,12 +19,26 @@ namespace SangsomMiniMe.UI
         [SerializeField] private Slider happinessSlider;
         [SerializeField] private TextMeshProUGUI happinessText;
 
+        [Header("Meter Displays (Hunger & Energy)")]
+        [SerializeField] private Slider hungerSlider;
+        [SerializeField] private TextMeshProUGUI hungerText;
+        [SerializeField] private Slider energySlider;
+        [SerializeField] private TextMeshProUGUI energyText;
+        [SerializeField] private TextMeshProUGUI moodText;
+
         [Header("Character Interaction Buttons")]
         [SerializeField] private Button danceButton;
         [SerializeField] private Button waveButton;
         [SerializeField] private Button waiButton;
         [SerializeField] private Button curtsyButton;
         [SerializeField] private Button bowButton;
+
+        [Header("Character Care Actions")]
+        [SerializeField] private Button feedButton;
+        [SerializeField] private Button restButton;
+        [SerializeField] private Button playButton;
+        [SerializeField] private TextMeshProUGUI feedCostText;
+        [SerializeField] private TextMeshProUGUI restCostText;
 
         [Header("Customization Controls")]
         [SerializeField] private Slider eyeScaleSlider;
@@ -52,6 +66,15 @@ namespace SangsomMiniMe.UI
         [SerializeField] private float feedbackDisplayDuration = 2f;
         [SerializeField] private CanvasGroup mainCanvasGroup;
 
+        [Header("Daily Login Celebration")]
+        [SerializeField] private GameObject celebrationPanel;
+        [SerializeField] private TextMeshProUGUI celebrationTitleText;
+        [SerializeField] private TextMeshProUGUI celebrationMessageText;
+        [SerializeField] private TextMeshProUGUI celebrationCoinsText;
+        [SerializeField] private TextMeshProUGUI streakDisplayText;
+        [SerializeField] private Button closeCelebrationButton;
+        [SerializeField] private float celebrationDisplayDuration = 4f;
+
         [Header("Animation Settings")]
         [SerializeField] private float uiFadeInDuration = 0.3f;
         [SerializeField] private float buttonPressScale = 0.95f;
@@ -60,7 +83,7 @@ namespace SangsomMiniMe.UI
         // Cached references
         private Character.CharacterController characterController;
         private Core.UserProfile currentUser;
-        
+
         // State tracking
         private int currentOutfitIndex = 0;
         private int currentAccessoryIndex = 0;
@@ -71,6 +94,12 @@ namespace SangsomMiniMe.UI
         // Coroutine tracking
         private Coroutine feedbackCoroutine;
         private Coroutine fadeCoroutine;
+
+        // Meter animation tracking (smooth fill for premium UX)
+        private Coroutine happinessAnimCoroutine;
+        private Coroutine hungerAnimCoroutine;
+        private Coroutine energyAnimCoroutine;
+        private float meterAnimationDuration = 0.4f;
 
         private void Start()
         {
@@ -107,7 +136,7 @@ namespace SangsomMiniMe.UI
                 // Hide loading and feedback elements initially
                 SetLoadingState(false);
                 HideFeedbackText();
-                
+
                 if (rewardNotification != null)
                     rewardNotification.SetActive(false);
 
@@ -140,23 +169,23 @@ namespace SangsomMiniMe.UI
                 // Character animation buttons with visual feedback
                 SetupButtonWithFeedback(danceButton, () => TriggerCharacterAction(
                     () => characterController?.PlayDance(), "Playing dance animation..."));
-                
+
                 SetupButtonWithFeedback(waveButton, () => TriggerCharacterAction(
                     () => characterController?.PlayWave(), "Waving..."));
-                
+
                 SetupButtonWithFeedback(waiButton, () => TriggerCharacterAction(
                     () => characterController?.PlayWai(), "Performing Thai Wai gesture..."));
-                
+
                 SetupButtonWithFeedback(curtsyButton, () => TriggerCharacterAction(
                     () => characterController?.PlayCurtsy(), "Performing curtsy..."));
-                
+
                 SetupButtonWithFeedback(bowButton, () => TriggerCharacterAction(
                     () => characterController?.PlayBow(), "Bowing..."));
 
                 // Customization controls
                 if (eyeScaleSlider != null)
                     eyeScaleSlider.onValueChanged.AddListener(HandleEyeScaleChanged);
-                
+
                 SetupButtonWithFeedback(prevOutfitButton, HandlePreviousOutfit);
                 SetupButtonWithFeedback(nextOutfitButton, HandleNextOutfit);
                 SetupButtonWithFeedback(prevAccessoryButton, HandlePreviousAccessory);
@@ -166,9 +195,17 @@ namespace SangsomMiniMe.UI
                 SetupButtonWithFeedback(completeHomeworkButton, HandleCompleteHomework);
                 SetupButtonWithFeedback(homeworkRewardButton, HandleClaimHomeworkReward);
 
+                // Character care actions (Feed, Rest, Play)
+                SetupButtonWithFeedback(feedButton, HandleFeedCharacter);
+                SetupButtonWithFeedback(restButton, HandleRestCharacter);
+                SetupButtonWithFeedback(playButton, HandlePlayWithCharacter);
+
                 // Account buttons
                 SetupButtonWithFeedback(logoutButton, HandleLogout);
                 SetupButtonWithFeedback(saveProgressButton, HandleManualSave);
+
+                // Update care action cost displays
+                UpdateCareActionCosts();
 
                 Debug.Log("[GameUI] Event listeners configured successfully.");
             }
@@ -195,41 +232,68 @@ namespace SangsomMiniMe.UI
 
         /// <summary>
         /// Animates a button press with smooth scale animation for tactile feedback.
-        /// Implements modern UI microinteraction patterns.
+        /// Implements modern UI microinteraction patterns with overshoot (spring) effect.
         /// </summary>
         private IEnumerator AnimateButtonPress(Transform buttonTransform)
         {
             if (buttonTransform == null) yield break;
 
             Vector3 originalScale = buttonTransform.localScale;
-            Vector3 pressedScale = originalScale * buttonPressScale;
+            Vector3 targetScale = originalScale * buttonPressScale;
+            float duration = buttonPressDuration;
 
-            // Scale down (press)
+            // Press down
             float elapsed = 0f;
-            while (elapsed < buttonPressDuration)
+            while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / buttonPressDuration);
-                // Apply ease-out curve for smooth animation
-                t = 1f - (1f - t) * (1f - t);
-                buttonTransform.localScale = Vector3.Lerp(originalScale, pressedScale, t);
+                float t = elapsed / duration;
+                // Cubic ease out
+                t = 1f - Mathf.Pow(1f - t, 3);
+                buttonTransform.localScale = Vector3.Lerp(originalScale, targetScale, t);
                 yield return null;
             }
 
-            // Scale back up (release)
+            // Release with overshoot (spring effect)
             elapsed = 0f;
-            while (elapsed < buttonPressDuration)
+            float releaseDuration = duration * 1.5f;
+            while (elapsed < releaseDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / buttonPressDuration);
-                // Apply ease-out curve
-                t = 1f - (1f - t) * (1f - t);
-                buttonTransform.localScale = Vector3.Lerp(pressedScale, originalScale, t);
+                float t = elapsed / releaseDuration;
+
+                // Elastic overshoot math
+                float s = 1.70158f; // Overshoot amount
+                float elasticT = --t * t * ((s + 1) * t + s) + 1;
+
+                buttonTransform.localScale = Vector3.Lerp(targetScale, originalScale, elasticT);
                 yield return null;
             }
 
             // Ensure we return to exact original scale
             buttonTransform.localScale = originalScale;
+        }
+
+        /// <summary>
+        /// Toggles the loading skeleton/state.
+        /// </summary>
+        public void SetLoadingState(bool isLoading)
+        {
+            if (loadingState != null)
+            {
+                loadingState.SetLoading(isLoading);
+            }
+            else if (loadingIndicator != null)
+            {
+                loadingIndicator.SetActive(isLoading);
+            }
+
+            if (mainCanvasGroup != null)
+            {
+                mainCanvasGroup.interactable = !isLoading;
+                mainCanvasGroup.blocksRaycasts = !isLoading;
+                mainCanvasGroup.alpha = isLoading ? 0.7f : 1.0f;
+            }
         }
 
         /// <summary>
@@ -307,14 +371,14 @@ namespace SangsomMiniMe.UI
 
                 // Set new current user
                 currentUser = user;
-                
+
                 // Show UI with fade-in animation
                 gameObject.SetActive(true);
                 StartFadeIn();
 
                 // Subscribe to new user events
                 SubscribeToCurrentUserEvents();
-                
+
                 // Update all UI elements
                 RefreshAllUIElements();
 
@@ -336,10 +400,10 @@ namespace SangsomMiniMe.UI
             {
                 UnsubscribeFromCurrentUserEvents();
                 currentUser = null;
-                
+
                 // Fade out and hide UI
                 StartCoroutine(FadeOutAndHide());
-                
+
                 Debug.Log("[GameUI] UI hidden after user logout.");
             }
             catch (Exception ex)
@@ -358,6 +422,8 @@ namespace SangsomMiniMe.UI
                 currentUser.OnCoinsChanged += UpdateCoinsDisplay;
                 currentUser.OnExperienceChanged += UpdateExperienceDisplay;
                 currentUser.OnHappinessChanged += HandleCharacterHappinessChanged;
+                currentUser.OnHungerChanged += HandleHungerChanged;
+                currentUser.OnEnergyChanged += HandleEnergyChanged;
             }
         }
 
@@ -371,20 +437,43 @@ namespace SangsomMiniMe.UI
                 currentUser.OnCoinsChanged -= UpdateCoinsDisplay;
                 currentUser.OnExperienceChanged -= UpdateExperienceDisplay;
                 currentUser.OnHappinessChanged -= HandleCharacterHappinessChanged;
+                currentUser.OnHungerChanged -= HandleHungerChanged;
+                currentUser.OnEnergyChanged -= HandleEnergyChanged;
             }
         }
 
         // ===== UI DISPLAY UPDATES =====
 
         /// <summary>
-        /// Updates the coins display with visual feedback.
+        /// Updates the coins display with visual feedback and animation.
+        /// Resolved TODO: Added coin increase animation for better UX.
         /// </summary>
         private void UpdateCoinsDisplay(int coins)
         {
             if (coinsText != null)
             {
-                coinsText.text = $"💰 {coins:N0}";
-                // TODO: [OPTIMIZATION] Add coin increase animation for better UX
+                int oldCoins = currentUser != null ? (int)Mathf.Max(0, coins - 10) : 0; // Estimate previous value
+
+                // Play coin animation if CoinAnimationController exists
+                if (coins > oldCoins && CoinAnimationController.Instance != null && coinsText.transform != null)
+                {
+                    Vector3 spawnPos = coinsText.transform.position;
+                    CoinAnimationController.Instance.PlayCoinCollectAnimation(
+                        coins - oldCoins,
+                        spawnPos,
+                        () =>
+                        {
+                            // Update text after animation completes
+                            coinsText.text = $"💰 {coins:N0}";
+                            Core.AudioManager.Instance?.PlayCoin();
+                        }
+                    );
+                }
+                else
+                {
+                    // Fallback: instant update
+                    coinsText.text = $"💰 {coins:N0}";
+                }
             }
         }
 
@@ -463,14 +552,25 @@ namespace SangsomMiniMe.UI
         }
 
         /// <summary>
-        /// Handles character happiness changes with smooth slider update.
+        /// Handles character happiness changes with smooth slider update and premium animation.
+        /// Uses easing for organic feel and visual polish.
         /// </summary>
         private void HandleCharacterHappinessChanged(float happiness)
         {
+            // Stop any existing animation
+            if (happinessAnimCoroutine != null)
+            {
+                StopCoroutine(happinessAnimCoroutine);
+            }
+
             if (happinessSlider != null)
             {
-                // Smooth transition could be added here
-                happinessSlider.value = happiness;
+                // Start smooth fill animation with elastic easing
+                happinessAnimCoroutine = StartCoroutine(AnimateMeterFill(
+                    happinessSlider,
+                    happiness,
+                    UITransitionManager.EasingMode.EaseOut
+                ));
             }
 
             if (happinessText != null)
@@ -620,6 +720,9 @@ namespace SangsomMiniMe.UI
                 currentUser.CompleteHomework();
                 characterController?.IncreaseHappiness(10f);
 
+                // Play coin reward sound
+                Core.AudioManager.Instance?.PlayCoin();
+
                 // Trigger celebration animation
                 if (characterController != null && !characterController.IsAnimating)
                 {
@@ -632,7 +735,7 @@ namespace SangsomMiniMe.UI
 
                 // Show rewarding feedback
                 ShowFeedbackText("📚 Great job! Homework completed! +10 Happiness", Color.green);
-                
+
                 // Show reward notification
                 StartCoroutine(ShowRewardNotificationCoroutine());
 
@@ -697,6 +800,166 @@ namespace SangsomMiniMe.UI
             rewardNotification.SetActive(false);
         }
 
+        // ===== CHARACTER CARE ACTIONS =====
+
+        /// <summary>
+        /// Handles feeding the character to restore hunger.
+        /// Costs coins but restores hunger meter.
+        /// </summary>
+        private void HandleFeedCharacter()
+        {
+            if (isProcessingAction || currentUser == null) return;
+
+            try
+            {
+                isProcessingAction = true;
+
+                // Check if user can afford
+                if (currentUser.Coins < Core.GameConstants.FeedCost)
+                {
+                    ShowFeedbackText($"Not enough coins! Need {Core.GameConstants.FeedCost} 🪙", Color.yellow);
+                    return;
+                }
+
+                // Check if hunger is already full
+                if (currentUser.CharacterHunger >= 95f)
+                {
+                    ShowFeedbackText("Your Mini-Me isn't hungry right now! 😊", Color.cyan);
+                    return;
+                }
+
+                // Spend coins and feed
+                currentUser.SpendCoins(Core.GameConstants.FeedCost);
+                currentUser.Feed();
+
+                // Play feed sound
+                Core.AudioManager.Instance?.PlayFeed();
+
+                // Update UI
+                RefreshAllUIElements();
+                UpdateMeterDisplays();
+                Core.UserManager.Instance?.MarkDirty();
+
+                ShowFeedbackText($"🍎 Yummy! +{Core.GameConstants.FeedHungerRecovery:F0} Hunger", Color.green);
+                Debug.Log("[GameUI] Character fed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error feeding character: {ex.Message}");
+                ShowFeedbackText("Error feeding character", Color.red);
+            }
+            finally
+            {
+                isProcessingAction = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles resting the character to restore energy.
+        /// Costs coins but restores energy meter.
+        /// </summary>
+        private void HandleRestCharacter()
+        {
+            if (isProcessingAction || currentUser == null) return;
+
+            try
+            {
+                isProcessingAction = true;
+
+                // Check if user can afford
+                if (currentUser.Coins < Core.GameConstants.RestCost)
+                {
+                    ShowFeedbackText($"Not enough coins! Need {Core.GameConstants.RestCost} 🪙", Color.yellow);
+                    return;
+                }
+
+                // Check if energy is already full
+                if (currentUser.CharacterEnergy >= 95f)
+                {
+                    ShowFeedbackText("Your Mini-Me is full of energy! ⚡", Color.cyan);
+                    return;
+                }
+
+                // Spend coins and rest
+                currentUser.SpendCoins(Core.GameConstants.RestCost);
+                currentUser.Rest();
+
+                // Play rest sound
+                Core.AudioManager.Instance?.PlayRest();
+
+                // Update UI
+                RefreshAllUIElements();
+                UpdateMeterDisplays();
+                Core.UserManager.Instance?.MarkDirty();
+
+                ShowFeedbackText($"😴 Rested! +{Core.GameConstants.RestEnergyRecovery:F0} Energy", Color.green);
+                Debug.Log("[GameUI] Character rested successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error resting character: {ex.Message}");
+                ShowFeedbackText("Error resting character", Color.red);
+            }
+            finally
+            {
+                isProcessingAction = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles playing with the character to restore happiness.
+        /// Free action that triggers dance and increases happiness.
+        /// </summary>
+        private void HandlePlayWithCharacter()
+        {
+            if (isProcessingAction || currentUser == null) return;
+
+            try
+            {
+                isProcessingAction = true;
+
+                // Play is free! Just increase happiness
+                currentUser.IncreaseHappiness(Core.GameConstants.PlayHappinessBonus);
+
+                // Play happy sound
+                Core.AudioManager.Instance?.PlayPlay();
+
+                // Trigger celebration animation
+                if (characterController != null && !characterController.IsAnimating)
+                {
+                    characterController.PlayDance();
+                }
+
+                // Update UI
+                RefreshAllUIElements();
+                UpdateMeterDisplays();
+                Core.UserManager.Instance?.MarkDirty();
+
+                ShowFeedbackText($"🎉 Fun time! +{Core.GameConstants.PlayHappinessBonus:F0} Happiness", Color.magenta);
+                Debug.Log("[GameUI] Played with character successfully.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error playing with character: {ex.Message}");
+                ShowFeedbackText("Error playing", Color.red);
+            }
+            finally
+            {
+                isProcessingAction = false;
+            }
+        }
+
+        /// <summary>
+        /// Updates the care action cost display texts.
+        /// </summary>
+        private void UpdateCareActionCosts()
+        {
+            if (feedCostText != null)
+                feedCostText.text = $"{Core.GameConstants.FeedCost} 🪙";
+            if (restCostText != null)
+                restCostText.text = $"{Core.GameConstants.RestCost} 🪙";
+        }
+
         // ===== CHARACTER INTERACTIONS =====
 
         /// <summary>
@@ -740,9 +1003,9 @@ namespace SangsomMiniMe.UI
             try
             {
                 isProcessingAction = true;
-                
+
                 ShowFeedbackText("Logging out...", Color.white, 1f);
-                
+
                 // Small delay for feedback visibility
                 StartCoroutine(LogoutWithDelay());
             }
@@ -759,7 +1022,7 @@ namespace SangsomMiniMe.UI
         private IEnumerator LogoutWithDelay()
         {
             yield return new WaitForSeconds(0.5f);
-            
+
             Core.UserManager.Instance?.LogoutUser();
             isProcessingAction = false;
         }
@@ -777,7 +1040,7 @@ namespace SangsomMiniMe.UI
                 SetLoadingState(true);
 
                 Core.UserManager.Instance?.SaveCurrentUser();
-                
+
                 ShowFeedbackText("✓ Progress saved successfully!", Color.green);
                 Debug.Log("[GameUI] Manual save completed.");
             }
@@ -794,6 +1057,19 @@ namespace SangsomMiniMe.UI
         }
 
         // ===== VISUAL FEEDBACK & ANIMATIONS =====
+
+        /// <summary>
+        /// Shows a gentle reminder message for low meters (cozy, not stressful).
+        /// </summary>
+        /// <param name="message">The friendly reminder message</param>
+        public void ShowGentleReminder(string message)
+        {
+            // Play gentle reminder sound
+            Core.AudioManager.Instance?.PlayGentleReminder();
+
+            // Use a soft color for gentle reminders - not red/alarming
+            ShowFeedbackText(message, new Color(0.4f, 0.7f, 1f), 3f); // Soft blue
+        }
 
         /// <summary>
         /// Shows temporary feedback text to the user.
@@ -890,6 +1166,273 @@ namespace SangsomMiniMe.UI
             }
 
             group.alpha = endAlpha;
+        }
+
+        // ===== DAILY LOGIN CELEBRATION =====
+
+        /// <summary>
+        /// Shows the daily login bonus celebration panel.
+        /// Displays streak info, coins earned, and milestone achievements.
+        /// </summary>
+        /// <param name="result">The login bonus result containing reward details</param>
+        public void ShowLoginBonusCelebration(Core.LoginBonusResult result)
+        {
+            if (!result.IsFirstLoginToday) return;
+
+            try
+            {
+                // Play appropriate sound effect
+                if (result.HitMilestone)
+                {
+                    Core.AudioManager.Instance?.PlayMilestone();
+                }
+                else
+                {
+                    Core.AudioManager.Instance?.PlayLoginBonus();
+                }
+
+                // Update celebration UI text
+                if (celebrationTitleText != null)
+                {
+                    if (result.HitMilestone)
+                    {
+                        celebrationTitleText.text = $"🎉 {result.MilestoneDay} Day Milestone!";
+                    }
+                    else if (result.IsNewRecord)
+                    {
+                        celebrationTitleText.text = "🏆 New Streak Record!";
+                    }
+                    else if (result.CurrentStreak > 1)
+                    {
+                        celebrationTitleText.text = $"{Core.DailyLoginSystem.GetStreakEmoji(result.CurrentStreak)} Daily Bonus!";
+                    }
+                    else
+                    {
+                        celebrationTitleText.text = "✨ Welcome Back!";
+                    }
+                }
+
+                if (celebrationMessageText != null)
+                {
+                    celebrationMessageText.text = Core.DailyLoginSystem.GetCelebrationMessage(result);
+                }
+
+                if (celebrationCoinsText != null)
+                {
+                    celebrationCoinsText.text = $"+{result.CoinsEarned} coins";
+                }
+
+                if (streakDisplayText != null)
+                {
+                    string streakEmoji = Core.DailyLoginSystem.GetStreakEmoji(result.CurrentStreak);
+                    int daysToNext = Core.DailyLoginSystem.GetDaysUntilNextMilestone(result.CurrentStreak);
+                    int nextMilestone = Core.DailyLoginSystem.GetNextMilestoneDay(result.CurrentStreak);
+
+                    if (nextMilestone > 0)
+                    {
+                        streakDisplayText.text = $"{streakEmoji} {result.CurrentStreak} day streak\n{daysToNext} days to {nextMilestone} day milestone!";
+                    }
+                    else
+                    {
+                        streakDisplayText.text = $"👑 {result.CurrentStreak} day streak\nAll milestones achieved!";
+                    }
+                }
+
+                // Show celebration panel
+                if (celebrationPanel != null)
+                {
+                    celebrationPanel.SetActive(true);
+                    StartCoroutine(AutoHideCelebration());
+                }
+
+                // Setup close button
+                if (closeCelebrationButton != null)
+                {
+                    closeCelebrationButton.onClick.RemoveAllListeners();
+                    closeCelebrationButton.onClick.AddListener(HideCelebration);
+                }
+
+                Debug.Log($"[GameUI] Showing login celebration: +{result.CoinsEarned} coins, {result.CurrentStreak} day streak");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error showing celebration: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Auto-hides celebration panel after a delay.
+        /// </summary>
+        private IEnumerator AutoHideCelebration()
+        {
+            yield return new WaitForSeconds(celebrationDisplayDuration);
+            HideCelebration();
+        }
+
+        /// <summary>
+        /// Hides the celebration panel.
+        /// </summary>
+        private void HideCelebration()
+        {
+            if (celebrationPanel != null)
+            {
+                celebrationPanel.SetActive(false);
+            }
+        }
+
+        // ===== METER DISPLAY UPDATES =====
+
+        /// <summary>
+        /// Updates all meter displays (happiness, hunger, energy, mood).
+        /// Called by GameManager when meters decay.
+        /// </summary>
+        public void UpdateMeterDisplays()
+        {
+            if (currentUser == null) return;
+
+            try
+            {
+                // Update happiness
+                if (happinessSlider != null)
+                    happinessSlider.value = currentUser.CharacterHappiness;
+                if (happinessText != null)
+                    happinessText.text = $"{currentUser.CharacterHappiness:F0}%";
+
+                // Update hunger
+                if (hungerSlider != null)
+                    hungerSlider.value = currentUser.CharacterHunger;
+                if (hungerText != null)
+                    hungerText.text = $"{currentUser.CharacterHunger:F0}%";
+
+                // Update energy
+                if (energySlider != null)
+                    energySlider.value = currentUser.CharacterEnergy;
+                if (energyText != null)
+                    energyText.text = $"{currentUser.CharacterEnergy:F0}%";
+
+                // Update mood display
+                UpdateMoodDisplay();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[GameUI] Error updating meter displays: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Updates the mood display based on overall meter values.
+        /// </summary>
+        private void UpdateMoodDisplay()
+        {
+            if (moodText == null || currentUser == null) return;
+
+            var mood = Core.MeterDecaySystem.GetOverallMood(currentUser);
+            string emoji = Core.MeterDecaySystem.GetMoodEmoji(mood);
+            string description = Core.MeterDecaySystem.GetMoodDescription(mood);
+
+            moodText.text = $"{emoji} {description}";
+        }
+
+        /// <summary>
+        /// Animates a slider filling to target value with smooth easing.
+        /// Provides premium micro-interaction feel with organic motion.
+        /// </summary>
+        /// <param name="slider">The UI slider to animate</param>
+        /// <param name="targetValue">The target fill value</param>
+        /// <param name="easingMode">Easing function to use</param>
+        private IEnumerator AnimateMeterFill(Slider slider, float targetValue, UITransitionManager.EasingMode easingMode)
+        {
+            if (slider == null) yield break;
+
+            float startValue = slider.value;
+            float elapsed = 0f;
+
+            // Add subtle color pulse for visual feedback
+            Image fillImage = slider.fillRect?.GetComponent<Image>();
+            Color originalColor = fillImage != null ? fillImage.color : Color.white;
+
+            while (elapsed < meterAnimationDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / meterAnimationDuration);
+
+                // Apply easing for smooth, organic feel
+                float easedT = UITransitionManager.GetEasedValue(t, easingMode);
+
+                // Interpolate slider value
+                slider.value = Mathf.Lerp(startValue, targetValue, easedT);
+
+                // Optional: Pulse color on increase (positive feedback)
+                if (fillImage != null && targetValue > startValue)
+                {
+                    // Subtle brightness pulse
+                    float pulseIntensity = Mathf.Sin(t * Mathf.PI) * 0.2f;
+                    fillImage.color = Color.Lerp(originalColor, Color.white, pulseIntensity);
+                }
+
+                yield return null;
+            }
+
+            // Ensure final value is exact
+            slider.value = targetValue;
+
+            // Restore original color
+            if (fillImage != null)
+            {
+                fillImage.color = originalColor;
+            }
+        }
+
+        /// <summary>
+        /// Handles hunger meter changes with smooth animation.
+        /// </summary>
+        private void HandleHungerChanged(float hunger)
+        {
+            if (hungerAnimCoroutine != null)
+            {
+                StopCoroutine(hungerAnimCoroutine);
+            }
+
+            if (hungerSlider != null)
+            {
+                hungerAnimCoroutine = StartCoroutine(AnimateMeterFill(
+                    hungerSlider,
+                    hunger,
+                    UITransitionManager.EasingMode.EaseOut
+                ));
+            }
+
+            if (hungerText != null)
+            {
+                string emoji = hunger >= 70f ? "🍽️" : hunger >= 40f ? "🍴" : "🍔";
+                hungerText.text = $"{emoji} {hunger:F0}%";
+            }
+        }
+
+        /// <summary>
+        /// Handles energy meter changes with smooth animation.
+        /// </summary>
+        private void HandleEnergyChanged(float energy)
+        {
+            if (energyAnimCoroutine != null)
+            {
+                StopCoroutine(energyAnimCoroutine);
+            }
+
+            if (energySlider != null)
+            {
+                energyAnimCoroutine = StartCoroutine(AnimateMeterFill(
+                    energySlider,
+                    energy,
+                    UITransitionManager.EasingMode.EaseOut
+                ));
+            }
+
+            if (energyText != null)
+            {
+                string emoji = energy >= 70f ? "⚡" : energy >= 40f ? "🔋" : "🪫";
+                energyText.text = $"{emoji} {energy:F0}%";
+            }
         }
 
         // ===== CLEANUP =====

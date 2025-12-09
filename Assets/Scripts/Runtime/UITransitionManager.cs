@@ -10,6 +10,7 @@ namespace SangsomMiniMe.UI
     /// Manages smooth UI panel transitions with fade, slide, and scale effects.
     /// Implements modern UX patterns for visually pleasing navigation.
     /// Optimized for Unity 2022.3 LTS with pooling and caching.
+    /// Enhanced with premium easing modes for phenomenal integration quality.
     /// </summary>
     public class UITransitionManager : MonoBehaviour
     {
@@ -28,9 +29,26 @@ namespace SangsomMiniMe.UI
             FadeAndSlide
         }
 
+        /// <summary>
+        /// Easing modes for premium micro-interactions.
+        /// Adds "juice" and tactile feel to UI animations.
+        /// </summary>
+        public enum EasingMode
+        {
+            Linear,
+            EaseInOut,      // Default smooth
+            EaseIn,
+            EaseOut,
+            Elastic,        // Bounce-back feel
+            Bounce,         // Physical bounce
+            Back,           // Overshoot then settle
+            Spring          // Springy overshoot
+        }
+
         [Header("Transition Settings")]
         [SerializeField] private float transitionDuration = 0.3f;
         [SerializeField] private AnimationCurve transitionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+        [SerializeField] private EasingMode defaultEasingMode = EasingMode.EaseInOut;
 
         [Header("Slide Distance")]
         [SerializeField] private float slideDistance = 100f;
@@ -67,7 +85,7 @@ namespace SangsomMiniMe.UI
         /// <param name="inPanel">Panel to show</param>
         /// <param name="transitionType">Type of transition animation</param>
         /// <param name="onComplete">Optional callback when transition completes</param>
-        public void TransitionPanels(GameObject outPanel, GameObject inPanel, 
+        public void TransitionPanels(GameObject outPanel, GameObject inPanel,
             TransitionType transitionType = TransitionType.Fade, Action onComplete = null)
         {
             if (outPanel == null && inPanel == null)
@@ -81,9 +99,10 @@ namespace SangsomMiniMe.UI
         }
 
         /// <summary>
-        /// Shows a panel with transition animation.
+        /// Shows a panel with transition animation and easing mode.
         /// </summary>
-        public void ShowPanel(GameObject panel, TransitionType transitionType = TransitionType.Fade, Action onComplete = null)
+        public void ShowPanel(GameObject panel, TransitionType transitionType = TransitionType.Fade,
+            EasingMode easingMode = EasingMode.EaseInOut, Action onComplete = null)
         {
             if (panel == null)
             {
@@ -93,14 +112,15 @@ namespace SangsomMiniMe.UI
             }
 
             StopTransition(panel);
-            var coroutine = StartCoroutine(ShowPanelCoroutine(panel, transitionType, onComplete));
+            var coroutine = StartCoroutine(ShowPanelCoroutine(panel, transitionType, easingMode, onComplete));
             activeTransitions[panel] = coroutine;
         }
 
         /// <summary>
-        /// Hides a panel with transition animation.
+        /// Hides a panel with transition animation and easing mode.
         /// </summary>
-        public void HidePanel(GameObject panel, TransitionType transitionType = TransitionType.Fade, Action onComplete = null)
+        public void HidePanel(GameObject panel, TransitionType transitionType = TransitionType.Fade,
+            EasingMode easingMode = EasingMode.EaseInOut, Action onComplete = null)
         {
             if (panel == null)
             {
@@ -110,11 +130,11 @@ namespace SangsomMiniMe.UI
             }
 
             StopTransition(panel);
-            var coroutine = StartCoroutine(HidePanelCoroutine(panel, transitionType, onComplete));
+            var coroutine = StartCoroutine(HidePanelCoroutine(panel, transitionType, easingMode, onComplete));
             activeTransitions[panel] = coroutine;
         }
 
-        private IEnumerator TransitionPanelsCoroutine(GameObject outPanel, GameObject inPanel, 
+        private IEnumerator TransitionPanelsCoroutine(GameObject outPanel, GameObject inPanel,
             TransitionType transitionType, Action onComplete)
         {
             // Hide outgoing panel
@@ -135,7 +155,8 @@ namespace SangsomMiniMe.UI
             onComplete?.Invoke();
         }
 
-        private IEnumerator ShowPanelCoroutine(GameObject panel, TransitionType transitionType, Action onComplete)
+        private IEnumerator ShowPanelCoroutine(GameObject panel, TransitionType transitionType,
+            EasingMode easingMode, Action onComplete)
         {
             // Ensure panel is active
             panel.SetActive(true);
@@ -151,16 +172,16 @@ namespace SangsomMiniMe.UI
             // Set initial state based on transition type
             SetInitialStateForShow(panel, canvasGroup, rectTransform, transitionType, originalPosition, originalScale);
 
-            // Animate to visible state
+            // Animate to visible state with easing
             float elapsed = 0f;
 
             while (elapsed < transitionDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / transitionDuration);
-                float curveValue = transitionCurve.Evaluate(t);
+                float easedT = ApplyEasing(t, easingMode);
 
-                AnimateShow(panel, canvasGroup, rectTransform, transitionType, curveValue, originalPosition, originalScale);
+                AnimateShow(panel, canvasGroup, rectTransform, transitionType, easedT, originalPosition, originalScale);
 
                 yield return null;
             }
@@ -175,7 +196,8 @@ namespace SangsomMiniMe.UI
             onComplete?.Invoke();
         }
 
-        private IEnumerator HidePanelCoroutine(GameObject panel, TransitionType transitionType, Action onComplete)
+        private IEnumerator HidePanelCoroutine(GameObject panel, TransitionType transitionType,
+            EasingMode easingMode, Action onComplete)
         {
             var canvasGroup = GetOrCreateCanvasGroup(panel);
             var rectTransform = panel.GetComponent<RectTransform>();
@@ -184,16 +206,16 @@ namespace SangsomMiniMe.UI
             Vector2 originalPosition = rectTransform != null ? rectTransform.anchoredPosition : Vector2.zero;
             Vector3 originalScale = panel.transform.localScale;
 
-            // Animate to hidden state
+            // Animate to hidden state with easing
             float elapsed = 0f;
 
             while (elapsed < transitionDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / transitionDuration);
-                float curveValue = transitionCurve.Evaluate(t);
+                float easedT = ApplyEasing(t, easingMode);
 
-                AnimateHide(panel, canvasGroup, rectTransform, transitionType, curveValue, originalPosition, originalScale);
+                AnimateHide(panel, canvasGroup, rectTransform, transitionType, easedT, originalPosition, originalScale);
 
                 yield return null;
             }
@@ -381,6 +403,95 @@ namespace SangsomMiniMe.UI
             StopAllCoroutines();
             activeTransitions.Clear();
             cachedCanvasGroups.Clear();
+        }
+
+        /// <summary>
+        /// Applies easing function to linear progress value.
+        /// Implements premium easing modes for phenomenal UX.
+        /// Math based on Robert Penner's easing equations.
+        /// </summary>
+        private float ApplyEasing(float t, EasingMode mode)
+        {
+            switch (mode)
+            {
+                case EasingMode.Linear:
+                    return t;
+
+                case EasingMode.EaseIn:
+                    return t * t;
+
+                case EasingMode.EaseOut:
+                    return 1f - (1f - t) * (1f - t);
+
+                case EasingMode.EaseInOut:
+                    return t < 0.5f
+                        ? 2f * t * t
+                        : 1f - Mathf.Pow(-2f * t + 2f, 2f) / 2f;
+
+                case EasingMode.Elastic:
+                    // Elastic bounce-back (overshoots then settles)
+                    if (t == 0f || t == 1f) return t;
+                    float p = 0.3f;
+                    return Mathf.Pow(2f, -10f * t) * Mathf.Sin((t - p / 4f) * (2f * Mathf.PI) / p) + 1f;
+
+                case EasingMode.Bounce:
+                    // Physical bounce effect
+                    return BounceOut(t);
+
+                case EasingMode.Back:
+                    // Overshoot and return (anticipation effect)
+                    float s = 1.70158f;
+                    return t * t * ((s + 1f) * t - s);
+
+                case EasingMode.Spring:
+                    // Springy overshoot (more elastic than Back)
+                    t = Mathf.Clamp01(t);
+                    t = (Mathf.Sin(t * Mathf.PI * (0.2f + 2.5f * t * t * t)) *
+                         Mathf.Pow(1f - t, 2.2f) + t) * (1f + (1.2f * (1f - t)));
+                    return t;
+
+                default:
+                    return transitionCurve.Evaluate(t);
+            }
+        }
+
+        /// <summary>
+        /// Bounce easing helper (out direction).
+        /// </summary>
+        private float BounceOut(float t)
+        {
+            if (t < (1f / 2.75f))
+            {
+                return 7.5625f * t * t;
+            }
+            else if (t < (2f / 2.75f))
+            {
+                t -= (1.5f / 2.75f);
+                return 7.5625f * t * t + 0.75f;
+            }
+            else if (t < (2.5f / 2.75f))
+            {
+                t -= (2.25f / 2.75f);
+                return 7.5625f * t * t + 0.9375f;
+            }
+            else
+            {
+                t -= (2.625f / 2.75f);
+                return 7.5625f * t * t + 0.984375f;
+            }
+        }
+
+        /// <summary>
+        /// Public API for applying easing to external animations.
+        /// Allows other systems to use premium easing functions.
+        /// </summary>
+        public static float GetEasedValue(float t, EasingMode mode)
+        {
+            if (Instance != null)
+            {
+                return Instance.ApplyEasing(t, mode);
+            }
+            return t; // Fallback to linear if no instance
         }
     }
 }

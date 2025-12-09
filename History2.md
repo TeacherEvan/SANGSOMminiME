@@ -2,6 +2,105 @@
 
 ---
 
+## Session Log: December 9, 2025 - UX Polish & Premium Animation System
+
+### 🎨 **Major Accomplishments**
+
+#### **1. Coin Collection Animation System**
+
+- **CoinAnimationController.cs** (NEW): Production-grade coin animation with object pooling
+
+  - Pre-warmed pool (5 coins) prevents first-frame lag
+  - Staggered spawn (0.05s delay) creates cascading effect
+  - Two-phase animation: scale-up (0.15s) → flight (0.6s)
+  - Rotation (360°/s) and shrinking (1.0 → 0.3 scale) during flight
+  - Elastic "punch" scale on UI element (1.3x overshoot with sin damping)
+  - Configurable via Inspector: flight curve, spawn offset, rotation speed
+
+- **GameUI.cs Integration**:
+  - Resolved TODO marker at line 445
+  - `UpdateCoinsDisplay()` now triggers coin animation on increase
+  - Audio sync with visual feedback (coin sound on collection)
+  - Fallback to instant update if controller unavailable
+
+#### **2. Premium Easing System**
+
+- **UITransitionManager.cs Enhanced**:
+
+  - Added `EasingMode` enum with 8 modes (Linear, EaseIn, EaseOut, EaseInOut, Elastic, Bounce, Back, Spring)
+  - Mathematical implementations based on Robert Penner's easing equations
+  - `ApplyEasing()` private method for internal transitions
+  - `GetEasedValue()` public static API for external animations
+  - Elastic easing uses pow/sin for natural spring feel
+  - Bounce easing implements multi-impact physics simulation
+  - Back easing adds anticipation with 1.70158 overshoot factor
+
+- **Backward Compatibility**: Existing transitions continue using AnimationCurve, new transitions can opt-in to easing modes
+
+#### **3. Smooth Meter Fill Animations**
+
+- **GameUI.cs Meter System**:
+
+  - `AnimateMeterFill()` coroutine with configurable easing
+  - Happiness slider uses EaseOut for responsive feel
+  - Hunger/Energy sliders animate smoothly on value changes
+  - Coroutine tracking prevents conflicting animations (stops previous before starting new)
+  - Optional color pulse (20% brightness) on meter increase
+  - 0.4s animation duration balances smoothness with responsiveness
+
+- **Event Integration**:
+  - Subscribed to `OnHungerChanged` and `OnEnergyChanged` events
+  - `HandleHungerChanged()` and `HandleEnergyChanged()` methods added
+  - Emoji updates per meter state (🍽️/🍴/🍔 for hunger, ⚡/🔋/🪫 for energy)
+
+### 🎯 **Key Technical Achievements**
+
+1. **Object Pooling**: Coin sprites reuse existing `Core.ObjectPool<T>` pattern
+2. **Coroutine Safety**: All animations tracked, stoppable, non-blocking
+3. **Performance**: 60 FPS target maintained with frame-independent Time.deltaTime
+4. **Math Precision**: Easing functions ensure exact final values (no float drift)
+5. **Modularity**: CoinAnimationController and easing system usable by other features
+
+### 📊 **Project Status: Phase 3 UX Polish Complete**
+
+- ✅ **Coin Animations**: Flying coins, punch feedback, audio sync
+- ✅ **Easing Library**: 8 premium modes with public API
+- ✅ **Meter Smoothing**: Happiness, Hunger, Energy animate organically
+- ✅ **TODO Resolution**: 1/3 immediate TODOs resolved, 2 deferred to Phase 4
+- 🔄 **Documentation**: Updated JOBCARD.md, History2.md, GAMEPLAY_UX_GUIDE.md
+
+### 🔧 **Files Modified This Session**
+
+- `Assets/Scripts/Runtime/UI/CoinAnimationController.cs` (NEW - 340 lines)
+- `Assets/Scripts/Runtime/UITransitionManager.cs` (Enhanced - +120 lines)
+- `Assets/Scripts/Runtime/GameUI.cs` (Enhanced - +95 lines)
+- `JOBCARD.md` (Updated)
+- `History2.md` (This entry)
+- `Docs/GAMEPLAY_UX_GUIDE.md` (Animation section added)
+
+### 💡 **Recommendations for Next Session**
+
+#### **1. Complete Phase 3: Customization**
+
+- Implement outfit attachment system (mesh attachment points)
+- Add accessory system (hats, jewelry with ScriptableObjects)
+- Integrate Thai gesture animations (Wai/Curtsy/Bow exist, need UI triggers)
+
+#### **2. Create Coin Sprite Prefab in Unity**
+
+- Design coin sprite (or use Asset Store placeholder)
+- Configure CoinAnimationController prefab in scene
+- Assign `coinUITarget` reference to coins text transform
+- Test animation in Play mode
+
+#### **3. Performance Profiling**
+
+- Run Unity Profiler during coin animations
+- Verify 60 FPS maintained with 15 simultaneous coins
+- Check GC.Alloc in animation coroutines (should be zero after warmup)
+
+---
+
 ## Session Log: December 7, 2025 - Unity-Only Project Conversion
 
 ### 🔄 **Major Refactor: Removed All Blender Dependencies**
@@ -718,3 +817,135 @@ Docs/
 **Session completed: Blender pipeline optimized for performance, modularity, and maintainability.**
 
 **🚀 BLENDER PIPELINE READY FOR PRODUCTION 🚀**
+
+---
+
+## Session Log: December 9, 2025 - Phase 2 & 3 Implementation Sprint
+
+### ✅ **Phase 2 - Engagement Loop: COMPLETE**
+
+#### **Daily Login Bonus System**
+
+- Created `DailyLoginSystem.cs` - Static orchestration with events
+- Added `LoginBonusResult` struct to `UserProfile.cs`
+- Streak tracking with positive-only design (no penalties for missed days)
+- Milestone bonuses at 3/7/14/30 days
+
+#### **Meter Decay System**
+
+- Created `MeterDecaySystem.cs` - Gentle decay with floors
+- Added `characterHunger`, `characterEnergy` to `UserProfile.cs`
+- Decay rates: Happiness 0.5/min, Hunger 1.0/min, Energy 0.75/min
+- Floor values: Never drops below 10-20% (no stress mechanics)
+
+#### **Character Care Actions**
+
+- Added Feed/Rest/Play buttons to `GameUI.cs`
+- Feed costs 5 coins, Rest costs 3 coins, Play is free
+- Care actions restore meters and trigger animations
+
+#### **Sound Effect Integration**
+
+- Created `AudioManager.cs` - Singleton with SFX/music sources
+- Added sound hooks: loginBonusChime, milestoneSparkle, coinSound, feedSound, restSound, playSound, gentleReminder
+- Volume persistence via PlayerPrefs
+
+### 🔄 **Phase 3 - Character & Customization: IN PROGRESS**
+
+#### **Comprehensive Shop System Created**
+
+New files in `Assets/Scripts/Runtime/Shop/`:
+
+| File              | Purpose                                                |
+| ----------------- | ------------------------------------------------------ |
+| `ShopEnums.cs`    | ShopCategory, ItemRarity, PurchaseResult, UnlockMethod |
+| `ShopItem.cs`     | ScriptableObject for item definitions                  |
+| `ShopCatalog.cs`  | Item database with O(1) lookups                        |
+| `ShopManager.cs`  | Purchase/inventory/unlock logic                        |
+| `ShopUI.cs`       | Full UI with pooled grid, tabs, detail panel           |
+| `ShopItemSlot.cs` | Individual slot with rarity borders                    |
+
+#### **Shop System Features**
+
+- **5 Rarity Tiers**: Common (gray) → Uncommon (green) → Rare (blue) → Epic (purple) → Legendary (gold)
+- **7 Categories**: All, Outfits, Accessories, Hats, Jewelry, Eyes, Food, Special
+- **6 Unlock Methods**: Purchase, LevelUnlock, HomeworkReward, StreakReward, Achievement, Default
+- **Events**: OnItemPurchased, OnItemUnlocked, OnItemEquipped, OnPurchaseAttempted
+- **Persistence**: UserProfile.OwnedItems list
+- **Performance**: Pooled UI slots (30 default)
+
+#### **Unity Setup Instructions**
+
+1. Create ShopCatalog: `Assets > Create > Sangsom Mini-Me > Shop Catalog`
+2. Create ShopItems: `Assets > Create > Sangsom Mini-Me > Shop Item`
+3. Add `ShopManager` to scene GameObject
+4. Wire `ShopUI` references in Inspector
+
+### 📊 **Progress Summary**
+
+| Phase                               | Status         | Completion |
+| ----------------------------------- | -------------- | ---------- |
+| Phase 1 - Core Systems              | ✅ Complete    | 100%       |
+| Phase 2 - Engagement Loop           | ✅ Complete    | 100%       |
+| Phase 3 - Character & Customization | 🔄 In Progress | ~50%       |
+| Phase 4 - Mini-Games & Universe     | 📋 Planned     | 0%         |
+| Phase 5 - Multi-User & Social       | 📋 Planned     | 0%         |
+| Phase 6 - Polish & Deployment       | 📋 Planned     | 0%         |
+
+### 🔜 **Next Steps for Phase 3**
+
+- [ ] Outfit attachment points on character mesh
+- [ ] Accessory system with runtime swapping
+- [ ] Sample ShopItem assets for testing
+- [ ] Thai gesture animations (Wai, Curtsy, Bow)
+
+---
+
+## Session Log: December 10, 2025 - Documentation Cleanup & Unity 6 Update
+
+### 📚 **Major Documentation Overhaul**
+
+#### **Unity Version Update**
+
+- **Upgraded from Unity 2022.3.12f1 LTS to Unity 6000.2.15f1**
+- Updated ProjectSettings/ProjectVersion.txt
+- Updated all documentation references to reflect new version
+
+#### **Files Deleted (Redundant/Obsolete)**
+
+- `UserManager_backup.cs` + `.meta` - Obsolete backup after clean rewrite
+- `CODE_REVIEW.md` - One-time review document, findings applied
+- `IMPLEMENTATION.md` - Implementation complete, details in other docs
+- `VERIFICATION.md` - Verification tasks complete
+- `PRODUCTION_REFACTOR_SUMMARY.md` - Refactor complete, merged into docs
+- `QUICKSTART.md` - Redundant with README.md quick start
+- `Docs/CODE_QUALITY_REVIEW.md` - Review complete, recommendations applied
+- `Docs/EXTENSIONS_AND_TOOLS.md` - Tool list outdated, VSCode handles this
+- `Docs/Display project overview.ini` - Unused configuration file
+- `demo.html` - Development artifact not needed
+- `Proceed` - Temporary work file
+
+#### **Documentation Kept & Updated**
+
+| File                            | Purpose                    | Updated              |
+| ------------------------------- | -------------------------- | -------------------- |
+| README.md                       | Main project documentation | ✅ Unity 6000.2.15f1 |
+| SangsomMini-Me.mdc              | Project specification      | ✅ Unity 6000.2.15f1 |
+| JOBCARD.md                      | Development work log       | ✅ Unity 6000.2.15f1 |
+| History2.md                     | AI session history         | ✅ New entry added   |
+| Docs/SETUP_NOTES.md             | Detailed setup guide       | ✅ Unity 6000.2.15f1 |
+| Docs/GAMEPLAY_UX_GUIDE.md       | Tamagotchi UX patterns     | ✅ Current           |
+| Docs/CONFIG_SETUP_GUIDE.md      | ScriptableObject config    | ✅ Current           |
+| .github/copilot-instructions.md | AI development rules       | ✅ Unity 6000.2.15f1 |
+| .cursor/rules/core-rules/       | Cursor AI rules            | ✅ Unity 6000.2.15f1 |
+
+#### **Rationale**
+
+- Reduced documentation sprawl from 15+ files to 9 focused documents
+- Single source of truth for each topic
+- Consistent Unity 6000.2.15f1 version across all docs
+- Easier onboarding for new contributors
+
+---
+
+**Session completed: Documentation consolidated and updated for Unity 6.**

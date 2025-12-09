@@ -2,7 +2,7 @@
 
 ## Project Snapshot
 
-- Unity 2022.3.12f1 drives the interactive tamagotchi (see ProjectSettings/ProjectVersion.txt).
+- Unity 6000.2.15f1 drives the interactive tamagotchi (see ProjectSettings/ProjectVersion.txt).
 - VSCode AI rules live in .vscode/rules/\*\* and SangsomMini-Me.mdc; read them before prompting so generated code respects educational + cultural boundaries.
 - Assets/Characters/{Student}/ and Assets/Minime-Universe/\*\* store character content and game assets.
 
@@ -22,7 +22,7 @@
 
 ## Developer Workflow
 
-- Use Unity Hub targeting 2022.3 LTS; verify with Unity splash before editing.
+- Use Unity Hub targeting Unity 6 (6000.2.15f1); verify with Unity splash before editing.
 - Use `git --no-pager status|diff|log` (avoids pager hangs) before/after work; repository often has partially staged art so isolate changes carefully.
 - Preferred iteration loop: 1) import/create assets in Unity, 2) hook them into prefabs/scenes (MainScene.unity), 3) run PlayMode tests, 4) document prompts in History2.md if AI assisted.
 

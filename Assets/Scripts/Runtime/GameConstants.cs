@@ -21,23 +21,61 @@ namespace SangsomMiniMe.Core
         // Eye Scale Limits
         public const float MinEyeScale = 0.5f;
         public const float MaxEyeScale = 2.0f;
-        
+
         // Happiness Limits
         public const float MinHappiness = 0f;
         public const float MaxHappiness = 100f;
-        
+
         // Happiness Thresholds for mood states
         public const float VeryHappyThreshold = 80f;
         public const float HappyThreshold = 60f;
         public const float NeutralThreshold = 40f;
         public const float SadThreshold = 20f;
-        
+
         // Reward Values
         public const int HomeworkExperienceReward = 10;
         public const int HomeworkCoinReward = 5;
         public const float HomeworkHappinessReward = 5f;
         public const float DanceHappinessBonus = 2f;
-        
+
+        // Daily Login Bonus System (positive-only, no penalties)
+        public const int DailyLoginBonusCoins = 5;
+        public const float DailyLoginHappinessBonus = 3f;
+        public const int MaxStreakBonusCoins = 10;
+
+        // Streak Milestone Bonuses (celebration rewards)
+        public const int Milestone3DayBonus = 10;
+        public const int Milestone7DayBonus = 25;
+        public const int Milestone14DayBonus = 50;
+        public const int Milestone30DayBonus = 100;
+
+        // Meter Decay System (gentle, with floors - no stress mechanics)
+        public const float HappinessDecayPerMinute = 0.5f;   // Very slow decay
+        public const float HungerDecayPerMinute = 1.0f;      // Moderate decay
+        public const float EnergyDecayPerMinute = 0.75f;     // Slow decay
+
+        // Meter Floors (meters never drop below these - no stress!)
+        public const float HappinessFloor = 20f;   // Character stays "okay" at minimum
+        public const float HungerFloor = 10f;      // Never starving
+        public const float EnergyFloor = 15f;      // Always has some energy
+
+        // Meter Defaults
+        public const float DefaultHunger = 75f;
+        public const float DefaultEnergy = 100f;
+
+        // Meter Recovery Values
+        public const float FeedHungerRecovery = 25f;
+        public const float RestEnergyRecovery = 30f;
+        public const float PlayHappinessBonus = 10f;
+
+        // Care Action Costs (coins) - affordable to encourage engagement
+        public const int FeedCost = 5;
+        public const int RestCost = 3;
+        public const int PlayCost = 0;  // Play is free!
+
+        // Decay Check Interval (seconds)
+        public const float MeterDecayInterval = 60f;  // Check every minute
+
         // Auto-Save Settings
         public const float DefaultAutoSaveInterval = 30f;
         public const float MinAutoSaveInterval = 10f;
@@ -71,7 +109,7 @@ namespace SangsomMiniMe.Core
             public const string Curtsy = "Curtsy";
             public const string Bow = "Bow";
         }
-        
+
         // UI Layer Names
         public static class UILayers
         {
@@ -80,7 +118,7 @@ namespace SangsomMiniMe.Core
             public const string GamePanel = "GamePanel";
             public const string CustomizationPanel = "CustomizationPanel";
         }
-        
+
         // PlayerPrefs Keys
         public static class PlayerPrefsKeys
         {
