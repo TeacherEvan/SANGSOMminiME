@@ -152,11 +152,11 @@ SangsomMiniMe.Educational // Analytics, homework integration
 
 ### **Phase 2 - Engagement Loop** 🔄 _(Current Priority)_
 
-- [ ] Daily login bonus system (positive-only streaks)
-- [ ] Streak tracking with reset protection (no penalties)
+- [x] Daily login bonus system (positive-only streaks)
+- [x] Streak tracking with reset protection (no penalties)
 - [ ] Homework completion flow UI
 - [ ] Celebration animations & sound effects
-- [ ] Meter decay system (Happiness/Hunger/Energy with floors)
+- [x] Meter decay system (Happiness/Hunger/Energy with floors)
 
 ### **Phase 3 - Character & Customization** 📋
 

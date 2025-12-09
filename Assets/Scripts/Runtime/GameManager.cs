@@ -76,6 +76,7 @@ namespace SangsomMiniMe.Core
                 ValidateRequiredReferences();
                 SubscribeToGameEvents();
                 InitializeAutoSave();
+                InitializeMeterDecay();
 
                 isInitialized = true;
                 OnGameInitialized?.Invoke();
@@ -125,6 +126,21 @@ namespace SangsomMiniMe.Core
             {
                 Debug.LogError("[GameManager] UserManager.Instance is null. Cannot subscribe to user events.");
             }
+
+            // Subscribe to meter decay events for gentle reminders
+            MeterDecaySystem.OnMeterLow += HandleMeterLowReminder;
+        }
+
+        /// <summary>
+        /// Handles low meter gentle reminders (not warnings - cozy gameplay!).
+        /// </summary>
+        private void HandleMeterLowReminder(string meterName)
+        {
+            if (gameUI != null)
+            {
+                string message = MeterDecaySystem.GetLowMeterMessage(meterName);
+                gameUI.ShowGentleReminder(message);
+            }
         }
 
         /// <summary>
@@ -146,6 +162,45 @@ namespace SangsomMiniMe.Core
                 if (autoSaveEnabled && isInitialized)
                 {
                     UserManager.Instance?.SaveIfDirty();
+                }
+            }
+        }
+
+        // Meter decay coroutine reference
+        private Coroutine meterDecayCoroutine;
+
+        /// <summary>
+        /// Initializes the meter decay system with gentle decay rates.
+        /// </summary>
+        private void InitializeMeterDecay()
+        {
+            if (meterDecayCoroutine != null) StopCoroutine(meterDecayCoroutine);
+            meterDecayCoroutine = StartCoroutine(MeterDecayRoutine());
+            LogInfo($"Meter decay initialized. Interval: {GameConstants.MeterDecayInterval}s");
+        }
+
+        /// <summary>
+        /// Coroutine for gentle meter decay at regular intervals.
+        /// Only decays when a user is logged in.
+        /// </summary>
+        private System.Collections.IEnumerator MeterDecayRoutine()
+        {
+            var wait = new WaitForSeconds(GameConstants.MeterDecayInterval);
+            while (true)
+            {
+                yield return wait;
+
+                // Only decay if user is logged in
+                var currentUser = UserManager.Instance?.CurrentUser;
+                if (currentUser != null && isInitialized)
+                {
+                    MeterDecaySystem.ApplyDecay(currentUser);
+
+                    // Update UI if available
+                    if (gameUI != null)
+                    {
+                        gameUI.UpdateMeterDisplays();
+                    }
                 }
             }
         }
@@ -226,6 +281,7 @@ namespace SangsomMiniMe.Core
 
         /// <summary>
         /// Handles user login event with comprehensive error handling.
+        /// Processes daily login bonus and triggers celebration events.
         /// </summary>
         private void HandleUserLoggedIn(UserProfile user)
         {
@@ -238,6 +294,26 @@ namespace SangsomMiniMe.Core
             try
             {
                 LogInfo($"User logged in: {user.DisplayName} (ID: {user.UserName})");
+
+                // Process daily login bonus (positive-only streak system)
+                var loginResult = DailyLoginSystem.ProcessLogin(user);
+
+                if (loginResult.IsFirstLoginToday)
+                {
+                    LogInfo($"Daily bonus awarded: +{loginResult.CoinsEarned} coins | Streak: {loginResult.CurrentStreak} days");
+
+                    // Notify UI to show celebration
+                    if (gameUI != null)
+                    {
+                        gameUI.ShowLoginBonusCelebration(loginResult);
+                    }
+
+                    // Trigger celebration animation for milestones
+                    if (loginResult.HitMilestone && characterController != null)
+                    {
+                        characterController.PlayDance();
+                    }
+                }
 
                 // Transition UI
                 ShowGameUI();

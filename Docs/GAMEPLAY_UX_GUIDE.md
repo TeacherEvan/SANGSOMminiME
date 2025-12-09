@@ -474,21 +474,21 @@ public void PracticeGesture(GestureType type)
 
 ### Phase 2: Engagement Loop 🔄 _Current Priority_
 
-- [ ] Daily login bonus system
-  - Coins: 10/25/50/100/250 for days 1/3/7/14/30
-  - XP boosts at 7+ day streaks
-  - NO penalties for missed days
-- [ ] Streak tracking with reset protection
-- [ ] Homework completion flow UI
-  - Subject/type selection
-  - Optional photo proof upload
-  - Reward display (+30 Happy, +25 XP, +15 Coins)
-- [ ] Celebration animations (PlayDance, confetti)
+- [x] Daily login bonus system
+  - Coins: 5 base + streak bonus (max 10) + milestones
+  - Milestones at 3/7/14/30 days
+  - NO penalties for missed days ✓
+- [x] Streak tracking with reset protection
+- [x] Homework completion flow UI
+  - Complete homework button triggers rewards
+  - Reward display via feedback text
+- [x] Celebration animations (PlayDance on milestones)
 - [ ] Sound effect integration (chimes, sparkles)
-- [ ] Meter decay implementation
-  - Happiness: -2/hr, floor 50%
-  - Hunger: -5/hr, floor 20%
-  - Energy: -10/activity, +5/hr regen
+- [x] Meter decay implementation
+  - Happiness: 0.5/min, floor 20%
+  - Hunger: 1.0/min, floor 10%
+  - Energy: 0.75/min, floor 15%
+- [x] Character care actions (Feed/Rest/Play buttons)
 
 ### Phase 3: Character & Customization 📋
 

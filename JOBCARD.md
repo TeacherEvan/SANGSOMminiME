@@ -2,9 +2,64 @@
 
 ## Work Summary
 
-**Date**: December 7, 2025
-**Phase**: Unity-Only Refactor
-**Status**: ✅ COMPLETED
+**Date**: December 9, 2025
+**Phase**: Phase 2 - Engagement Loop
+**Status**: 🔄 IN PROGRESS
+
+### Session: December 9, 2025 - Character Care Actions
+
+**Feature Implemented: Feed/Rest/Play Actions**
+
+- **GameUI.cs**: Added care action buttons (`feedButton`, `restButton`, `playButton`) with cost displays and handlers.
+- **GameConstants.cs**: Added care action costs (`FeedCost=5`, `RestCost=3`, `PlayCost=0`).
+- **GameManager.cs**: Subscribed to `MeterDecaySystem.OnMeterLow` for gentle reminders, added celebration dance on milestones.
+
+**Handlers Implemented:**
+
+- `HandleFeedCharacter()` - Costs coins, restores hunger, validates affordability
+- `HandleRestCharacter()` - Costs coins, restores energy, validates affordability
+- `HandlePlayWithCharacter()` - Free! Increases happiness and triggers dance animation
+- `ShowGentleReminder()` - Soft blue feedback for low meter notifications
+
+---
+
+### Session: December 9, 2025 - Meter Decay System
+
+**Feature Implemented: Gentle Decay with Floors**
+
+- **UserProfile.cs**: Added `characterHunger` and `characterEnergy` fields, events (`OnHungerChanged`, `OnEnergyChanged`), and methods (`Feed()`, `Rest()`, `ApplyMeterDecay()`).
+- **GameConstants.cs**: Added decay constants (per-minute rates) and floor values (meters never drop below 10-20%).
+- **MeterDecaySystem.cs** (NEW): Static system with gentle decay logic, mood calculation (`GetOverallMood()`), and low-meter reminders.
+- **GameManager.cs**: Added `MeterDecayRoutine()` coroutine that applies decay every 60 seconds when user is logged in.
+- **GameUI.cs**: Added hunger/energy sliders, mood text, and `UpdateMeterDisplays()` method.
+
+**Design Principles Applied:**
+
+- Floors prevent zero-state meters (no stress!)
+- Slow decay rates encourage play without pressure
+- Mood system reflects overall character wellbeing
+- Gentle reminders, not warnings
+
+---
+
+### Session: December 9, 2025 - Daily Login Bonus System
+
+**Feature Implemented: Positive-Only Streak System**
+
+- **UserProfile.cs**: Added `LoginBonusResult` struct, streak tracking fields (`lastLoginDateString`, `currentStreak`, `longestStreak`), and `ProcessDailyLogin()` method with bonus calculations.
+- **GameConstants.cs**: Added daily login constants (`DailyLoginBonusCoins=5`, `DailyLoginHappinessBonus=3f`, `MaxStreakBonusCoins=10`) and milestone bonuses (3/7/14/30 days).
+- **DailyLoginSystem.cs** (NEW): Static orchestration class with events (`OnLoginBonusAwarded`, `OnMilestoneReached`, `OnNewStreakRecord`), celebration message helpers, and streak emoji utilities.
+- **GameManager.cs**: Integrated `DailyLoginSystem.ProcessLogin()` into `HandleUserLoggedIn()` flow.
+- **GameUI.cs**: Added celebration panel UI references and `ShowLoginBonusCelebration()` method with auto-hide.
+
+**Design Principles Applied:**
+
+- No penalties for missing days (positive-only)
+- Streak resets to 1 on gaps (fresh start, not punishment)
+- Progressive bonuses encourage engagement without stress
+- Milestone celebrations for achievement moments
+
+---
 
 ### Follow-up: Save System Optimizations (December 7, 2025)
 
