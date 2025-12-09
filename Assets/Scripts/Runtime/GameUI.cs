@@ -71,6 +71,12 @@ namespace SangsomMiniMe.UI
         // Coroutine tracking
         private Coroutine feedbackCoroutine;
         private Coroutine fadeCoroutine;
+        private Coroutine coinCountUpCoroutine;
+        private Coroutine expCountUpCoroutine;
+        
+        // Animation state tracking for micro-interactions
+        private int displayedCoins = 0;
+        private int displayedExperience = 0;
 
         private void Start()
         {
@@ -377,28 +383,120 @@ namespace SangsomMiniMe.UI
         // ===== UI DISPLAY UPDATES =====
 
         /// <summary>
-        /// Updates the coins display with visual feedback.
+        /// Updates the coins display with smooth count-up animation for better UX.
+        /// Implements modern micro-interaction pattern for currency changes.
         /// </summary>
-        private void UpdateCoinsDisplay(int coins)
+        private void UpdateCoinsDisplay(int targetCoins)
         {
-            if (coinsText != null)
+            if (coinsText == null) return;
+            
+            // Stop any existing coin animation
+            if (coinCountUpCoroutine != null)
             {
-                coinsText.text = $"💰 {coins:N0}";
-                // TODO: [OPTIMIZATION] Add coin increase animation for better UX
+                StopCoroutine(coinCountUpCoroutine);
             }
+            
+            // Start count-up animation
+            coinCountUpCoroutine = StartCoroutine(AnimateCountUp(
+                displayedCoins, 
+                targetCoins, 
+                coinsText, 
+                "💰 {0:N0}",
+                (newValue) => displayedCoins = newValue,
+                0.5f // Animation duration
+            ));
         }
 
         /// <summary>
-        /// Updates the experience and level display.
+        /// Updates the experience and level display with smooth count-up animation.
         /// </summary>
-        private void UpdateExperienceDisplay(int experience)
+        private void UpdateExperienceDisplay(int targetExperience)
         {
-            if (experienceText != null)
+            if (experienceText == null) return;
+            
+            // Stop any existing XP animation
+            if (expCountUpCoroutine != null)
             {
-                int level = experience / Core.GameConstants.ExperiencePerLevel + 1;
-                int expInLevel = experience % Core.GameConstants.ExperiencePerLevel;
-                experienceText.text = $"⭐ Level {level} ({expInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+                StopCoroutine(expCountUpCoroutine);
             }
+            
+            // Start count-up animation
+            expCountUpCoroutine = StartCoroutine(AnimateExperienceCountUp(
+                displayedExperience, 
+                targetExperience, 
+                0.5f // Animation duration
+            ));
+        }
+        
+        /// <summary>
+        /// Animates the experience display with level calculation.
+        /// </summary>
+        private IEnumerator AnimateExperienceCountUp(int startExp, int targetExp, float duration)
+        {
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                
+                // Apply ease-out curve for smooth deceleration
+                t = 1f - (1f - t) * (1f - t);
+                
+                int currentExp = Mathf.RoundToInt(Mathf.Lerp(startExp, targetExp, t));
+                displayedExperience = currentExp;
+                
+                // Calculate level display
+                int level = currentExp / Core.GameConstants.ExperiencePerLevel + 1;
+                int expInLevel = currentExp % Core.GameConstants.ExperiencePerLevel;
+                experienceText.text = $"⭐ Level {level} ({expInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+                
+                yield return null;
+            }
+            
+            // Ensure final value is exact
+            displayedExperience = targetExp;
+            int finalLevel = targetExp / Core.GameConstants.ExperiencePerLevel + 1;
+            int finalExpInLevel = targetExp % Core.GameConstants.ExperiencePerLevel;
+            experienceText.text = $"⭐ Level {finalLevel} ({finalExpInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+        }
+        
+        /// <summary>
+        /// Generic count-up animation for numeric text displays.
+        /// Implements smooth easing for professional UX micro-interactions.
+        /// </summary>
+        /// <param name="startValue">Starting value</param>
+        /// <param name="endValue">Target value</param>
+        /// <param name="textComponent">Text component to update</param>
+        /// <param name="format">String format with {0} placeholder</param>
+        /// <param name="onValueUpdate">Callback to update tracked value</param>
+        /// <param name="duration">Animation duration in seconds</param>
+        private IEnumerator AnimateCountUp(int startValue, int endValue, TextMeshProUGUI textComponent, 
+            string format, Action<int> onValueUpdate, float duration)
+        {
+            if (textComponent == null) yield break;
+            
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                
+                // Apply ease-out curve for smooth deceleration (feels more natural)
+                t = 1f - (1f - t) * (1f - t);
+                
+                int currentValue = Mathf.RoundToInt(Mathf.Lerp(startValue, endValue, t));
+                onValueUpdate?.Invoke(currentValue);
+                
+                textComponent.text = string.Format(format, currentValue);
+                
+                yield return null;
+            }
+            
+            // Ensure final value is exact
+            onValueUpdate?.Invoke(endValue);
+            textComponent.text = string.Format(format, endValue);
         }
 
         /// <summary>
