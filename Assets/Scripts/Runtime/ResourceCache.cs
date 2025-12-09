@@ -7,7 +7,13 @@ namespace SangsomMiniMe.Core
     /// <summary>
     /// Optimized resource cache with lazy loading and memory management.
     /// Implements object pooling pattern for frequently accessed resources.
-    /// TODO: [OPTIMIZATION] Consider migrating to Addressables for larger projects.
+    /// 
+    /// TODO: [OPTIMIZATION] Consider migrating to Addressables when:
+    ///       - Total Resources assets exceed 100MB (check Build Report)
+    ///       - More than 50 unique resources loaded per scene
+    ///       - Memory profiling shows excessive heap fragmentation
+    ///       - Need for runtime content updates or DLC support
+    ///       - Targeting mobile with <2GB RAM
     /// </summary>
     public class ResourceCache : MonoBehaviour
     {

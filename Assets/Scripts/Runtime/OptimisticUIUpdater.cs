@@ -363,12 +363,15 @@ namespace SangsomMiniMe.UI
 
         private void Update()
         {
-            // Periodic cleanup every 30 seconds
-            if (Time.frameCount % (30 * 60) == 0) // Assuming 60 FPS
+            // Periodic cleanup using time-based interval instead of frame-based
+            if (Time.time - lastCleanupTime >= 30f)
             {
                 CleanupStalePendingOperations();
+                lastCleanupTime = Time.time;
             }
         }
+
+        private float lastCleanupTime;
 
         private void OnDestroy()
         {

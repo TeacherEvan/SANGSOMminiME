@@ -288,9 +288,10 @@ namespace SangsomMiniMe.Core
         /// </summary>
         /// <param name="amount">Amount to validate</param>
         /// <param name="resourceName">Name of resource for error message</param>
+        /// <param name="maxAllowed">Maximum allowed value for this resource</param>
         /// <param name="errorMessage">Detailed error message if invalid</param>
         /// <returns>True if valid, false otherwise</returns>
-        public static bool ValidateCurrencyAmount(int amount, string resourceName, out string errorMessage)
+        public static bool ValidateCurrencyAmount(int amount, string resourceName, out string errorMessage, int maxAllowed = -1)
         {
             errorMessage = string.Empty;
 
@@ -300,9 +301,12 @@ namespace SangsomMiniMe.Core
                 return false;
             }
 
-            if (amount > GameConstants.MaxCoins)
+            // Use provided max or default to MaxCoins
+            int maxLimit = maxAllowed > 0 ? maxAllowed : GameConstants.MaxCoins;
+
+            if (amount > maxLimit)
             {
-                errorMessage = $"{resourceName} amount exceeds maximum allowed ({GameConstants.MaxCoins}). Got: {amount}";
+                errorMessage = $"{resourceName} amount exceeds maximum allowed ({maxLimit}). Got: {amount}";
                 return false;
             }
 

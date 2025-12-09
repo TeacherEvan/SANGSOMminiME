@@ -273,7 +273,10 @@ namespace SangsomMiniMe.UI
                 PlaySound(clickSound);
             }
 
-            // Spawn click particles
+            // Spawn click particles using object pooling to reduce GC pressure
+            // TODO: [OPTIMIZATION] Integrate with ObjectPoolManager for particle effects
+            // Current approach: Simple instantiate with timed destruction
+            // Recommended: Use ObjectPool<ParticleSystem> for frequently clicked buttons
             if (enableParticleEffects && clickParticles != null)
             {
                 var particles = Instantiate(clickParticles, transform.position, Quaternion.identity);

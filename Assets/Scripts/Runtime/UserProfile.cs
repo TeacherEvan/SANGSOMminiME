@@ -82,8 +82,8 @@ namespace SangsomMiniMe.Core
 
         public void AddExperience(int amount)
         {
-            // Validation for anti-cheat and overflow protection
-            if (!ValidationUtilities.ValidateCurrencyAmount(amount, "Experience", out string error))
+            // Validation for anti-cheat and overflow protection with resource-specific max
+            if (!ValidationUtilities.ValidateCurrencyAmount(amount, "Experience", out string error, GameConstants.MaxExperience))
             {
                 ValidationUtilities.LogValidationError("AddExperience", error);
                 return;
@@ -105,8 +105,8 @@ namespace SangsomMiniMe.Core
 
         public void AddCoins(int amount)
         {
-            // Validation for anti-cheat and overflow protection
-            if (!ValidationUtilities.ValidateCurrencyAmount(amount, "Coins", out string error))
+            // Validation for anti-cheat and overflow protection with resource-specific max
+            if (!ValidationUtilities.ValidateCurrencyAmount(amount, "Coins", out string error, GameConstants.MaxCoins))
             {
                 ValidationUtilities.LogValidationError("AddCoins", error);
                 return;
