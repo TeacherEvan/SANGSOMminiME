@@ -8,7 +8,7 @@ namespace SangsomMiniMe.UI
     /// <summary>
     /// Adds professional hover micro-interactions to UI buttons.
     /// Implements modern UX patterns with smooth scale and color transitions.
-    /// Optimized for Unity 2022.3 LTS with minimal allocations.
+    /// Optimized for Unity 2022.3.12f1 with minimal allocations.
     /// </summary>
     [RequireComponent(typeof(Button))]
     public class UIButtonHoverEffect : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
