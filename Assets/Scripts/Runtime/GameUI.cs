@@ -94,6 +94,12 @@ namespace SangsomMiniMe.UI
         // Coroutine tracking
         private Coroutine feedbackCoroutine;
         private Coroutine fadeCoroutine;
+        private Coroutine coinCountUpCoroutine;
+        private Coroutine expCountUpCoroutine;
+
+        // Animation state tracking for micro-interactions
+        private int displayedCoins = 0;
+        private int displayedExperience = 0;
 
         // Meter animation tracking (smooth fill for premium UX)
         private Coroutine happinessAnimCoroutine;
@@ -445,49 +451,163 @@ namespace SangsomMiniMe.UI
         // ===== UI DISPLAY UPDATES =====
 
         /// <summary>
-        /// Updates the coins display with visual feedback and animation.
-        /// Resolved TODO: Added coin increase animation for better UX.
+        /// Updates the coins display with smooth count-up animation for better UX.
+        /// Implements modern micro-interaction pattern for currency changes.
+        /// Supports optional CoinAnimationController for flying coin effects.
         /// </summary>
-        private void UpdateCoinsDisplay(int coins)
+        private void UpdateCoinsDisplay(int targetCoins)
         {
-            if (coinsText != null)
-            {
-                int oldCoins = currentUser != null ? (int)Mathf.Max(0, coins - 10) : 0; // Estimate previous value
+            if (coinsText == null) return;
 
-                // Play coin animation if CoinAnimationController exists
-                if (coins > oldCoins && CoinAnimationController.Instance != null && coinsText.transform != null)
+            // Stop any existing coin animation
+            if (coinCountUpCoroutine != null)
+            {
+                StopCoroutine(coinCountUpCoroutine);
+            }
+
+            // Try to use CoinAnimationController if available (from main branch)
+            // Check if type exists using reflection to avoid compilation errors
+            var coinAnimType = System.Type.GetType("SangsomMiniMe.UI.CoinAnimationController");
+            if (coinAnimType != null && displayedCoins < targetCoins)
+            {
+                var instanceProp = coinAnimType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (instanceProp != null)
                 {
-                    Vector3 spawnPos = coinsText.transform.position;
-                    CoinAnimationController.Instance.PlayCoinCollectAnimation(
-                        coins - oldCoins,
-                        spawnPos,
-                        () =>
+                    var coinAnimInstance = instanceProp.GetValue(null);
+                    if (coinAnimInstance != null && coinsText.transform != null)
+                    {
+                        // Call PlayCoinCollectAnimation via reflection
+                        var playMethod = coinAnimType.GetMethod("PlayCoinCollectAnimation");
+                        if (playMethod != null)
                         {
-                            // Update text after animation completes
-                            coinsText.text = $"💰 {coins:N0}";
-                            Core.AudioManager.Instance?.PlayCoin();
+                            Vector3 spawnPos = coinsText.transform.position;
+                            playMethod.Invoke(coinAnimInstance, new object[] {
+                                targetCoins - displayedCoins,
+                                spawnPos,
+                                (System.Action)(() => {
+                                    // Play sound if AudioManager exists
+                                    var audioType = System.Type.GetType("SangsomMiniMe.Core.AudioManager");
+                                    if (audioType != null)
+                                    {
+                                        var audioInstanceProp = audioType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                                        if (audioInstanceProp != null)
+                                        {
+                                            var audioInstance = audioInstanceProp.GetValue(null);
+                                            if (audioInstance != null)
+                                            {
+                                                var playCoinMethod = audioType.GetMethod("PlayCoin");
+                                                playCoinMethod?.Invoke(audioInstance, null);
+                                            }
+                                        }
+                                    }
+                                })
+                            });
                         }
-                    );
-                }
-                else
-                {
-                    // Fallback: instant update
-                    coinsText.text = $"💰 {coins:N0}";
+                    }
                 }
             }
+
+            // Start count-up animation
+            coinCountUpCoroutine = StartCoroutine(AnimateCountUp(
+                displayedCoins,
+                targetCoins,
+                coinsText,
+                "💰 {0:N0}",
+                (newValue) => displayedCoins = newValue,
+                0.5f // Animation duration
+            ));
         }
 
         /// <summary>
-        /// Updates the experience and level display.
+        /// Updates the experience and level display with smooth count-up animation.
         /// </summary>
-        private void UpdateExperienceDisplay(int experience)
+        private void UpdateExperienceDisplay(int targetExperience)
         {
-            if (experienceText != null)
+            if (experienceText == null) return;
+
+            // Stop any existing XP animation
+            if (expCountUpCoroutine != null)
             {
-                int level = experience / Core.GameConstants.ExperiencePerLevel + 1;
-                int expInLevel = experience % Core.GameConstants.ExperiencePerLevel;
-                experienceText.text = $"⭐ Level {level} ({expInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+                StopCoroutine(expCountUpCoroutine);
             }
+
+            // Start count-up animation
+            expCountUpCoroutine = StartCoroutine(AnimateExperienceCountUp(
+                displayedExperience,
+                targetExperience,
+                0.5f // Animation duration
+            ));
+        }
+
+        /// <summary>
+        /// Animates the experience display with level calculation.
+        /// </summary>
+        private IEnumerator AnimateExperienceCountUp(int startExp, int targetExp, float duration)
+        {
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                // Apply ease-out curve for smooth deceleration
+                t = 1f - (1f - t) * (1f - t);
+
+                int currentExp = Mathf.RoundToInt(Mathf.Lerp(startExp, targetExp, t));
+                displayedExperience = currentExp;
+
+                // Calculate level display
+                int level = currentExp / Core.GameConstants.ExperiencePerLevel + 1;
+                int expInLevel = currentExp % Core.GameConstants.ExperiencePerLevel;
+                experienceText.text = $"⭐ Level {level} ({expInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+
+                yield return null;
+            }
+
+            // Ensure final value is exact
+            displayedExperience = targetExp;
+            int finalLevel = targetExp / Core.GameConstants.ExperiencePerLevel + 1;
+            int finalExpInLevel = targetExp % Core.GameConstants.ExperiencePerLevel;
+            experienceText.text = $"⭐ Level {finalLevel} ({finalExpInLevel}/{Core.GameConstants.ExperiencePerLevel} XP)";
+        }
+
+        /// <summary>
+        /// Generic count-up animation for numeric text displays.
+        /// Implements smooth easing for professional UX micro-interactions.
+        /// </summary>
+        /// <param name="startValue">Starting value</param>
+        /// <param name="endValue">Target value</param>
+        /// <param name="textComponent">Text component to update</param>
+        /// <param name="format">String format with {0} placeholder</param>
+        /// <param name="onValueUpdate">Callback to update tracked value</param>
+        /// <param name="duration">Animation duration in seconds</param>
+        private IEnumerator AnimateCountUp(int startValue, int endValue, TextMeshProUGUI textComponent,
+            string format, Action<int> onValueUpdate, float duration)
+        {
+            if (textComponent == null) yield break;
+
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                // Apply ease-out curve for smooth deceleration (feels more natural)
+                t = 1f - (1f - t) * (1f - t);
+
+                int currentValue = Mathf.RoundToInt(Mathf.Lerp(startValue, endValue, t));
+                onValueUpdate?.Invoke(currentValue);
+
+                textComponent.text = string.Format(format, currentValue);
+
+                yield return null;
+            }
+
+            // Ensure final value is exact
+            onValueUpdate?.Invoke(endValue);
+            textComponent.text = string.Format(format, endValue);
         }
 
         /// <summary>
