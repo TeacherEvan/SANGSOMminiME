@@ -1,7 +1,8 @@
 namespace SangsomMiniMe.Core
 {
     /// <summary>
-    /// Game-wide constants for consistent values across the application
+    /// Game-wide constants for consistent values across the application.
+    /// Centralized configuration prevents magic numbers and improves maintainability.
     /// </summary>
     public static class GameConstants
     {
@@ -11,7 +12,12 @@ namespace SangsomMiniMe.Core
         public const float DefaultEyeScale = 1.0f;
         public const string DefaultOutfit = "default";
         public const string DefaultAccessory = "none";
-
+        
+        // Currency and Resource Limits (anti-cheat)
+        public const int MaxCoins = 999999;
+        public const int MaxExperience = 999999;
+        public const int MaxHomeworkCompleted = 10000;
+        
         // Eye Scale Limits
         public const float MinEyeScale = 0.5f;
         public const float MaxEyeScale = 2.0f;
@@ -27,7 +33,7 @@ namespace SangsomMiniMe.Core
         public const float SadThreshold = 20f;
 
         // Reward Values
-        public const int HomeworkExpReward = 10;
+        public const int HomeworkExperienceReward = 10;
         public const int HomeworkCoinReward = 5;
         public const float HomeworkHappinessReward = 5f;
         public const float DanceHappinessBonus = 2f;
@@ -72,16 +78,27 @@ namespace SangsomMiniMe.Core
 
         // Auto-Save Settings
         public const float DefaultAutoSaveInterval = 30f;
-
+        public const float MinAutoSaveInterval = 10f;
+        public const float MaxAutoSaveInterval = 600f;
+        
         // Animation Settings
         public const float DefaultAnimationDuration = 2f;
-
+        public const float MinAnimationDuration = 0.5f;
+        public const float MaxAnimationDuration = 10f;
+        
         // Level System
         public const int ExperiencePerLevel = 100;
-
+        public const int MaxLevel = 999;
+        
+        // Resource Cache Settings
+        public const int DefaultCacheSize = 50;
+        public const int MaxCacheSize = 200;
+        public const float CacheCleanupInterval = 60f;
+        
         // File Paths
         public const string UserProfilesSaveFileName = "userProfiles.json";
-
+        public const string ConfigurationResourcePath = "Configuration/GameConfig";
+        
         // Animation Parameter Names
         public static class AnimationParams
         {

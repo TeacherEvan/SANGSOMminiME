@@ -84,17 +84,56 @@ namespace SangsomMiniMe.Core
 
         public UserProfile CreateUser(string userName, string displayName, GameConfiguration config = null)
         {
-            if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(displayName))
+            // Enhanced validation using ValidationUtilities
+            if (!ValidationUtilities.ValidateUsername(userName, out string usernameError))
             {
-                Debug.LogWarning("[UserManager] Create user failed: Invalid input.");
+                ValidationUtilities.LogValidationError("CreateUser", usernameError);
                 return null;
             }
 
-            if (userProfileLookup.ContainsKey(userName))
+            if (!ValidationUtilities.ValidateDisplayName(displayName, out string displayNameError))
             {
-                Debug.LogWarning($"[UserManager] Username '{userName}' already exists.");
+                ValidationUtilities.LogValidationError("CreateUser", displayNameError);
                 return null;
             }
+
+            // Check for duplicate username using lookup dictionary (O(1) performance)
+            if (userProfileLookup.ContainsKey(userName))
+            {
+                Debug.LogWarning($"[UserManager] Username '{userName}' already exists. Please choose a different username.");
+                return null;
+            }
+
+            // Validate configuration if provided
+            if (config != null && !ValidationUtilities.ValidateGameConfiguration(config, out string[] configErrors))
+            {
+                Debug.LogWarning($"[UserManager] Invalid configuration provided: {string.Join(", ", configErrors)}");
+                // Continue with default configuration
+                config = null;
+            }
+
+            try
+            {
+                // Create new user profile
+                var newUser = new UserProfile(userName, displayName, config);
+                userProfiles.Add(newUser);
+                userProfileLookup[userName] = newUser;
+
+                // Persist asynchronously
+                SaveAsync();
+
+                // Notify listeners
+                OnUserCreated?.Invoke(newUser);
+
+                LogInfo($"Successfully created new user: {displayName} (ID: {userName})");
+                return newUser;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[UserManager] Error creating user: {ex.Message}");
+                return null;
+            }
+        }
 
             var newUser = new UserProfile(userName, displayName, config);
             userProfiles.Add(newUser);
