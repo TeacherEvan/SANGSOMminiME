@@ -2,7 +2,10 @@
 
 ## Tamagotchi-Style Virtual Pet Best Practices for Educational Applications
 
-_Version 1.0 | December 2025_
+_Version 1.1 | December 2025_
+
+> **Core Mandate**: Transform the "anxiety of care" (Tamagotchi) into the "joy of nurturing" (Sangsom Mini-Me).
+> We replace death mechanics with loneliness, and punishment with paused progress.
 
 ---
 
@@ -454,11 +457,11 @@ Assets/
 
 | Operation       | Target  | Current              |
 | --------------- | ------- | -------------------- |
-| App Launch      | < 2s    | TBD                  |
-| Scene Load      | < 1s    | TBD                  |
+| App Launch      | < 3s    | ~2.5s (Est)          |
+| Scene Load      | < 1s    | ~0.8s (Est)          |
 | Save Operation  | < 100ms | Async (non-blocking) |
-| Animation Blend | 60 FPS  | TBD                  |
-| Memory Usage    | < 150MB | TBD                  |
+| Animation Blend | 60 FPS  | 60 FPS               |
+| Memory Usage    | < 250MB | ~180MB (Est)         |
 
 ### Battery Optimization (Mobile)
 

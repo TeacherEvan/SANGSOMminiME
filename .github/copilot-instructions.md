@@ -1,37 +1,69 @@
-# Sangsom Mini-Me AI Guide
+# Sangsom Mini-Me AI Developer Guide
 
-## Project Snapshot
+## Project Context
 
-- Unity 6000.2.15f1 drives the interactive tamagotchi (see ProjectSettings/ProjectVersion.txt).
-- VSCode AI rules live in .vscode/rules/\*\* and SangsomMini-Me.mdc; read them before prompting so generated code respects educational + cultural boundaries.
-- Assets/Characters/{Student}/ and Assets/Minime-Universe/\*\* store character content and game assets.
+- **Engine**: Unity 6000.2.15f1 (Unity 6)
+- **Language**: C# (Unity Runtime), Python (Blender Automation)
+- **Core Concept**: Educational Tamagotchi where homework completion drives character growth.
+- **Key Constraint**: **NO DEATH/FAILURE STATES.** Positive reinforcement only.
 
-## Runtime Architecture (Unity)
+## Architecture & Codebase Map
 
-- Assets/Scripts/Runtime is split by namespace: SangsomMiniMe.Core (game/state), .Character (avatar control), .UI (TMP/UGUI), .Educational (analytics); each asmdef (Runtime.asmdef, Editor.asmdef, Tests.asmdef) enforces dependencies.
-- GameManager.cs orchestrates login/UI flow, subscribes to UserManager events, and runs autosave/debug keypaths; always route new global behavior through it instead of duplicating singletons.
-- UserManager.cs serializes UserProfile objects to Application.persistentDataPath/userProfiles.json via JsonUtility; keep new profile fields [Serializable] and update UserProfileCollection to avoid save loss.
-- CharacterController.cs mirrors saved customization (eye scale, outfit, accessories) and exposes PlayDance/Wai/Curtsy/Bow helpers; UI and debug hooks must call those public APIs rather than driving Animator directly.
-- GameUI.cs is the canonical bridge between TMP controls and gameplay (homework flow, reward buttons, customization sliders); when adding UI, wire through UpdateUserInfoDisplay/UpdateCustomizationFromUser to keep HUD consistent.
-- GameUtilities.cs + GameConstants.cs centralize thresholds, formatting, and limits; extend these instead of inlining new numbers so tests remain predictable.
+### Namespace vs. Folder Structure
 
-## Tests & Validation
+**Important**: Logical namespaces (`SangsomMiniMe.Core`) do not always match physical folder depth.
 
-- Assets/Scripts/Tests contains NUnit PlayMode tests (see UserProfileTests.cs, GameUtilitiesTests.cs); run them in Unity Test Runner or via `Unity.exe -runTests -testResults results.xml -projectPath <repo>`.
-- When touching persistence or calculators, add coverage inside Tests.asmdef to avoid regressions on serialized data.
+- `Assets/Scripts/Runtime/` contains core scripts like `GameManager.cs` and `UserManager.cs` (Namespace: `SangsomMiniMe.Core`).
+- `Assets/Scripts/Runtime/Character/` contains `CharacterController.cs` (Namespace: `SangsomMiniMe.Character`).
+- `Assets/Scripts/Runtime/UI/` contains `GameUI.cs` (Namespace: `SangsomMiniMe.UI`).
 
-## Developer Workflow
+### Core Systems
 
-- Use Unity Hub targeting Unity 6 (6000.2.15f1); verify with Unity splash before editing.
-- Use `git --no-pager status|diff|log` (avoids pager hangs) before/after work; repository often has partially staged art so isolate changes carefully.
-- Preferred iteration loop: 1) import/create assets in Unity, 2) hook them into prefabs/scenes (MainScene.unity), 3) run PlayMode tests, 4) document prompts in History2.md if AI assisted.
+- **GameManager**: Singleton orchestrator. Handles global state, auto-save loops, and debug keys.
+- **UserManager**: Handles `UserProfile` persistence via `JsonUtility`. Uses Async I/O for non-blocking saves.
+- **CharacterController**: Manages visual state (Animator), customization (eye scale, outfits), and cultural gestures (Wai, Bow).
+- **EducationalAnalytics**: Tracks learning progress without collecting PII.
 
-## Design Principles
+## Development Rules
 
-- Educational gameplay forbids timers/fail states; reward homework completion with happiness/coins as implemented in UserProfile.CompleteHomework().
-- Thai cultural gestures (wai/curtsy/bow) already have animation entry points; reuse them when building new interactions to stay respectful.
-- Minime Universe side games feed resources back through UserProfile.AddCoins/AddExperience; never bypass these helpers or coins/XP will desync from analytics.
+### 1. Educational Game Design
+
+- **Never implement punishment mechanics** (e.g., pet death, stat regression below floors).
+- **Homework is the primary resource generator** (Happiness/Coins).
+- **Respect Thai culture**: Use `Wai`, `Curtsy`, `Bow` animations appropriately.
+
+### 2. Coding Standards
+
+- **Serialization**: Use `[SerializeField] private` for Inspector exposure.
+- **Persistence**: Use `JsonUtility` (native) over `Newtonsoft` for simple profile data.
+- **Async/Await**: Prefer `async void` (fire-and-forget) or `async Task` for I/O operations to prevent frame drops.
+- **Event-Driven**: Use C# Events (`Action<T>`) in `UserManager` instead of polling in `Update()`.
+
+### 3. Unity Specifics
+
+- **Object Pooling**: Use `Core.ObjectPool<T>` for high-frequency spawns (coins, particles).
+- **UI Animation**: Use `UITransitionManager` for easing (Elastic, Bounce) instead of raw `Mathf.Lerp`.
+- **Performance**: Avoid `GetComponent` in `Update`. Cache references in `Awake`.
+
+## Workflows
+
+### Testing
+
+- **Run Tests**: `Unity.exe -runTests -testResults results.xml -projectPath .`
+- **Editor**: Use "Test Runner" window.
+- **Key Tests**: `UserProfileTests.cs` (Logic), `GameUtilitiesTests.cs` (Math).
+
+### Asset Pipeline
+
+- **Blender**: Python scripts in `Blender/` folder automate character export.
+- **Import**: FBX files go to `Assets/Characters/{StudentName}/Models/`.
+
+## Common Tasks
+
+- **Adding a new Meter**: Update `UserProfile.cs`, add UI slider in `GameUI.cs`, register in `GameManager`.
+- **New Animation**: Add trigger to `CharacterController`, update Animator Controller, expose public method.
 
 ## Reference Material
 
-- README.md and Docs/SETUP_NOTES.md describe the broader vision; SangsomMini-Me.mdc tracks the current spec; History2.md logs previous AI sessions—consult these before large shifts.
+- `Docs/GAMEPLAY_UX_GUIDE.md`: Detailed design specs and benchmarks.
+- `.cursor/rules/`: Detailed agent-specific rules (read `sangsom-minime-project-agent.mdc`).
