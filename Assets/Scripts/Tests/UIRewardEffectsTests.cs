@@ -129,15 +129,14 @@ namespace SangsomMiniMe.Tests
             Assert.IsTrue(callbackInvoked, "Coin flight callback should be invoked");
         }
 
+        // ClearActiveEffects method is not part of the current API
+        // Particles are automatically returned to pool after their duration
         [Test]
-        public void ClearActiveEffects_DoesNotThrow()
+        public void PlayMultipleEffects_DoesNotThrow()
         {
-            // Play some effects first
-            rewardEffects.PlayCoinRewardEffect(Vector3.zero, 5);
-            rewardEffects.PlayLevelUpEffect(Vector3.zero);
-
-            // Clear should not throw
-            Assert.DoesNotThrow(() => rewardEffects.ClearActiveEffects());
+            // Play some effects
+            Assert.DoesNotThrow(() => rewardEffects.PlayCoinRewardEffect(Vector3.zero, 5));
+            Assert.DoesNotThrow(() => rewardEffects.PlayLevelUpEffect(Vector3.zero));
         }
 
         [UnityTest]
@@ -190,11 +189,11 @@ namespace SangsomMiniMe.Tests
         }
 
         [Test]
-        public void GetActiveEffectCount_IsAccessible()
+        public void SetSoundEffectsEnabled_IsAccessible()
         {
-            // Verify method exists and returns valid value
-            int count = rewardEffects.GetActiveEffectCount();
-            Assert.GreaterOrEqual(count, 0);
+            // Verify method exists and can be called
+            Assert.DoesNotThrow(() => rewardEffects.SetSoundEffectsEnabled(false));
+            Assert.DoesNotThrow(() => rewardEffects.SetSoundEffectsEnabled(true));
         }
 
         [UnityTest]

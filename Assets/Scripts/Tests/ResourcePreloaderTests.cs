@@ -150,57 +150,47 @@ namespace SangsomMiniMe.Tests
             Assert.IsNull(resource);
         }
 
-        [UnityTest]
-        public IEnumerator LoadResourceAsync_WithCallback_InvokesCallback()
+        // LoadResourceAsync method is not part of the current API
+        // The preloader uses GetCachedResource<T>(string path) instead
+        [Test]
+        public void GetCachedResource_NonExistent_ReturnsNull()
         {
-            bool callbackInvoked = false;
-            Material loadedResource = null;
+            var resource = preloader.GetCachedResource<Material>("NonExistentPath");
+            Assert.IsNull(resource);
+        }
 
-            preloader.LoadResourceAsync<Material>("TestMaterial", (material) =>
-            {
-                callbackInvoked = true;
-                loadedResource = material;
-            });
-
-            // Wait for async load to complete
-            yield return new WaitForSeconds(0.5f);
-
-            // Callback should be invoked (resource may be null if path doesn't exist)
-            Assert.IsTrue(callbackInvoked);
+        // PreloadResourceList method is not part of the current API
+        // The preloader uses StartPreload() which loads configured paths
+        [Test]
+        public void StartPreload_CanBeCalledMultipleTimes()
+        {
+            // First call starts preload
+            preloader.StartPreload();
+            // Second call should log warning but not crash
+            Assert.DoesNotThrow(() => preloader.StartPreload());
         }
 
         [Test]
-        public void PreloadResourceList_WithNullList_DoesNotThrow()
+        public void MultipleGetCachedResource_WorksCorrectly()
         {
-            Assert.DoesNotThrow(() => preloader.PreloadResourceList<Material>(null));
-        }
-
-        [Test]
-        public void PreloadResourceList_WithEmptyList_DoesNotThrow()
-        {
-            Assert.DoesNotThrow(() => preloader.PreloadResourceList<Material>(new string[] { }));
-        }
-
-        [UnityTest]
-        public IEnumerator MultipleResourceLoads_DontCauseMemoryLeaks()
-        {
-            // Load the same resource multiple times
+            // Get the same resource multiple times
             for (int i = 0; i < 10; i++)
             {
-                preloader.LoadResourceAsync<Material>("TestMaterial", (mat) => { });
-                yield return null;
+                var resource = preloader.GetCachedResource<Material>("TestMaterial");
+                // Resource may be null if path doesn't exist, that's fine
             }
 
-            // Verify no exceptions or errors occurred
-            Assert.Pass("Multiple loads completed without errors");
+            // Verify no exceptions occurred
+            Assert.Pass("Multiple gets completed without errors");
         }
 
         [Test]
         public void CacheStatistics_AreAccessible()
         {
-            // Verify that cache stats methods exist and don't throw
-            Assert.DoesNotThrow(() => preloader.GetCacheSize());
-            Assert.DoesNotThrow(() => preloader.GetCacheKeys());
+            // Verify that cache stats method exists and doesn't throw
+            Assert.DoesNotThrow(() => preloader.LogCacheStatistics());
+            // IsResourceCached is also available
+            Assert.DoesNotThrow(() => preloader.IsResourceCached("somePath"));
         }
 
         [UnityTest]
