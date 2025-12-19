@@ -4,9 +4,13 @@
         {
             "label": "Unity: Run Tests",
             "type": "shell",
-            "command": "echo",
+            "command": "powershell",
             "args": [
-                "Run Unity tests via Unity Test Runner (Edit > Test Runner > Run All)"
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "New-Item -ItemType Directory -Force -Path (Join-Path '${workspaceFolder}' 'Logs') | Out-Null; & 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.15f1\\Editor\\Unity.exe' -runTests -batchmode -projectPath '${workspaceFolder}' -testResults (Join-Path '${workspaceFolder}' 'Logs/results.xml') -logFile (Join-Path '${workspaceFolder}' 'Logs/Editor.log') -testPlatform EditMode -debugCodeOptimization"
             ],
             "problemMatcher": [],
             "group": "test"

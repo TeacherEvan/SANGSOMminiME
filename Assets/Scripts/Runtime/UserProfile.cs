@@ -47,6 +47,9 @@ namespace SangsomMiniMe.Core
         [SerializeField] private float characterHunger = 75f;
         [SerializeField] private float characterEnergy = 100f;
 
+        // Meter decay timestamp (UTC) for offline catch-up (JsonUtility-safe)
+        [SerializeField] private long lastMeterDecayUtcTicks = 0;
+
         // Daily login & streak tracking (positive-only, no penalties)
         [SerializeField] private string lastLoginDateString = "";
         [SerializeField] private int currentStreak;
@@ -85,6 +88,8 @@ namespace SangsomMiniMe.Core
         public float CharacterHappiness => characterHappiness;
         public float CharacterHunger => characterHunger;
         public float CharacterEnergy => characterEnergy;
+
+        public long LastMeterDecayUtcTicks => lastMeterDecayUtcTicks;
 
         // Streak properties (read-only)
         public string LastLoginDateString => lastLoginDateString;
@@ -212,12 +217,67 @@ namespace SangsomMiniMe.Core
             else
             {
                 this.coins = GameConstants.DefaultStartingCoins;
-                this.characterHappiness = GameConstants.DefaultHappiness;
+                this.characterHappiness = GameConstants.DefaultStartingHappiness;
                 this.daysActive = 1;
             }
 
             this.isActive = true;
             this.homeworkCompleted = 0;
+        }
+
+        /// <summary>
+        /// Updates the last meter decay timestamp (UTC ticks).
+        /// Use this to keep offline catch-up in sync with runtime decay.
+        /// </summary>
+        public void SetLastMeterDecayUtcTicks(long utcTicks, bool markDirty = true)
+        {
+            if (utcTicks <= 0) return;
+            if (lastMeterDecayUtcTicks == utcTicks) return;
+
+            lastMeterDecayUtcTicks = utcTicks;
+            if (markDirty) MarkDirty();
+        }
+
+        /// <summary>
+        /// Applies gentle offline meter catch-up decay since the last recorded decay timestamp.
+        /// Decay is clamped to a cozy maximum and never drops below floors.
+        /// </summary>
+        public void ApplyOfflineMeterDecayCatchUp(long utcNowTicks)
+        {
+            if (utcNowTicks <= 0) return;
+
+            // First run: initialize timestamp without applying decay.
+            if (lastMeterDecayUtcTicks <= 0)
+            {
+                SetLastMeterDecayUtcTicks(utcNowTicks);
+                return;
+            }
+
+            long deltaTicks = utcNowTicks - lastMeterDecayUtcTicks;
+            if (deltaTicks <= 0)
+            {
+                // Clock moved backwards or no time passed; resync.
+                SetLastMeterDecayUtcTicks(utcNowTicks);
+                return;
+            }
+
+            float elapsedMinutes = (float)deltaTicks / TimeSpan.TicksPerMinute;
+            float clampedMinutes = Mathf.Min(elapsedMinutes, GameConstants.MaxOfflineMeterDecayMinutes);
+
+            if (clampedMinutes > 0.01f)
+            {
+                ApplyMeterDecay(
+                    GameConstants.HappinessDecayPerMinute * clampedMinutes,
+                    GameConstants.HungerDecayPerMinute * clampedMinutes,
+                    GameConstants.EnergyDecayPerMinute * clampedMinutes);
+
+                // ApplyMeterDecay already marks dirty.
+                SetLastMeterDecayUtcTicks(utcNowTicks, markDirty: false);
+            }
+            else
+            {
+                SetLastMeterDecayUtcTicks(utcNowTicks);
+            }
         }
 
         public void AddExperience(int amount)

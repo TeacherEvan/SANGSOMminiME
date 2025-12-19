@@ -39,6 +39,9 @@ namespace SangsomMiniMe.Core
             // Apply decay (respects floors internally)
             user.ApplyMeterDecay(happinessDecay, hungerDecay, energyDecay);
 
+            // Keep offline catch-up timestamp in sync (ApplyMeterDecay already marks dirty)
+            user.SetLastMeterDecayUtcTicks(DateTime.UtcNow.Ticks, markDirty: false);
+
             // Fire event for UI updates
             OnMetersDecayed?.Invoke(user.CharacterHappiness, user.CharacterHunger, user.CharacterEnergy);
 

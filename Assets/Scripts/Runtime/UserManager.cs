@@ -135,16 +135,6 @@ namespace SangsomMiniMe.Core
             }
         }
 
-            var newUser = new UserProfile(userName, displayName, config);
-            userProfiles.Add(newUser);
-            userProfileLookup[userName] = newUser;
-
-            SaveAsync();
-            OnUserCreated?.Invoke(newUser);
-            LogInfo($"Created user: {displayName}");
-            return newUser;
-        }
-
         public bool LoginUser(string userName)
         {
             if (string.IsNullOrWhiteSpace(userName))

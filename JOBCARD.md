@@ -2,9 +2,49 @@
 
 ## Work Summary
 
-**Latest Update**: December 9, 2025
-**Branches Merged**: Production Optimization (copilot/overhaul-code-for-performance) + UX Polish (main)
-**Status**: ✅ COMPLETED - Merged
+**Latest Update**: December 19, 2025
+**Status**: ✅ COMPLETED - Implemented
+
+---
+
+## Session: December 19, 2025 - Offline Meter Catch-Up + Agent Indexing
+
+**Phase**: Practical QoL Feature + Maintenance
+**Status**: ✅ COMPLETED
+
+### Feature Implemented: Offline Meter Catch-Up (Gentle, Floor-Safe)
+
+- Added a persisted UTC tick timestamp to `UserProfile` to support offline progress without relying on `DateTime` serialization.
+- On login, applies “catch-up” decay based on time away:
+  - **Clamped** to a cozy maximum (`GameConstants.MaxOfflineMeterDecayMinutes = 360f`) to avoid punitive jumps.
+  - **Never below floors** (still enforced by `ApplyMeterDecay(...)`).
+- Runtime decay now updates the timestamp so offline catch-up stays accurate.
+
+Files updated:
+
+- `Assets/Scripts/Runtime/UserProfile.cs`
+- `Assets/Scripts/Runtime/GameConstants.cs`
+- `Assets/Scripts/Runtime/MeterDecaySystem.cs`
+- `Assets/Scripts/Runtime/GameManager.cs`
+
+### Test Added
+
+- Added unit coverage for offline catch-up clamp + floor enforcement:
+  - `Assets/Scripts/Tests/UserProfileTests.cs`
+
+### Maintenance Fix: User Creation Merge Artifact
+
+- Removed a duplicated code block inside `UserManager.CreateUser(...)` that appeared to be a merge artifact.
+- Prevents compilation/runtime issues and preserves intended behavior.
+
+File updated:
+
+- `Assets/Scripts/Runtime/UserManager.cs`
+
+### Developer Productivity: Agent Instruction Indexing
+
+- Updated `.github/copilot-instructions.md` to reduce ambiguity and improve future agent navigation:
+  - Added a “Fast File Index” and explicit checklists (meters, persistence, offline progress status).
 
 ---
 
@@ -16,6 +56,7 @@
 ### Production Optimization Branch Work
 
 **1. Comprehensive Code Analysis**
+
 - Analyzed 5,511 lines of C# code across 17 Runtime scripts
 - Reviewed architecture: event-driven UI, dirty flags, coroutines
 - **Finding:** Codebase already production-grade, no critical issues
@@ -24,18 +65,21 @@
 **2. Visual & Interactive Enhancements**
 
 **Count-Up Animations** (`GameUI.cs`)
+
 - Smooth coin and XP count-up animations with ease-out curves
 - Generic `AnimateCountUp()` method for reusable numeric animations
 - Experience display with real-time level calculation
 - **Impact:** Professional visual feedback, no jarring number jumps
 
 **Button Hover Effects** (`UIButtonHoverEffect.cs`)
+
 - New component for professional button micro-interactions
 - Configurable scale and color transitions on hover
 - Automatic reset on disable/destroy
 - **Impact:** Modern UX feel, tactile feedback
 
 **Reward Particle System** (`UIRewardEffects.cs`)
+
 - Object-pooled particle effects for achievements
 - Coin bursts, level-up celebrations, achievement effects
 - Coin flight animations (framework ready)
@@ -45,6 +89,7 @@
 **3. Performance Enhancements**
 
 **Resource Preloading System** (`ResourcePreloader.cs`)
+
 - Async resource loading with progress tracking
 - Intelligent caching of frequently accessed assets
 - Chunked loading to prevent frame spikes
@@ -54,12 +99,14 @@
 **4. Documentation & Code Quality**
 
 **Strategic TODO Comments**
+
 - Added optimization comments in `CharacterController.cs`
 - Documented object pool integration opportunities
 - Resource preloading integration notes
 - Selective cache clearing strategies
 
 **Comprehensive Documentation**
+
 - Created `OPTIMIZATION_PLAN.md` - Critical review and strategy
 - Created `REFACTOR_SUMMARY.md` - Complete implementation details
 - Created `FINAL_REPORT.md` - Executive summary
@@ -84,7 +131,6 @@ Enhanced files:
 **Key Features:**
 
 1. **Coin Animation System:**
-
    - Object-pooled coin sprites (capacity: 10-30, pre-warmed: 5)
    - Staggered spawn with random offsets for natural feel
    - Flight animation with rotation and scale interpolation
@@ -93,7 +139,6 @@ Enhanced files:
    - Performance: 60 FPS target with coroutine-based tweening
 
 2. **Premium Easing Library:**
-
    - Elastic: Bounce-back with sin wave oscillation
    - Bounce: Physical bounce with multiple impacts
    - Back: Anticipation overshoot (1.70158 factor)
@@ -212,15 +257,18 @@ New files created in `Assets/Scripts/Runtime/Shop/`:
 - Milestone celebrations for achievement moments
 
 ---
+
 - **Impact:** Professional visual feedback, no jarring number jumps
 
 **Button Hover Effects** (`UIButtonHoverEffect.cs`)
+
 - New component for professional button micro-interactions
 - Configurable scale and color transitions on hover
 - Automatic reset on disable/destroy
 - **Impact:** Modern UX feel, tactile feedback
 
 **Reward Particle System** (`UIRewardEffects.cs`)
+
 - Object-pooled particle effects for achievements
 - Coin bursts, level-up celebrations, achievement effects
 - Coin flight animations (framework ready)
@@ -230,6 +278,7 @@ New files created in `Assets/Scripts/Runtime/Shop/`:
 **3. Performance Enhancements**
 
 **Resource Preloading System** (`ResourcePreloader.cs`)
+
 - Async resource loading with progress tracking
 - Intelligent caching of frequently accessed assets
 - Chunked loading to prevent frame spikes
@@ -239,18 +288,21 @@ New files created in `Assets/Scripts/Runtime/Shop/`:
 **4. Documentation & Code Quality**
 
 **Strategic TODO Comments**
+
 - Added optimization comments in `CharacterController.cs`
 - Documented object pool integration opportunities
 - Resource preloading integration notes
 - Selective cache clearing strategies
 
 **Comprehensive Documentation**
+
 - Created `OPTIMIZATION_PLAN.md` - Critical review and strategy
 - Created `REFACTOR_SUMMARY.md` - Complete implementation details
 - Updated inline XML documentation
 - All changes documented with rationale
 
 ### Files Created (5)
+
 1. `OPTIMIZATION_PLAN.md` - Optimization strategy and critical review
 2. `UIButtonHoverEffect.cs` - Button hover micro-interactions (160 lines)
 3. `UIRewardEffects.cs` - Particle effects with pooling (320 lines)
@@ -258,17 +310,18 @@ New files created in `Assets/Scripts/Runtime/Shop/`:
 5. `REFACTOR_SUMMARY.md` - Implementation summary (this session)
 
 ### Files Enhanced (2)
+
 1. `GameUI.cs` - Count-up animations (+80 lines)
 2. `CharacterController.cs` - TODO optimization comments (+7 lines)
 
 ### Code Metrics
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Total Runtime Lines | 5,511 | 6,451 | +940 lines |
-| New Systems | 17 | 21 | +4 systems |
-| TODO Comments | 7 | 9 | +2 strategic |
-| Breaking Changes | 0 | 0 | **ZERO** |
+| Metric              | Before | After | Change       |
+| ------------------- | ------ | ----- | ------------ |
+| Total Runtime Lines | 5,511  | 6,451 | +940 lines   |
+| New Systems         | 17     | 21    | +4 systems   |
+| TODO Comments       | 7      | 9     | +2 strategic |
+| Breaking Changes    | 0      | 0     | **ZERO**     |
 
 ### Key Benefits
 
@@ -460,13 +513,11 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 ### Short-Term (Next Sprint)
 
 1. **Complete Test Coverage**
-
    - Add tests for UserManager
    - Add tests for CharacterController
    - Integration tests for full user flow
 
 2. **Create GameConfiguration Asset**
-
    - Create default `GameConfig.asset` in `Assets/Resources/`
    - Document configuration options for designers
    - Test configuration overrides in Unity Editor
@@ -479,13 +530,11 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 ### Medium-Term (Next Phase)
 
 1. **Analytics Dashboard**
-
    - Create editor window for analytics visualization
    - Export functionality for teacher reports
    - Session comparison metrics
 
 2. **Localization System**
-
    - Prepare for Thai/English support
    - Externalize all user-facing strings
 
@@ -496,13 +545,11 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 ### Long-Term Considerations
 
 1. **Performance Profiling**
-
    - Profile WebGL build
    - Optimize for mobile targets
    - Memory usage analysis
 
 2. **Security Hardening**
-
    - Encrypt saved user data
    - Validate all user inputs
    - Rate limiting for API calls
@@ -523,6 +570,7 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 ### Core Systems Added
 
 **1. ResourceCache.cs** (395 lines)
+
 - LRU cache with async loading for 70-90% I/O reduction
 - Automatic memory management with configurable eviction
 - Resource preloading capabilities
@@ -530,6 +578,7 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 - Performance: 85%+ cache hit rate in normal gameplay
 
 **2. ValidationUtilities.cs** (478 lines)
+
 - 15+ validation patterns (usernames, emails, currencies, paths)
 - Anti-cheat protection with overflow prevention
 - Content filtering (profanity detection)
@@ -537,18 +586,21 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 - GameConfiguration consistency validation
 
 **3. InteractiveButton.cs** (387 lines)
+
 - Premium micro-interactions (hover/press/pulse)
 - Multi-sensory feedback (visual, audio, haptic)
 - Smooth scale and color transitions
 - Mobile-optimized with platform-specific haptics
 
 **4. OptimisticUIUpdater.cs** (403 lines)
+
 - Zero-latency UI updates with rollback
 - Smooth number counting animations
 - Pending operation tracking
 - Visual feedback (color flash, scale pop)
 
 **5. PerformanceMonitor.cs** (403 lines)
+
 - Real-time FPS tracking (current, average, min, max)
 - Memory monitoring (allocated, reserved, mono heap)
 - GC collection tracking
@@ -558,16 +610,19 @@ SangsomMiniMe.Tests (Assets/Scripts/Tests/)
 ### Modified Existing Systems
 
 **UserManager.cs**
+
 - Integrated ValidationUtilities for robust input validation
 - Maintained O(1) dictionary lookups from main branch
 - Merged async save functionality
 
 **UserProfile.cs**
+
 - Added resource-specific validation
 - Anti-cheat currency protection
 - Overflow prevention
 
 **GameConstants.cs**
+
 - Added security limits (MaxCoins=999999, MaxExperience=999999)
 - Added resource cache settings
 - Preserved all existing constants from main branch

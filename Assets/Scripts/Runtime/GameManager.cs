@@ -295,6 +295,9 @@ namespace SangsomMiniMe.Core
             {
                 LogInfo($"User logged in: {user.DisplayName} (ID: {user.UserName})");
 
+                // Apply gentle offline meter catch-up (floor-safe, clamped)
+                user.ApplyOfflineMeterDecayCatchUp(DateTime.UtcNow.Ticks);
+
                 // Process daily login bonus (positive-only streak system)
                 var loginResult = DailyLoginSystem.ProcessLogin(user);
 
@@ -317,6 +320,12 @@ namespace SangsomMiniMe.Core
 
                 // Transition UI
                 ShowGameUI();
+
+                // Ensure meters render current values immediately on login
+                if (gameUI != null)
+                {
+                    gameUI.UpdateMeterDisplays();
+                }
 
                 // Initialize character for the user
                 if (characterController != null)

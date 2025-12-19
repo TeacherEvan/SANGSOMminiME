@@ -12,12 +12,12 @@ namespace SangsomMiniMe.Core
         public const float DefaultEyeScale = 1.0f;
         public const string DefaultOutfit = "default";
         public const string DefaultAccessory = "none";
-        
+
         // Currency and Resource Limits (anti-cheat)
         public const int MaxCoins = 999999;
         public const int MaxExperience = 999999;
         public const int MaxHomeworkCompleted = 10000;
-        
+
         // Eye Scale Limits
         public const float MinEyeScale = 0.5f;
         public const float MaxEyeScale = 2.0f;
@@ -54,6 +54,10 @@ namespace SangsomMiniMe.Core
         public const float HungerDecayPerMinute = 1.0f;      // Moderate decay
         public const float EnergyDecayPerMinute = 0.75f;     // Slow decay
 
+        // Offline meter catch-up (minutes)
+        // Clamped to keep offline progress gentle and avoid punitive jumps.
+        public const float MaxOfflineMeterDecayMinutes = 360f; // 6 hours
+
         // Meter Floors (meters never drop below these - no stress!)
         public const float HappinessFloor = 20f;   // Character stays "okay" at minimum
         public const float HungerFloor = 10f;      // Never starving
@@ -80,25 +84,25 @@ namespace SangsomMiniMe.Core
         public const float DefaultAutoSaveInterval = 30f;
         public const float MinAutoSaveInterval = 10f;
         public const float MaxAutoSaveInterval = 600f;
-        
+
         // Animation Settings
         public const float DefaultAnimationDuration = 2f;
         public const float MinAnimationDuration = 0.5f;
         public const float MaxAnimationDuration = 10f;
-        
+
         // Level System
         public const int ExperiencePerLevel = 100;
         public const int MaxLevel = 999;
-        
+
         // Resource Cache Settings
         public const int DefaultCacheSize = 50;
         public const int MaxCacheSize = 200;
         public const float CacheCleanupInterval = 60f;
-        
+
         // File Paths
         public const string UserProfilesSaveFileName = "userProfiles.json";
         public const string ConfigurationResourcePath = "Configuration/GameConfig";
-        
+
         // Animation Parameter Names
         public static class AnimationParams
         {
