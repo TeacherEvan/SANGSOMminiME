@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using TMPro;
 
 namespace SangsomMiniMe.UI
 {
@@ -32,7 +31,7 @@ namespace SangsomMiniMe.UI
         public static CoinAnimationController Instance => instance;
 
         // Object pool for coin sprites (reusing existing ObjectPool pattern)
-        private Core.ObjectPool<GameObject> coinPool;
+        private Core.ObjectPool<RectTransform> coinPool;
 
         private void Awake()
         {
@@ -60,20 +59,26 @@ namespace SangsomMiniMe.UI
                 return;
             }
 
-            coinPool = new Core.ObjectPool<GameObject>(
-                createFunc: () => Instantiate(coinSpritePrefab, transform),
-                actionOnGet: (obj) => obj.SetActive(true),
-                actionOnRelease: (obj) => obj.SetActive(false),
-                actionOnDestroy: (obj) => Destroy(obj),
-                defaultCapacity: 10,
-                maxSize: 30
+            var prefabRectTransform = coinSpritePrefab.GetComponent<RectTransform>();
+            if (prefabRectTransform == null)
+            {
+                Debug.LogWarning("[CoinAnimationController] coinSpritePrefab is missing a RectTransform. Animations will not work.");
+                return;
+            }
+
+            coinPool = new Core.ObjectPool<RectTransform>(
+                prefabRectTransform,
+                initialCapacity: 10,
+                maxCapacity: 30,
+                expandable: true,
+                poolParent: transform
             );
 
             // Pre-warm pool to avoid first-frame lag
             for (int i = 0; i < 5; i++)
             {
                 var warmup = coinPool.Get();
-                coinPool.Release(warmup);
+                coinPool.Return(warmup);
             }
         }
 
@@ -146,7 +151,7 @@ namespace SangsomMiniMe.UI
         /// <summary>
         /// Animates single coin from spawn to target with scale-up and flight.
         /// </summary>
-        private IEnumerator AnimateSingleCoin(GameObject coin, System.Action onReachTarget)
+        private IEnumerator AnimateSingleCoin(RectTransform coin, System.Action onReachTarget)
         {
             Transform coinTransform = coin.transform;
             Vector3 startPos = coinTransform.position;
@@ -184,7 +189,7 @@ namespace SangsomMiniMe.UI
             }
 
             // Phase 3: Cleanup
-            coinPool.Release(coin);
+            coinPool.Return(coin);
             onReachTarget?.Invoke();
         }
 
@@ -248,7 +253,7 @@ namespace SangsomMiniMe.UI
             StartCoroutine(SpawnEffectCoroutine(coin));
         }
 
-        private IEnumerator SpawnEffectCoroutine(GameObject coin)
+        private IEnumerator SpawnEffectCoroutine(RectTransform coin)
         {
             Transform t = coin.transform;
             Vector3 startPos = t.position;
@@ -276,13 +281,14 @@ namespace SangsomMiniMe.UI
                 yield return null;
             }
 
-            coinPool.Release(coin);
+            coinPool.Return(coin);
         }
 
         private void OnDestroy()
         {
             // Clean up pool on destroy
-            coinPool?.Dispose();
+            coinPool?.Clear();
+            coinPool = null;
         }
     }
 }

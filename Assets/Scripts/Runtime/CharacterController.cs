@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using SangsomMiniMe.Core;
 
 namespace SangsomMiniMe.Character
 {
@@ -125,7 +126,7 @@ namespace SangsomMiniMe.Character
             // - Preload outfit materials during loading screen
             // - Cache materials to avoid repeated Resources.Load() calls
             // - Implement async material loading for large texture sets
-            
+
             if (outfitMaterials != null && outfitIndex >= 0 && outfitIndex < outfitMaterials.Length)
             {
                 currentOutfitIndex = outfitIndex;
@@ -234,7 +235,7 @@ namespace SangsomMiniMe.Character
             // - Pre-warm pool with 3-5 instances during initialization
             // - Return to pool when happiness drops below threshold
             // Example: happinessParticles = ObjectPoolManager.Instance.GetOrCreatePool(particlePrefab).Get();
-            
+
             // Update particle effects and indicators based on happiness
             if (happinessParticles != null)
             {

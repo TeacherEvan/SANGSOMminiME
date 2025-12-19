@@ -140,7 +140,7 @@ namespace SangsomMiniMe.UI
             // Hide outgoing panel
             if (outPanel != null)
             {
-                yield return StartCoroutine(HidePanelCoroutine(outPanel, transitionType, null));
+                yield return StartCoroutine(HidePanelCoroutine(outPanel, transitionType, defaultEasingMode, null));
             }
 
             // Small delay between transitions for better UX
@@ -149,7 +149,7 @@ namespace SangsomMiniMe.UI
             // Show incoming panel
             if (inPanel != null)
             {
-                yield return StartCoroutine(ShowPanelCoroutine(inPanel, transitionType, null));
+                yield return StartCoroutine(ShowPanelCoroutine(inPanel, transitionType, defaultEasingMode, null));
             }
 
             onComplete?.Invoke();

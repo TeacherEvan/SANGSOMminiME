@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="33" result="Passed" total="33" passed="33" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.2022434">
+  <test-suite type="TestSuite" id="1000" name="SANGSOMminiME" fullname="SANGSOMminiME" runstate="Runnable" testcasecount="33" result="Passed" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.202243" total="33" passed="33" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1036" name="SangsomMiniMe.Tests.dll" fullname="C:/Users/eboth/OneDrive/Documents/vs/Mini-me/SANGSOMminiME/Library/ScriptAssemblies/SangsomMiniMe.Tests.dll" runstate="Runnable" testcasecount="33" result="Passed" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.177759" total="33" passed="33" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="10328" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1037" name="SangsomMiniMe" fullname="SangsomMiniMe" runstate="Runnable" testcasecount="33" result="Passed" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.175382" total="33" passed="33" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1038" name="Tests" fullname="SangsomMiniMe.Tests" runstate="Runnable" testcasecount="33" result="Passed" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.173797" total="33" passed="33" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="GameUtilitiesTests" fullname="SangsomMiniMe.Tests.GameUtilitiesTests" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" testcasecount="20" result="Passed" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.118782" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1007" name="CalculateLevel_ReturnsCorrectLevel" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.CalculateLevel_ReturnsCorrectLevel" methodname="CalculateLevel_ReturnsCorrectLevel" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1690279371" result="Passed" start-time="2025-12-19 03:28:46Z" end-time="2025-12-19 03:28:47Z" duration="0.043864" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="ClampEyeScale_ClampsCorrectly" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.ClampEyeScale_ClampsCorrectly" methodname="ClampEyeScale_ClampsCorrectly" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="999046033" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.004949" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1017" name="ClampHappiness_ClampsCorrectly" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.ClampHappiness_ClampsCorrectly" methodname="ClampHappiness_ClampsCorrectly" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="80664945" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000550" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1016" name="FormatCoinsDisplay_FormatsCorrectly" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.FormatCoinsDisplay_FormatsCorrectly" methodname="FormatCoinsDisplay_FormatsCorrectly" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1555589297" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.001337" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1020" name="GetHomeworkMotivation_ReturnsAppropriateMessage" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetHomeworkMotivation_ReturnsAppropriateMessage" methodname="GetHomeworkMotivation_ReturnsAppropriateMessage" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="2082279014" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.005017" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="GetLevelProgress_ReturnsCorrectProgress" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetLevelProgress_ReturnsCorrectProgress" methodname="GetLevelProgress_ReturnsCorrectProgress" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1278220467" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.004201" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="GetMoodState_ReturnsHappy_WhenHappinessInRange" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetMoodState_ReturnsHappy_WhenHappinessInRange" methodname="GetMoodState_ReturnsHappy_WhenHappinessInRange" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="283114503" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.002219" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1004" name="GetMoodState_ReturnsNeutral_WhenHappinessInRange" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetMoodState_ReturnsNeutral_WhenHappinessInRange" methodname="GetMoodState_ReturnsNeutral_WhenHappinessInRange" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1185675929" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000416" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="GetMoodState_ReturnsSad_WhenHappinessInRange" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetMoodState_ReturnsSad_WhenHappinessInRange" methodname="GetMoodState_ReturnsSad_WhenHappinessInRange" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="188384197" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000246" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1002" name="GetMoodState_ReturnsVeryHappy_WhenHappinessAboveThreshold" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetMoodState_ReturnsVeryHappy_WhenHappinessAboveThreshold" methodname="GetMoodState_ReturnsVeryHappy_WhenHappinessAboveThreshold" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1354044332" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000226" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="GetMoodState_ReturnsVerySad_WhenHappinessBelowThreshold" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetMoodState_ReturnsVerySad_WhenHappinessBelowThreshold" methodname="GetMoodState_ReturnsVerySad_WhenHappinessBelowThreshold" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1439096179" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000269" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1019" name="GetRandomAnimation_DoesNotReturnIdle" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetRandomAnimation_DoesNotReturnIdle" methodname="GetRandomAnimation_DoesNotReturnIdle" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="39638281" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.001200" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="GetTimeBasedGreeting_ReturnsNonEmptyString" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.GetTimeBasedGreeting_ReturnsNonEmptyString" methodname="GetTimeBasedGreeting_ReturnsNonEmptyString" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="454790793" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.001223" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1014" name="IsValidDisplayName_ReturnsFalse_ForNullOrEmpty" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidDisplayName_ReturnsFalse_ForNullOrEmpty" methodname="IsValidDisplayName_ReturnsFalse_ForNullOrEmpty" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1036048298" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000935" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="IsValidDisplayName_ReturnsTrue_ForValidNames" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidDisplayName_ReturnsTrue_ForValidNames" methodname="IsValidDisplayName_ReturnsTrue_ForValidNames" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1730412639" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000680" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="IsValidUsername_ReturnsFalse_ForInvalidCharacters" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidUsername_ReturnsFalse_ForInvalidCharacters" methodname="IsValidUsername_ReturnsFalse_ForInvalidCharacters" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1971358420" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000389" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1009" name="IsValidUsername_ReturnsFalse_ForNullOrEmpty" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidUsername_ReturnsFalse_ForNullOrEmpty" methodname="IsValidUsername_ReturnsFalse_ForNullOrEmpty" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="964672091" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000183" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1011" name="IsValidUsername_ReturnsFalse_ForTooLong" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidUsername_ReturnsFalse_ForTooLong" methodname="IsValidUsername_ReturnsFalse_ForTooLong" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="1639169525" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000195" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="IsValidUsername_ReturnsFalse_ForTooShort" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidUsername_ReturnsFalse_ForTooShort" methodname="IsValidUsername_ReturnsFalse_ForTooShort" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="577265245" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000169" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1013" name="IsValidUsername_ReturnsTrue_ForValidUsernames" fullname="SangsomMiniMe.Tests.GameUtilitiesTests.IsValidUsername_ReturnsTrue_ForValidUsernames" methodname="IsValidUsername_ReturnsTrue_ForValidUsernames" classname="SangsomMiniMe.Tests.GameUtilitiesTests" runstate="Runnable" seed="407862525" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000172" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1022" name="UserProfileTests" fullname="SangsomMiniMe.Tests.UserProfileTests" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" testcasecount="13" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.048596" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1025" name="AddCoins_IncreasesCoins" fullname="SangsomMiniMe.Tests.UserProfileTests.AddCoins_IncreasesCoins" methodname="AddCoins_IncreasesCoins" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="142460496" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.004469" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1024" name="AddExperience_IncreasesExperiencePoints" fullname="SangsomMiniMe.Tests.UserProfileTests.AddExperience_IncreasesExperiencePoints" methodname="AddExperience_IncreasesExperiencePoints" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="184233019" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.002041" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1028" name="CompleteHomework_UpdatesAllRelevantStats" fullname="SangsomMiniMe.Tests.UserProfileTests.CompleteHomework_UpdatesAllRelevantStats" methodname="CompleteHomework_UpdatesAllRelevantStats" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="1285187990" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.008889" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1030" name="DecreaseHappiness_ClampsAtMinimum" fullname="SangsomMiniMe.Tests.UserProfileTests.DecreaseHappiness_ClampsAtMinimum" methodname="DecreaseHappiness_ClampsAtMinimum" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="535983603" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000781" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="IncreaseHappiness_ClampsAtMaximum" fullname="SangsomMiniMe.Tests.UserProfileTests.IncreaseHappiness_ClampsAtMaximum" methodname="IncreaseHappiness_ClampsAtMaximum" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="2122346461" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000414" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1035" name="OfflineMeterDecayCatchUp_ClampsAndRespectsFloors" fullname="SangsomMiniMe.Tests.UserProfileTests.OfflineMeterDecayCatchUp_ClampsAndRespectsFloors" methodname="OfflineMeterDecayCatchUp_ClampsAndRespectsFloors" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="470425340" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.002523" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1033" name="SetAccessory_UpdatesCurrentAccessory" fullname="SangsomMiniMe.Tests.UserProfileTests.SetAccessory_UpdatesCurrentAccessory" methodname="SetAccessory_UpdatesCurrentAccessory" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="1157522502" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000734" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="SetEyeScale_ClampsWithinRange" fullname="SangsomMiniMe.Tests.UserProfileTests.SetEyeScale_ClampsWithinRange" methodname="SetEyeScale_ClampsWithinRange" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="1580387497" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000800" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="SetOutfit_UpdatesCurrentOutfit" fullname="SangsomMiniMe.Tests.UserProfileTests.SetOutfit_UpdatesCurrentOutfit" methodname="SetOutfit_UpdatesCurrentOutfit" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="1164766988" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000528" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1027" name="SpendCoins_WithInsufficientBalance_ReturnsFalse" fullname="SangsomMiniMe.Tests.UserProfileTests.SpendCoins_WithInsufficientBalance_ReturnsFalse" methodname="SpendCoins_WithInsufficientBalance_ReturnsFalse" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="1368647175" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.006810" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[Validation] SpendCoins: Insufficient Coins. Have: 100, Need: 200
+]]></output>
+            </test-case>
+            <test-case id="1026" name="SpendCoins_WithSufficientBalance_ReturnsTrue" fullname="SangsomMiniMe.Tests.UserProfileTests.SpendCoins_WithSufficientBalance_ReturnsTrue" methodname="SpendCoins_WithSufficientBalance_ReturnsTrue" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="236959429" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000386" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1034" name="UserId_IsUniqueGuid" fullname="SangsomMiniMe.Tests.UserProfileTests.UserId_IsUniqueGuid" methodname="UserId_IsUniqueGuid" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="1284068557" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.005206" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1023" name="UserProfile_Creation_SetsCorrectDefaults" fullname="SangsomMiniMe.Tests.UserProfileTests.UserProfile_Creation_SetsCorrectDefaults" methodname="UserProfile_Creation_SetsCorrectDefaults" classname="SangsomMiniMe.Tests.UserProfileTests" runstate="Runnable" seed="2089377008" result="Passed" start-time="2025-12-19 03:28:47Z" end-time="2025-12-19 03:28:47Z" duration="0.000914" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: c:\Users\eboth\OneDrive\Documents\vs\Mini-me\SANGSOMminiME\TestResults\results.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

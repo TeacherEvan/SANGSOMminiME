@@ -140,15 +140,4 @@ namespace SangsomMiniMe.Core
         }
     }
 
-    /// <summary>
-    /// Mood states for the character based on average meter values.
-    /// </summary>
-    public enum MoodState
-    {
-        VeryHappy,
-        Happy,
-        Neutral,
-        Sad,
-        VerySad
-    }
 }

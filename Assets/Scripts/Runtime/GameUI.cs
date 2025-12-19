@@ -287,7 +287,14 @@ namespace SangsomMiniMe.UI
         {
             if (loadingState != null)
             {
-                loadingState.SetLoading(isLoading);
+                if (isLoading)
+                {
+                    loadingState.Show(useSkeleton: true);
+                }
+                else
+                {
+                    loadingState.Hide();
+                }
             }
             else if (loadingIndicator != null)
             {
@@ -1227,15 +1234,6 @@ namespace SangsomMiniMe.UI
         {
             if (feedbackText != null)
                 feedbackText.gameObject.SetActive(false);
-        }
-
-        /// <summary>
-        /// Sets the loading indicator state.
-        /// </summary>
-        private void SetLoadingState(bool isLoading)
-        {
-            if (loadingIndicator != null)
-                loadingIndicator.SetActive(isLoading);
         }
 
         /// <summary>

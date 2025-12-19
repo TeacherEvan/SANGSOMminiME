@@ -140,7 +140,7 @@ namespace SangsomMiniMe.Core
                 MilestoneType.HundredCoins => "💰 100 Coins Collected!",
                 MilestoneType.MaxHappiness => "😊 Maximum Happiness Reached!",
                 MilestoneType.FirstWeek => "📅 One Week Together!",
-                MilestoneType.LevelUp => $"⭐ Level {GameUtilities.GetLevel(user.ExperiencePoints)} Reached!",
+                MilestoneType.LevelUp => $"⭐ Level {GameUtilities.CalculateLevel(user.ExperiencePoints)} Reached!",
                 _ => "📸 Milestone Achieved!"
             };
 
@@ -197,7 +197,7 @@ namespace SangsomMiniMe.Core
             }
 
             var filteredPhotos = allPhotos.FindAll(p => p.Timestamp >= startDate && p.Timestamp <= endDate);
-            
+
             return new ScrapbookSummary
             {
                 UserId = userId,
