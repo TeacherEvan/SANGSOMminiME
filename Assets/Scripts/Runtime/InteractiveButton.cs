@@ -11,7 +11,7 @@ namespace SangsomMiniMe.UI
     /// Follows modern UI/UX best practices for interactive elements.
     /// </summary>
     [RequireComponent(typeof(Button))]
-    public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, 
+    public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
         IPointerDownHandler, IPointerUpHandler
     {
         [Header("Visual Feedback")]
@@ -52,7 +52,6 @@ namespace SangsomMiniMe.UI
         private Vector3 targetScale;
         private Color targetColor;
         private bool isHovering;
-        private bool isPressed;
         private bool isInitialized;
 
         // Coroutine tracking
@@ -184,7 +183,6 @@ namespace SangsomMiniMe.UI
         public void OnPointerExit(PointerEventData eventData)
         {
             isHovering = false;
-            isPressed = false;
 
             // Return to normal scale
             if (enableScaleAnimation)
@@ -206,8 +204,6 @@ namespace SangsomMiniMe.UI
         public void OnPointerDown(PointerEventData eventData)
         {
             if (button == null || !button.interactable) return;
-
-            isPressed = true;
 
             // Scale down when pressed
             if (enableScaleAnimation)
@@ -379,7 +375,7 @@ namespace SangsomMiniMe.UI
             targetScale = originalScale;
             targetColor = normalColor;
             transform.localScale = originalScale;
-            
+
             if (targetGraphic != null)
             {
                 targetGraphic.color = normalColor;

@@ -33,7 +33,7 @@ namespace SangsomMiniMe.Core
         // Statistics for monitoring
         private int cacheHits;
         private int cacheMisses;
-        
+
         private float lastCleanupTime;
 
         /// <summary>
@@ -153,11 +153,11 @@ namespace SangsomMiniMe.Core
             // Async load from Resources
             cacheMisses++;
             var request = Resources.LoadAsync<T>(resourcePath);
-            
+
             request.completed += (operation) =>
             {
                 var resource = request.asset as T;
-                
+
                 if (resource != null)
                 {
                     AddToCache(resourcePath, resource);
@@ -194,7 +194,7 @@ namespace SangsomMiniMe.Core
                 LoadResourceAsync<T>(path, (resource) =>
                 {
                     loadedCount++;
-                    
+
                     if (loadedCount >= totalCount)
                     {
                         Debug.Log($"[ResourceCache] Preloaded {totalCount} resources of type {typeof(T).Name}");
@@ -236,7 +236,7 @@ namespace SangsomMiniMe.Core
             if (accessOrder.Count == 0) return;
 
             string pathToEvict = accessOrder.Dequeue();
-            
+
             if (resourceCache.ContainsKey(pathToEvict))
             {
                 resourceCache.Remove(pathToEvict);
@@ -283,11 +283,32 @@ namespace SangsomMiniMe.Core
                    $"Hit Rate: {hitRate:F1}%";
         }
 
-        private void Update()
+        private Coroutine automaticCleanupCoroutine;
+
+        private void OnEnable()
         {
-            // Periodic automatic cleanup
-            if (enableAutomaticCleanup && Time.time - lastCleanupTime >= cleanupInterval)
+            if (automaticCleanupCoroutine != null) StopCoroutine(automaticCleanupCoroutine);
+            automaticCleanupCoroutine = StartCoroutine(AutomaticCleanupRoutine());
+        }
+
+        private void OnDisable()
+        {
+            if (automaticCleanupCoroutine != null)
             {
+                StopCoroutine(automaticCleanupCoroutine);
+                automaticCleanupCoroutine = null;
+            }
+        }
+
+        private System.Collections.IEnumerator AutomaticCleanupRoutine()
+        {
+            while (true)
+            {
+                float interval = Mathf.Max(1f, cleanupInterval);
+                yield return new WaitForSeconds(interval);
+
+                if (!enableAutomaticCleanup) continue;
+
                 PerformAutomaticCleanup();
                 lastCleanupTime = Time.time;
             }
@@ -332,7 +353,7 @@ namespace SangsomMiniMe.Core
         private void PrintCacheStatistics()
         {
             Debug.Log(GetCacheStatistics());
-            
+
             foreach (var kvp in resourceCache)
             {
                 var cached = kvp.Value;

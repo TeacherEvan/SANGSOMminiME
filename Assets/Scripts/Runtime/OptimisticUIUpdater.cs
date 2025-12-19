@@ -172,7 +172,7 @@ namespace SangsomMiniMe.UI
             if (pendingOperations.ContainsKey(operationId))
             {
                 pendingOperations.Remove(operationId);
-                
+
                 if (showSuccessFeedback)
                 {
                     Debug.Log($"[OptimisticUIUpdater] Operation confirmed: {operationId}");
@@ -236,7 +236,7 @@ namespace SangsomMiniMe.UI
             pendingOperations[operationId] = new PendingOperation(operationId, rollback);
         }
 
-        private IEnumerator CountToValue(TextMeshProUGUI textComponent, int startValue, int endValue, 
+        private IEnumerator CountToValue(TextMeshProUGUI textComponent, int startValue, int endValue,
             string formatString, Action onComplete)
         {
             float elapsed = 0f;
@@ -361,17 +361,31 @@ namespace SangsomMiniMe.UI
             }
         }
 
-        private void Update()
+        private Coroutine cleanupCoroutine;
+
+        private void OnEnable()
         {
-            // Periodic cleanup using time-based interval instead of frame-based
-            if (Time.time - lastCleanupTime >= 30f)
+            if (cleanupCoroutine != null) StopCoroutine(cleanupCoroutine);
+            cleanupCoroutine = StartCoroutine(CleanupRoutine());
+        }
+
+        private void OnDisable()
+        {
+            if (cleanupCoroutine != null)
             {
-                CleanupStalePendingOperations();
-                lastCleanupTime = Time.time;
+                StopCoroutine(cleanupCoroutine);
+                cleanupCoroutine = null;
             }
         }
 
-        private float lastCleanupTime;
+        private IEnumerator CleanupRoutine()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(30f);
+                CleanupStalePendingOperations();
+            }
+        }
 
         private void OnDestroy()
         {

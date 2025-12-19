@@ -3,14 +3,14 @@
     "tasks": [
         {
             "label": "Unity: Run Tests",
-            "type": "shell",
+            "type": "process",
             "command": "powershell",
             "args": [
                 "-NoProfile",
                 "-ExecutionPolicy",
                 "Bypass",
                 "-Command",
-                "New-Item -ItemType Directory -Force -Path (Join-Path '${workspaceFolder}' 'TestResults') | Out-Null; & 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.15f1\\Editor\\Unity.exe' -batchmode -nographics -projectPath '${workspaceFolder}' -runTests -testPlatform editmode -testResults (Join-Path '${workspaceFolder}' 'TestResults/results.xml') -logFile (Join-Path '${workspaceFolder}' 'TestResults/Editor.log') -debugCodeOptimization"
+                "$unity = 'C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.15f1\\Editor\\Unity.exe'; $results = (Join-Path '${workspaceFolder}' 'TestResults/results.xml'); $log = (Join-Path '${workspaceFolder}' 'TestResults/Editor.log'); New-Item -ItemType Directory -Force -Path (Join-Path '${workspaceFolder}' 'TestResults') | Out-Null; Remove-Item -ErrorAction SilentlyContinue $results, $log; & $unity -batchmode -nographics -projectPath '${workspaceFolder}' -runTests -testPlatform editmode -testResults $results -logFile $log -quit -debugCodeOptimization; $code = $LASTEXITCODE; if (Test-Path $log) { Get-Content -ErrorAction SilentlyContinue $log -Tail 40 | Write-Host }; if (!(Test-Path $results)) { Write-Warning 'No results.xml generated.' }; exit $code"
             ],
             "problemMatcher": [],
             "group": "test"

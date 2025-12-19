@@ -316,7 +316,7 @@ namespace SangsomMiniMe.UI
         {
             try
             {
-                characterController = FindObjectOfType<Character.CharacterController>();
+                characterController = FindFirstObjectByType<Character.CharacterController>();
                 if (characterController != null)
                 {
                     characterController.OnHappinessChanged += HandleCharacterHappinessChanged;

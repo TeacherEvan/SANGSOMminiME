@@ -14,7 +14,9 @@ namespace SangsomMiniMe.Core
         [SerializeField] private int maxFamilyMembers = 6;
         [SerializeField] private bool enableFamilyGifts = true;
         [SerializeField] private bool enableFamilyLeaderboard = true;
+#pragma warning disable CS0414 // Field assigned but never used - configured via Inspector for future privacy features
         [SerializeField] private bool privacyMode = true; // Hide other families' data
+#pragma warning restore CS0414
 
         private Dictionary<string, FamilyGroup> families = new Dictionary<string, FamilyGroup>();
         public static FamilySystem Instance { get; private set; }

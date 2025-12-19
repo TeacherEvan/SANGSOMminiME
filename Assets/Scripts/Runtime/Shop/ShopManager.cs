@@ -34,6 +34,9 @@ namespace SangsomMiniMe.Shop
         [Header("Shop Configuration")]
         [SerializeField] private ShopCatalog catalog;
 
+        [Header("Scene References")]
+        [SerializeField] private Character.CharacterController characterController;
+
         [Header("Audio")]
         [SerializeField] private AudioClip purchaseSound;
         [SerializeField] private AudioClip errorSound;
@@ -76,6 +79,11 @@ namespace SangsomMiniMe.Shop
             {
                 Debug.LogWarning("[ShopManager] No catalog assigned. Shop functionality will be limited.");
                 return;
+            }
+
+            if (characterController == null)
+            {
+                characterController = FindFirstObjectByType<Character.CharacterController>();
             }
 
             // Initialize equipped items dictionary
@@ -355,7 +363,6 @@ namespace SangsomMiniMe.Shop
         /// </summary>
         private void ApplyItemToCharacter(ShopItem item)
         {
-            var characterController = FindObjectOfType<Character.CharacterController>();
             if (characterController == null) return;
 
             switch (item.Category)
