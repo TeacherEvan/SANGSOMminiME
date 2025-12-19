@@ -343,7 +343,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1234567890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0000000000000000d000000000000000, type: 3}
+  m_Script: {fileID: 11500000, guid: 39225521d90c2824a8a2525e086ad027, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   loginUI: {fileID: 0}
@@ -361,7 +361,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1234567890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0000000000000000d000000000000000, type: 3}
+  m_Script: {fileID: 11500000, guid: 3b4ecebe814c12b4c9dd73b6ecbaa5cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   enableDataPersistence: 1

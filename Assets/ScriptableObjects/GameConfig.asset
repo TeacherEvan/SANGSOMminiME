@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b9eb429ca0598b4589ef05174a670b8, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: SangsomMiniMe.Runtime::SangsomMiniMe.Core.GameConfiguration
+  startingCoins: 100
+  startingHappiness: 75
+  startingDaysActive: 1
+  minEyeScale: 0.5
+  maxEyeScale: 2
+  homeworkExperienceReward: 10
+  homeworkCoinReward: 5
+  homeworkHappinessReward: 5
+  happyThreshold: 70
+  sadThreshold: 30
+  danceHappinessBonus: 2
+  autoSaveInterval: 30
+  enableAutoSave: 1
+  animationDuration: 2
+  experiencePerLevel: 100
