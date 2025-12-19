@@ -230,8 +230,6 @@ namespace SangsomMiniMe.UI
         /// </summary>
         public void OnPointerUp(PointerEventData eventData)
         {
-            isPressed = false;
-
             // Return to hover state if still hovering, else normal
             if (isHovering)
             {
@@ -361,7 +359,6 @@ namespace SangsomMiniMe.UI
             {
                 targetScale = originalScale;
                 isHovering = false;
-                isPressed = false;
             }
         }
 
@@ -371,7 +368,6 @@ namespace SangsomMiniMe.UI
         public void ResetState()
         {
             isHovering = false;
-            isPressed = false;
             targetScale = originalScale;
             targetColor = normalColor;
             transform.localScale = originalScale;
