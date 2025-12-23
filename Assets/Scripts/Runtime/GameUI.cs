@@ -575,7 +575,7 @@ namespace SangsomMiniMe.UI
                 var rewardEffects = UIRewardEffects.Instance;
                 if (rewardEffects != null)
                 {
-                    rewardEffects.PlayCoinRewardEffect(coinsText.transform.position, targetCoins - displayedCoins);
+                    rewardEffects.PlayCoinRewardEffect(coinsText.rectTransform, targetCoins - displayedCoins);
                 }
             }
 
@@ -605,7 +605,7 @@ namespace SangsomMiniMe.UI
                 var rewardEffects = UIRewardEffects.Instance;
                 if (rewardEffects != null)
                 {
-                    rewardEffects.PlayLevelUpEffect(experienceText.transform.position);
+                    rewardEffects.PlayLevelUpEffect(experienceText.rectTransform);
                 }
             }
 
@@ -930,7 +930,7 @@ namespace SangsomMiniMe.UI
                 // Visual celebration if available
                 if (coinsText != null)
                 {
-                    UIRewardEffects.Instance?.PlayCoinRewardEffect(coinsText.transform.position, 10);
+                    UIRewardEffects.Instance?.PlayCoinRewardEffect(coinsText.rectTransform, 10);
                 }
 
                 // Trigger celebration animation
@@ -981,7 +981,7 @@ namespace SangsomMiniMe.UI
                 // Reward feedback if available
                 if (coinsText != null)
                 {
-                    UIRewardEffects.Instance?.PlayCoinRewardEffect(coinsText.transform.position, 10);
+                    UIRewardEffects.Instance?.PlayCoinRewardEffect(coinsText.rectTransform, 10);
                 }
 
                 // Update UI

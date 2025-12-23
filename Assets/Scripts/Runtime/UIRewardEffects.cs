@@ -44,6 +44,8 @@ namespace SangsomMiniMe.UI
         // Singleton instance
         private static UIRewardEffects instance;
         public static UIRewardEffects Instance => instance;
+
+        private const float DefaultUiEffectDepth = 2.0f;
         
         private void Awake()
         {
@@ -318,6 +320,22 @@ namespace SangsomMiniMe.UI
             // Return to pool after duration
             StartCoroutine(ReturnParticleToPoolAfterDuration(particles, coinBurstPool, particles.main.duration + particles.main.startLifetime.constantMax));
         }
+
+        /// <summary>
+        /// Plays a coin reward effect anchored to a UI element.
+        /// Converts the UI element position to a screen point and spawns near the camera.
+        /// Works well with Screen Space Overlay and Screen Space Camera canvases.
+        /// </summary>
+        public void PlayCoinRewardEffect(RectTransform uiElement, int coinAmount = 1, Camera worldCamera = null, float depthFromCamera = DefaultUiEffectDepth)
+        {
+            if (uiElement == null)
+            {
+                return;
+            }
+
+            var spawnWorldPos = GetWorldPositionForUI(uiElement, worldCamera, depthFromCamera);
+            PlayCoinRewardEffect(spawnWorldPos, coinAmount);
+        }
         
         /// <summary>
         /// Plays level up effect with celebration particles.
@@ -366,6 +384,35 @@ namespace SangsomMiniMe.UI
             {
                 PlaySound(levelUpSound);
             }
+        }
+
+        /// <summary>
+        /// Plays level up effect anchored to a UI element.
+        /// </summary>
+        public void PlayLevelUpEffect(RectTransform uiElement, Camera worldCamera = null, float depthFromCamera = DefaultUiEffectDepth)
+        {
+            if (uiElement == null)
+            {
+                return;
+            }
+
+            var spawnWorldPos = GetWorldPositionForUI(uiElement, worldCamera, depthFromCamera);
+            PlayLevelUpEffect(spawnWorldPos);
+        }
+
+        private static Vector3 GetWorldPositionForUI(RectTransform uiElement, Camera worldCamera, float depthFromCamera)
+        {
+            // If there is no camera to convert to world space, fall back to whatever "world" position
+            // the UI element currently has.
+            var cam = worldCamera != null ? worldCamera : Camera.main;
+            if (cam == null)
+            {
+                return uiElement.position;
+            }
+
+            var screenPoint = RectTransformUtility.WorldToScreenPoint(null, uiElement.position);
+            float depth = Mathf.Max(cam.nearClipPlane + 0.5f, depthFromCamera);
+            return cam.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, depth));
         }
         
         /// <summary>
