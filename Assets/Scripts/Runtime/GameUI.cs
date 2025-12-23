@@ -111,8 +111,60 @@ namespace SangsomMiniMe.UI
         {
             InitializeUIComponents();
             SetupEventListeners();
+            EnsureHoverEffects();
+            EnsureRewardEffects();
             FindAndCacheCharacterController();
             SubscribeToUserManagementEvents();
+        }
+
+        private void EnsureRewardEffects()
+        {
+            if (UIRewardEffects.Instance != null) return;
+
+            var go = new GameObject("UIRewardEffects");
+            go.AddComponent<UIRewardEffects>();
+        }
+
+        private void EnsureHoverEffects()
+        {
+            // Add hover micro-interactions without requiring manual scene wiring.
+            // Keep it scale-only to avoid altering button colors unexpectedly.
+            TryAddHoverEffect(danceButton);
+            TryAddHoverEffect(waveButton);
+            TryAddHoverEffect(waiButton);
+            TryAddHoverEffect(curtsyButton);
+            TryAddHoverEffect(bowButton);
+
+            TryAddHoverEffect(feedButton);
+            TryAddHoverEffect(restButton);
+            TryAddHoverEffect(playButton);
+
+            TryAddHoverEffect(prevOutfitButton);
+            TryAddHoverEffect(nextOutfitButton);
+            TryAddHoverEffect(prevAccessoryButton);
+            TryAddHoverEffect(nextAccessoryButton);
+
+            TryAddHoverEffect(completeHomeworkButton);
+            TryAddHoverEffect(homeworkRewardButton);
+            TryAddHoverEffect(logoutButton);
+            TryAddHoverEffect(saveProgressButton);
+            TryAddHoverEffect(closeCelebrationButton);
+        }
+
+        private void TryAddHoverEffect(Button button)
+        {
+            if (button == null) return;
+
+            var existing = button.GetComponent<UIButtonHoverEffect>();
+            if (existing != null) return;
+
+            var hover = button.gameObject.AddComponent<UIButtonHoverEffect>();
+            hover.Configure(
+                hoverScale: 1.05f,
+                hoverDuration: 0.15f,
+                enableColorChange: false,
+                hoverColor: Color.white
+            );
         }
 
         /// <summary>
@@ -475,6 +527,7 @@ namespace SangsomMiniMe.UI
             // Try to use CoinAnimationController if available (from main branch)
             // Check if type exists using reflection to avoid compilation errors
             var coinAnimType = System.Type.GetType("SangsomMiniMe.UI.CoinAnimationController");
+            bool usedCoinAnimController = false;
             if (coinAnimType != null && displayedCoins < targetCoins)
             {
                 var instanceProp = coinAnimType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
@@ -509,8 +562,20 @@ namespace SangsomMiniMe.UI
                                     }
                                 })
                             });
+
+                            usedCoinAnimController = true;
                         }
                     }
+                }
+            }
+
+            // Fallback: if no coin animation controller exists, use UIRewardEffects if present.
+            if (!usedCoinAnimController && displayedCoins < targetCoins)
+            {
+                var rewardEffects = UIRewardEffects.Instance;
+                if (rewardEffects != null)
+                {
+                    rewardEffects.PlayCoinRewardEffect(coinsText.transform.position, targetCoins - displayedCoins);
                 }
             }
 
@@ -531,6 +596,18 @@ namespace SangsomMiniMe.UI
         private void UpdateExperienceDisplay(int targetExperience)
         {
             if (experienceText == null) return;
+
+            // Play a level-up celebration if this update crosses a level boundary.
+            int startLevel = displayedExperience / Core.GameConstants.ExperiencePerLevel;
+            int targetLevel = targetExperience / Core.GameConstants.ExperiencePerLevel;
+            if (targetLevel > startLevel)
+            {
+                var rewardEffects = UIRewardEffects.Instance;
+                if (rewardEffects != null)
+                {
+                    rewardEffects.PlayLevelUpEffect(experienceText.transform.position);
+                }
+            }
 
             // Stop any existing XP animation
             if (expCountUpCoroutine != null)
@@ -850,6 +927,12 @@ namespace SangsomMiniMe.UI
                 // Play coin reward sound
                 Core.AudioManager.Instance?.PlayCoin();
 
+                // Visual celebration if available
+                if (coinsText != null)
+                {
+                    UIRewardEffects.Instance?.PlayCoinRewardEffect(coinsText.transform.position, 10);
+                }
+
                 // Trigger celebration animation
                 if (characterController != null && !characterController.IsAnimating)
                 {
@@ -894,6 +977,12 @@ namespace SangsomMiniMe.UI
                 currentUser.AddCoins(10);
                 currentUser.AddExperience(5);
                 characterController?.IncreaseHappiness(5f);
+
+                // Reward feedback if available
+                if (coinsText != null)
+                {
+                    UIRewardEffects.Instance?.PlayCoinRewardEffect(coinsText.transform.position, 10);
+                }
 
                 // Update UI
                 RefreshAllUIElements();

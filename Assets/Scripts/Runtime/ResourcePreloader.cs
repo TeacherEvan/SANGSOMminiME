@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using System;
 
 namespace SangsomMiniMe.Core
@@ -25,8 +24,8 @@ namespace SangsomMiniMe.Core
         [Header("Preload Progress")]
         [SerializeField] private bool enableDetailedLogging = false;
         
-        // Cached resources
-        private Dictionary<string, UnityEngine.Object> resourceCache = new Dictionary<string, UnityEngine.Object>();
+        // Delegate caching/loading to ResourceCache to avoid redundant cache implementations.
+        private ResourceCache cacheBackend;
         
         // Preload state
         private bool isPreloading = false;
@@ -54,6 +53,8 @@ namespace SangsomMiniMe.Core
             {
                 instance = this;
                 DontDestroyOnLoad(gameObject);
+
+                EnsureCacheBackend();
                 
                 if (preloadOnAwake)
                 {
@@ -64,6 +65,17 @@ namespace SangsomMiniMe.Core
             {
                 Destroy(gameObject);
             }
+        }
+
+        private void EnsureCacheBackend()
+        {
+            if (cacheBackend != null) return;
+
+            cacheBackend = ResourceCache.Instance;
+            if (cacheBackend != null) return;
+
+            var cacheObject = new GameObject("ResourceCache");
+            cacheBackend = cacheObject.AddComponent<ResourceCache>();
         }
         
         /// <summary>
@@ -100,6 +112,8 @@ namespace SangsomMiniMe.Core
             isPreloading = true;
             preloadProgress = 0f;
             OnPreloadStarted?.Invoke();
+
+            EnsureCacheBackend();
             
             LogInfo("Starting resource preload...");
             
@@ -117,7 +131,7 @@ namespace SangsomMiniMe.Core
             // Preload outfits
             foreach (var path in outfitPaths)
             {
-                yield return StartCoroutine(LoadResourceAsync(path, typeof(GameObject)));
+                yield return StartCoroutine(LoadResourceAsync<GameObject>(path));
                 loadedItems++;
                 UpdateProgress(loadedItems, totalItems);
                 
@@ -129,7 +143,7 @@ namespace SangsomMiniMe.Core
             // Preload accessories
             foreach (var path in accessoryPaths)
             {
-                yield return StartCoroutine(LoadResourceAsync(path, typeof(GameObject)));
+                yield return StartCoroutine(LoadResourceAsync<GameObject>(path));
                 loadedItems++;
                 UpdateProgress(loadedItems, totalItems);
                 
@@ -140,7 +154,7 @@ namespace SangsomMiniMe.Core
             // Preload UI sprites
             foreach (var path in uiSpritePaths)
             {
-                yield return StartCoroutine(LoadResourceAsync(path, typeof(Sprite)));
+                yield return StartCoroutine(LoadResourceAsync<Sprite>(path));
                 loadedItems++;
                 UpdateProgress(loadedItems, totalItems);
                 
@@ -153,25 +167,38 @@ namespace SangsomMiniMe.Core
         
         /// <summary>
         /// Loads a resource asynchronously and caches it.
-        /// Uses Resources.LoadAsync for non-blocking loads.
+        /// Uses ResourceCache for non-blocking loads and consistent eviction behavior.
         /// </summary>
-        private IEnumerator LoadResourceAsync(string path, Type type)
+        private IEnumerator LoadResourceAsync<T>(string path) where T : UnityEngine.Object
         {
-            // Check if already cached
-            if (resourceCache.ContainsKey(path))
+            if (string.IsNullOrWhiteSpace(path)) yield break;
+
+            EnsureCacheBackend();
+            if (cacheBackend == null) yield break;
+
+            // Skip if already cached
+            if (cacheBackend.IsResourceCached(path))
             {
                 LogInfo($"Resource already cached: {path}", true);
                 yield break;
             }
-            
-            // Load asynchronously
-            ResourceRequest request = Resources.LoadAsync(path, type);
-            yield return request;
-            
-            // Cache result
-            if (request.asset != null)
+
+            bool completed = false;
+            T loaded = null;
+
+            cacheBackend.LoadResourceAsync<T>(path, (resource) =>
             {
-                resourceCache[path] = request.asset;
+                loaded = resource;
+                completed = true;
+            });
+
+            while (!completed)
+            {
+                yield return null;
+            }
+
+            if (loaded != null)
+            {
                 LogInfo($"Preloaded resource: {path}", true);
             }
             else
@@ -204,7 +231,15 @@ namespace SangsomMiniMe.Core
             preloadProgress = 1f;
             
             OnPreloadComplete?.Invoke();
-            LogInfo($"Resource preload complete. Cached {resourceCache.Count} resources.");
+            EnsureCacheBackend();
+            if (cacheBackend != null)
+            {
+                LogInfo($"Resource preload complete. {cacheBackend.GetCacheStatistics()}");
+            }
+            else
+            {
+                LogInfo("Resource preload complete.");
+            }
         }
         
         /// <summary>
@@ -216,21 +251,13 @@ namespace SangsomMiniMe.Core
         /// <returns>Cached resource or null</returns>
         public T GetCachedResource<T>(string path) where T : UnityEngine.Object
         {
-            if (resourceCache.TryGetValue(path, out var cached))
-            {
-                return cached as T;
-            }
-            
-            // Not cached, try to load it now
-            LogInfo($"Resource not cached, loading on-demand: {path}", true);
-            var resource = Resources.Load<T>(path);
-            
-            if (resource != null)
-            {
-                resourceCache[path] = resource;
-            }
-            
-            return resource;
+            if (string.IsNullOrWhiteSpace(path)) return null;
+
+            EnsureCacheBackend();
+            if (cacheBackend == null) return null;
+
+            // Delegate to ResourceCache (loads on demand if not cached)
+            return cacheBackend.LoadResource<T>(path);
         }
         
         /// <summary>
@@ -238,7 +265,12 @@ namespace SangsomMiniMe.Core
         /// </summary>
         public bool IsResourceCached(string path)
         {
-            return resourceCache.ContainsKey(path);
+            if (string.IsNullOrWhiteSpace(path)) return false;
+
+            EnsureCacheBackend();
+            if (cacheBackend == null) return false;
+
+            return cacheBackend.IsResourceCached(path);
         }
         
         /// <summary>
@@ -247,8 +279,14 @@ namespace SangsomMiniMe.Core
         /// </summary>
         public void ClearCache()
         {
-            int count = resourceCache.Count;
-            resourceCache.Clear();
+            EnsureCacheBackend();
+            if (cacheBackend == null)
+            {
+                LogInfo("Resource cache cleared. Freed 0 cached resources.");
+                return;
+            }
+
+            cacheBackend.ClearAll();
             
             // TODO: [OPTIMIZATION] Selective cache clearing based on usage patterns (Implement when cache >50 items)
             // Performance thresholds:
@@ -259,7 +297,7 @@ namespace SangsomMiniMe.Core
             // - Profile memory savings: Expect 30-50% reduction for typical usage
             // Implementation: ~2-3 hours, add LRU cache or access count tracking
             
-            LogInfo($"Resource cache cleared. Freed {count} cached resources.");
+            LogInfo("Resource cache cleared.");
         }
         
         /// <summary>
@@ -267,10 +305,16 @@ namespace SangsomMiniMe.Core
         /// </summary>
         public void LogCacheStatistics()
         {
+            EnsureCacheBackend();
             Debug.Log($"[ResourcePreloader] Cache Statistics:");
-            Debug.Log($"  Total Cached: {resourceCache.Count}");
             Debug.Log($"  Preload Complete: {preloadComplete}");
-            Debug.Log($"  Cache Keys: {string.Join(", ", resourceCache.Keys)}");
+            if (cacheBackend == null)
+            {
+                Debug.Log($"  Backend: (none)");
+                return;
+            }
+
+            Debug.Log($"  Backend Stats: {cacheBackend.GetCacheStatistics()}");
         }
         
         private void LogInfo(string message, bool detailedOnly = false)
@@ -283,6 +327,10 @@ namespace SangsomMiniMe.Core
         
         private void OnDestroy()
         {
+            if (instance == this)
+            {
+                instance = null;
+            }
             ClearCache();
         }
     }

@@ -260,6 +260,10 @@ namespace SangsomMiniMe.Core
 
         private void OnDestroy()
         {
+            if (instance == this)
+            {
+                instance = null;
+            }
             ClearAllPools();
         }
     }

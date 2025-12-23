@@ -33,6 +33,16 @@ namespace SangsomMiniMe.UI
             InitializeComponent();
         }
 
+        public void Configure(float hoverScale, float hoverDuration, bool enableColorChange, Color hoverColor)
+        {
+            this.hoverScale = hoverScale;
+            this.hoverDuration = hoverDuration;
+            this.enableColorChange = enableColorChange;
+            this.hoverColor = hoverColor;
+
+            ResetToOriginalState();
+        }
+
         private void InitializeComponent()
         {
             button = GetComponent<Button>();

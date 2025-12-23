@@ -16,6 +16,9 @@ namespace SangsomMiniMe.UI
         [SerializeField] private ParticleSystem starBurstPrefab;
         [SerializeField] private ParticleSystem confettiPrefab;
         [SerializeField] private ParticleSystem glowPrefab;
+
+        [Header("Fallback (No Prefabs)")]
+        [SerializeField] private bool autoCreateFallbackParticles = true;
         
         [Header("Effect Settings")]
         [SerializeField] private int poolSize = 5;
@@ -86,6 +89,14 @@ namespace SangsomMiniMe.UI
         /// </summary>
         private void InitializeParticlePools()
         {
+            if (autoCreateFallbackParticles)
+            {
+                coinBurstPrefab ??= CreateFallbackBurst("CoinBurst_Fallback", burstCount: 18, startSpeed: 6f, lifetime: 0.8f);
+                starBurstPrefab ??= CreateFallbackBurst("StarBurst_Fallback", burstCount: 24, startSpeed: 7f, lifetime: 0.9f);
+                confettiPrefab ??= CreateFallbackBurst("Confetti_Fallback", burstCount: 40, startSpeed: 5f, lifetime: 1.2f);
+                glowPrefab ??= CreateFallbackBurst("Glow_Fallback", burstCount: 10, startSpeed: 2.5f, lifetime: 0.6f);
+            }
+
             if (coinBurstPrefab != null)
             {
                 coinBurstPool = new Core.ObjectPool<ParticleSystem>(
@@ -130,6 +141,137 @@ namespace SangsomMiniMe.UI
                 );
             }
         }
+
+        private ParticleSystem CreateFallbackBurst(string name, int burstCount, float startSpeed, float lifetime)
+        {
+            if (effectsParent == null)
+            {
+                // Should be created in InitializeEffectSystem, but guard anyway.
+                var parentObj = new GameObject("RewardEffectsParent");
+                effectsParent = parentObj.transform;
+                effectsParent.SetParent(transform);
+            }
+
+            var go = new GameObject(name);
+            go.transform.SetParent(effectsParent, worldPositionStays: false);
+
+            var ps = go.AddComponent<ParticleSystem>();
+            var main = ps.main;
+            main.loop = false;
+            main.duration = 0.1f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(lifetime * 0.85f, lifetime * 1.15f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(startSpeed * 0.85f, startSpeed * 1.15f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.16f);
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.playOnAwake = false;
+            main.maxParticles = Mathf.Clamp(burstCount * 2, 32, 512);
+
+            var emission = ps.emission;
+            emission.enabled = true;
+            emission.rateOverTime = 0f;
+            emission.SetBurst(0, new ParticleSystem.Burst(0f, (short)Mathf.Clamp(burstCount, 1, 200)));
+
+            var shape = ps.shape;
+            shape.enabled = true;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius = 0.08f;
+
+            // Gentle fade + shrink (keeps it clean even with default white particles).
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            {
+                var gradient = new Gradient();
+                gradient.SetKeys(
+                    new[]
+                    {
+                        new GradientColorKey(Color.white, 0f),
+                        new GradientColorKey(Color.white, 1f)
+                    },
+                    new[]
+                    {
+                        new GradientAlphaKey(1f, 0f),
+                        new GradientAlphaKey(0.65f, 0.35f),
+                        new GradientAlphaKey(0f, 1f)
+                    }
+                );
+                colorOverLifetime.color = gradient;
+            }
+
+            var sizeOverLifetime = ps.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+            {
+                var curve = new AnimationCurve(
+                    new Keyframe(0f, 1f),
+                    new Keyframe(0.5f, 0.9f),
+                    new Keyframe(1f, 0f)
+                );
+                sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, curve);
+            }
+
+            // Add a bit of organic motion; cheap and noticeable.
+            var noise = ps.noise;
+            noise.enabled = true;
+            noise.strength = 0.25f;
+            noise.frequency = 0.35f;
+            noise.scrollSpeed = 0.5f;
+
+            var renderer = ps.GetComponent<ParticleSystemRenderer>();
+            renderer.renderMode = ParticleSystemRenderMode.Billboard;
+
+            // Per-effect tweaks (still no prefab assets required).
+            // Keep this conservative: the goal is "obviously animated" without turning into a physics sim.
+            if (name.Contains("Confetti"))
+            {
+                shape.shapeType = ParticleSystemShapeType.Cone;
+                shape.angle = 35f;
+                shape.radius = 0.05f;
+
+                main.gravityModifier = 1.2f;
+                main.startRotation3D = true;
+                main.startRotationX = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+                main.startRotationY = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+                main.startRotationZ = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+
+                var rotationOverLifetime = ps.rotationOverLifetime;
+                rotationOverLifetime.enabled = true;
+                rotationOverLifetime.x = new ParticleSystem.MinMaxCurve(-6f, 6f);
+                rotationOverLifetime.y = new ParticleSystem.MinMaxCurve(-6f, 6f);
+                rotationOverLifetime.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+
+                noise.strength = 0.35f;
+            }
+            else if (name.Contains("Glow"))
+            {
+                shape.shapeType = ParticleSystemShapeType.Sphere;
+                shape.radius = 0.02f;
+
+                main.startSize = new ParticleSystem.MinMaxCurve(0.22f, 0.38f);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(startSpeed * 0.5f, startSpeed * 0.9f);
+                main.gravityModifier = 0f;
+
+                noise.strength = 0.15f;
+            }
+            else if (name.Contains("Star"))
+            {
+                shape.shapeType = ParticleSystemShapeType.Sphere;
+                shape.radius = 0.06f;
+                main.startSize = new ParticleSystem.MinMaxCurve(0.06f, 0.12f);
+                main.gravityModifier = 0.25f;
+
+                noise.strength = 0.3f;
+            }
+            else
+            {
+                // Coin-ish burst: a little heavier and snappier.
+                shape.shapeType = ParticleSystemShapeType.Sphere;
+                shape.radius = 0.07f;
+                main.startSize = new ParticleSystem.MinMaxCurve(0.09f, 0.17f);
+                main.gravityModifier = 0.8f;
+            }
+
+            go.SetActive(false);
+            return ps;
+        }
         
         /// <summary>
         /// Plays a coin reward effect with particle burst and optional sound.
@@ -149,10 +291,20 @@ namespace SangsomMiniMe.UI
             particles.transform.position = worldPosition;
             
             // Scale emission based on coin amount (more coins = more particles)
+            int burstCount = Mathf.Clamp(coinAmount * 3, 5, 50);
             var emission = particles.emission;
-            var burst = emission.GetBurst(0);
-            burst.count = Mathf.Clamp(coinAmount * 3, 5, 50);
-            emission.SetBurst(0, burst);
+
+            // If the prefab has no bursts configured, add one at t=0.
+            if (emission.burstCount <= 0)
+            {
+                emission.SetBurst(0, new ParticleSystem.Burst(0f, (short)burstCount));
+            }
+            else
+            {
+                var burst = emission.GetBurst(0);
+                burst.count = new ParticleSystem.MinMaxCurve(burstCount);
+                emission.SetBurst(0, burst);
+            }
             
             // Play particles
             particles.Play();
@@ -310,6 +462,10 @@ namespace SangsomMiniMe.UI
         
         private void OnDestroy()
         {
+            if (instance == this)
+            {
+                instance = null;
+            }
             // Clean up pools
             coinBurstPool?.Clear();
             starBurstPool?.Clear();

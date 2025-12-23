@@ -26,9 +26,10 @@ namespace SangsomMiniMe.Core
         private static ResourceCache instance;
         public static ResourceCache Instance => instance;
 
-        // Cache storage with LRU tracking
+        // Cache storage with true LRU tracking
         private readonly Dictionary<string, CachedResource> resourceCache = new Dictionary<string, CachedResource>();
-        private readonly Queue<string> accessOrder = new Queue<string>();
+        private readonly LinkedList<string> lruList = new LinkedList<string>();
+        private readonly Dictionary<string, LinkedListNode<string>> lruNodes = new Dictionary<string, LinkedListNode<string>>();
 
         // Statistics for monitoring
         private int cacheHits;
@@ -126,6 +127,15 @@ namespace SangsomMiniMe.Core
         }
 
         /// <summary>
+        /// Returns true if the resource path is currently cached.
+        /// </summary>
+        public bool IsResourceCached(string resourcePath)
+        {
+            if (string.IsNullOrWhiteSpace(resourcePath)) return false;
+            return resourceCache.ContainsKey(resourcePath);
+        }
+
+        /// <summary>
         /// Async resource loading with callback pattern.
         /// Provides better user experience for large assets.
         /// </summary>
@@ -211,6 +221,13 @@ namespace SangsomMiniMe.Core
         {
             cached.LastAccessTime = Time.time;
             cached.AccessCount++;
+
+            // Move to most-recently-used position
+            if (lruNodes.TryGetValue(path, out var node) && node != null)
+            {
+                lruList.Remove(node);
+                lruList.AddLast(node);
+            }
         }
 
         /// <summary>
@@ -224,8 +241,14 @@ namespace SangsomMiniMe.Core
                 EvictLeastRecentlyUsed();
             }
 
+            // If overwriting an existing entry, remove its LRU node first
+            if (resourceCache.ContainsKey(path))
+            {
+                RemoveFromLru(path);
+            }
+
             resourceCache[path] = new CachedResource(resource);
-            accessOrder.Enqueue(path);
+            AddToLru(path);
         }
 
         /// <summary>
@@ -233,15 +256,30 @@ namespace SangsomMiniMe.Core
         /// </summary>
         private void EvictLeastRecentlyUsed()
         {
-            if (accessOrder.Count == 0) return;
+            if (lruList.First == null) return;
 
-            string pathToEvict = accessOrder.Dequeue();
+            string pathToEvict = lruList.First.Value;
+            RemoveFromLru(pathToEvict);
 
-            if (resourceCache.ContainsKey(pathToEvict))
+            if (resourceCache.Remove(pathToEvict))
             {
-                resourceCache.Remove(pathToEvict);
                 Debug.Log($"[ResourceCache] Evicted resource: {pathToEvict}");
             }
+        }
+
+        private void AddToLru(string path)
+        {
+            var node = lruList.AddLast(path);
+            lruNodes[path] = node;
+        }
+
+        private void RemoveFromLru(string path)
+        {
+            if (lruNodes.TryGetValue(path, out var node) && node != null)
+            {
+                lruList.Remove(node);
+            }
+            lruNodes.Remove(path);
         }
 
         /// <summary>
@@ -253,6 +291,7 @@ namespace SangsomMiniMe.Core
         {
             if (resourceCache.Remove(resourcePath))
             {
+                RemoveFromLru(resourcePath);
                 Debug.Log($"[ResourceCache] Cleared resource: {resourcePath}");
             }
         }
@@ -265,7 +304,8 @@ namespace SangsomMiniMe.Core
         {
             int count = resourceCache.Count;
             resourceCache.Clear();
-            accessOrder.Clear();
+            lruList.Clear();
+            lruNodes.Clear();
             Debug.Log($"[ResourceCache] Cleared all cached resources ({count} items)");
         }
 
@@ -333,7 +373,10 @@ namespace SangsomMiniMe.Core
 
             foreach (var key in itemsToRemove)
             {
-                resourceCache.Remove(key);
+                if (resourceCache.Remove(key))
+                {
+                    RemoveFromLru(key);
+                }
             }
 
             if (itemsToRemove.Count > 0)
@@ -344,6 +387,10 @@ namespace SangsomMiniMe.Core
 
         private void OnDestroy()
         {
+            if (instance == this)
+            {
+                instance = null;
+            }
             ClearAll();
         }
 
