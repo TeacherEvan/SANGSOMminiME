@@ -9,6 +9,10 @@ namespace SangsomMiniMe.UI
     /// Enhanced button component with micro-interactions for premium UX.
     /// Implements hover states, press feedback, and haptic responses.
     /// Follows modern UI/UX best practices for interactive elements.
+    /// 
+    /// PERFORMANCE OPTIMIZATION: Uses event-driven coroutine-based animations instead of
+    /// per-frame Update() polling. Animations only run when button state changes (hover/press),
+    /// significantly reducing CPU overhead for buttons not being interacted with.
     /// </summary>
     [RequireComponent(typeof(Button))]
     public class InteractiveButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
@@ -54,8 +58,10 @@ namespace SangsomMiniMe.UI
         private bool isHovering;
         private bool isInitialized;
 
-        // Coroutine tracking
-        private Coroutine animationCoroutine;
+        // Coroutine tracking for animations
+        private Coroutine scaleAnimationCoroutine;
+        private Coroutine colorAnimationCoroutine;
+        private Coroutine pulseAnimationCoroutine;
 
         private void Awake()
         {
@@ -112,39 +118,82 @@ namespace SangsomMiniMe.UI
             isInitialized = true;
         }
 
-        private void Update()
+        /// <summary>
+        /// Smoothly animates the scale to the target value.
+        /// Coroutine-based approach for better performance than Update() polling.
+        /// </summary>
+        private IEnumerator AnimateScale(Vector3 targetScale)
         {
-            if (!isInitialized) return;
-
-            // Smooth scale animation
-            if (enableScaleAnimation)
+            const float threshold = 0.001f;
+            
+            while (Vector3.Distance(transform.localScale, targetScale) > threshold)
             {
                 transform.localScale = Vector3.Lerp(
                     transform.localScale,
                     targetScale,
                     Time.deltaTime * scaleAnimationSpeed
                 );
+                yield return null;
             }
+            
+            transform.localScale = targetScale;
+            scaleAnimationCoroutine = null;
+        }
 
-            // Smooth color transition
-            if (enableColorAnimation && targetGraphic != null)
+        /// <summary>
+        /// Smoothly animates the color to the target value.
+        /// Coroutine-based approach for better performance than Update() polling.
+        /// </summary>
+        private IEnumerator AnimateColor(Color targetColor)
+        {
+            if (targetGraphic == null) yield break;
+            
+            const float threshold = 0.01f;
+            
+            while (Mathf.Abs((targetGraphic.color - targetColor).sqrMagnitude) > threshold)
             {
                 targetGraphic.color = Color.Lerp(
                     targetGraphic.color,
                     targetColor,
                     Time.deltaTime * colorTransitionSpeed
                 );
+                yield return null;
             }
+            
+            targetGraphic.color = targetColor;
+            colorAnimationCoroutine = null;
+        }
 
-            // Update disabled state
-            if (button != null && !button.interactable)
+        /// <summary>
+        /// Starts scale animation coroutine, stopping any previous animation.
+        /// </summary>
+        private void StartScaleAnimation(Vector3 target)
+        {
+            if (!enableScaleAnimation) return;
+            
+            if (scaleAnimationCoroutine != null)
             {
-                if (enableColorAnimation && targetGraphic != null)
-                {
-                    targetColor = disabledColor;
-                }
-                targetScale = originalScale;
+                StopCoroutine(scaleAnimationCoroutine);
             }
+            
+            targetScale = target;
+            scaleAnimationCoroutine = StartCoroutine(AnimateScale(target));
+        }
+
+        /// <summary>
+        /// Starts color animation coroutine, stopping any previous animation.
+        /// </summary>
+        private void StartColorAnimation(Color target)
+        {
+            if (!enableColorAnimation || targetGraphic == null) return;
+            
+            if (colorAnimationCoroutine != null)
+            {
+                StopCoroutine(colorAnimationCoroutine);
+            }
+            
+            targetColor = target;
+            colorAnimationCoroutine = StartCoroutine(AnimateColor(target));
         }
 
         /// <summary>
@@ -157,17 +206,11 @@ namespace SangsomMiniMe.UI
 
             isHovering = true;
 
-            // Scale up on hover
-            if (enableScaleAnimation)
-            {
-                targetScale = originalScale * hoverScale;
-            }
+            // Scale up on hover (coroutine-based)
+            StartScaleAnimation(originalScale * hoverScale);
 
-            // Change color on hover
-            if (enableColorAnimation)
-            {
-                targetColor = hoverColor;
-            }
+            // Change color on hover (coroutine-based)
+            StartColorAnimation(hoverColor);
 
             // Play hover sound
             if (enableSoundEffects && hoverSound != null)
@@ -184,17 +227,11 @@ namespace SangsomMiniMe.UI
         {
             isHovering = false;
 
-            // Return to normal scale
-            if (enableScaleAnimation)
-            {
-                targetScale = originalScale;
-            }
+            // Return to normal scale (coroutine-based)
+            StartScaleAnimation(originalScale);
 
-            // Return to normal color
-            if (enableColorAnimation)
-            {
-                targetColor = normalColor;
-            }
+            // Return to normal color (coroutine-based)
+            StartColorAnimation(normalColor);
         }
 
         /// <summary>
@@ -205,17 +242,11 @@ namespace SangsomMiniMe.UI
         {
             if (button == null || !button.interactable) return;
 
-            // Scale down when pressed
-            if (enableScaleAnimation)
-            {
-                targetScale = originalScale * pressedScale;
-            }
+            // Scale down when pressed (coroutine-based)
+            StartScaleAnimation(originalScale * pressedScale);
 
-            // Darken color when pressed
-            if (enableColorAnimation)
-            {
-                targetColor = pressedColor;
-            }
+            // Darken color when pressed (coroutine-based)
+            StartColorAnimation(pressedColor);
 
             // Trigger haptic feedback on mobile
             if (enableHapticFeedback)
@@ -233,25 +264,13 @@ namespace SangsomMiniMe.UI
             // Return to hover state if still hovering, else normal
             if (isHovering)
             {
-                if (enableScaleAnimation)
-                {
-                    targetScale = originalScale * hoverScale;
-                }
-                if (enableColorAnimation)
-                {
-                    targetColor = hoverColor;
-                }
+                StartScaleAnimation(originalScale * hoverScale);
+                StartColorAnimation(hoverColor);
             }
             else
             {
-                if (enableScaleAnimation)
-                {
-                    targetScale = originalScale;
-                }
-                if (enableColorAnimation)
-                {
-                    targetColor = normalColor;
-                }
+                StartScaleAnimation(originalScale);
+                StartColorAnimation(normalColor);
             }
         }
 
@@ -278,11 +297,11 @@ namespace SangsomMiniMe.UI
             }
 
             // Pulse animation
-            if (animationCoroutine != null)
+            if (pulseAnimationCoroutine != null)
             {
-                StopCoroutine(animationCoroutine);
+                StopCoroutine(pulseAnimationCoroutine);
             }
-            animationCoroutine = StartCoroutine(PulseAnimation());
+            pulseAnimationCoroutine = StartCoroutine(PulseAnimation());
         }
 
         /// <summary>
@@ -350,15 +369,15 @@ namespace SangsomMiniMe.UI
                 button.interactable = interactable;
             }
 
-            if (enableColorAnimation && targetGraphic != null)
-            {
-                targetColor = interactable ? normalColor : disabledColor;
-            }
-
             if (!interactable)
             {
-                targetScale = originalScale;
+                StartColorAnimation(disabledColor);
+                StartScaleAnimation(originalScale);
                 isHovering = false;
+            }
+            else
+            {
+                StartColorAnimation(normalColor);
             }
         }
 
@@ -390,9 +409,18 @@ namespace SangsomMiniMe.UI
                 button.onClick.RemoveListener(OnButtonClicked);
             }
 
-            if (animationCoroutine != null)
+            // Clean up all coroutines to prevent leaks
+            if (scaleAnimationCoroutine != null)
             {
-                StopCoroutine(animationCoroutine);
+                StopCoroutine(scaleAnimationCoroutine);
+            }
+            if (colorAnimationCoroutine != null)
+            {
+                StopCoroutine(colorAnimationCoroutine);
+            }
+            if (pulseAnimationCoroutine != null)
+            {
+                StopCoroutine(pulseAnimationCoroutine);
             }
         }
 
